@@ -9,9 +9,9 @@ title: Automated Testing Reference
 
 # Automated Testing Reference
 
-This document is a non-normative encyclopedia. It describes common terms, techniques, conventions, and tradeoffs. Requirements are defined in `Overview.md` and the L1/L2/L3 procedures.
+This document is a non-normative encyclopedia. It discusses common concepts, techniques, conventions, and tradeoffs. Canonical terminology is defined in `glossary.md`; requirements are defined in `Overview.md` and the L1/L2/L3 procedures; Python implementation guidance is in `python_testing.md`.
 
-Testing terminology is not standardized across organizations. Labels should be interpreted according to the explicit project definition rather than assumed to have universal boundaries.
+Testing terminology is not standardized across organizations. The definitions in `glossary.md` state the meanings used within this repository. External sources and project-specific guides may use the same labels differently.
 
 ## Core concerns
 
@@ -66,6 +66,8 @@ Purposes are orthogonal to structural scope. A regression, contract, security, o
 * **Exploratory testing** combines learning, test design, and execution without relying only on predefined cases.
 * **Formal verification** proves specified properties under an explicit model.
 
+See `glossary.md` for complete definitions and additional terms.
+
 ## Test doubles and real dependencies
 
 Common options include:
@@ -105,6 +107,8 @@ Common directory organizations include:
 
 Common code structures include Arrange–Act–Assert, Given–When–Then, table-driven cases, fixtures, factories, builders, and domain-specific test languages. These are readability conventions, not definitions of correctness.
 
+For a concrete pytest implementation, see `python_testing.md`.
+
 ## Feedback portfolios
 
 Many projects maintain multiple feedback loops:
@@ -136,8 +140,10 @@ These metrics have no universal target. Their interpretation depends on the popu
 * Coverage or mutation percentages are treated as proof of correctness.
 * Manual, exploratory, usability, or operational evidence is omitted because it is not easily automated.
 
-## Related procedures
+## Related documents
 
+* `glossary.md` — canonical repository terminology
+* `python_testing.md` — Python and pytest implementation guidance
 * `L3_T1_unit.md` — unit test design
 * `L3_T2_component.md` — component test design
 * `L3_T3_integration.md` — integration test design
