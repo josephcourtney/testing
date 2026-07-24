@@ -1,3 +1,16 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- System, smoke, end-to-end, and acceptance testing are treated as nearly interchangeable even though they describe different dimensions.
+- A small smoke selection cannot establish all stakeholder acceptance conditions or system risks.
+
+Proposed fixes:
+- Keep system as structural scope, smoke as selection purpose, and acceptance as stakeholder-facing purpose.
+- State which assembled artifact, environment, user/operator boundary, and critical journeys are exercised.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
 # L3-T4 — System / Smoke Test: Design, Writing, Evaluation
 
 ## 1. Purpose

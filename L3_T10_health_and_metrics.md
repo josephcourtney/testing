@@ -6,6 +6,20 @@ tags: []
 title: L3-T10 — Health and Metrics
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Suite health and quantitative release metrics are combined even though they answer different decisions.
+- Coverage, mutation, flake, runtime, and performance values lack a shared specification of population, denominator, environment, window, uncertainty, and response.
+
+Proposed fixes:
+- Evaluate suite health through feedback latency, determinism, diagnostic quality, maintenance burden, and critical-risk coverage.
+- Add a separate metric-design procedure before any numerical observation becomes a gate.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T10 — Health and Metrics
 
 ## 1. Purpose

@@ -1,3 +1,19 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The unit boundary is defined too narrowly around pure logic and can imply that a unit must be one function, method, or class.
+- The isolation rules can be read as requiring replacement of all collaborators, which encourages deep mocking and interfaces created only for tests.
+- Dependency injection is recommended appropriately, but its purpose and limits should be stated more precisely.
+
+Proposed fixes:
+- Define a unit as the smallest useful local behavioral boundary, which may be solitary or sociable.
+- Retain inexpensive deterministic collaborators when they are part of the chosen boundary; replace collaborators when control, substitution, observability, or fault injection is needed.
+- Continue recommending explicit dependency injection at external-effect and variability boundaries, but do not require artificial interfaces for every internal collaborator.
+- Pair consequential doubles with contract or integration evidence.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
 # L3-T1 — Unit Test (Pure Logic): Design, Writing, Evaluation
 
 ## 1. Purpose

@@ -7,6 +7,26 @@ tags: []
 title: Best Practices - Automated Testing
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The document alternates between encyclopedia, prescription, and lifecycle policy without stating which statements are normative.
+- The lifecycle sequence can be read as making test applicability depend on phase rather than current risk.
+- TDD, isolation style, portfolio shape, and test ordering are presented more universally than the evidence supports.
+- Property-based testing is described too narrowly, especially for stateful systems, model-based testing, differential testing, and metamorphic relations.
+- Quantitative targets are presented without a complete measurement design.
+
+Proposed fixes:
+- Mark the document as a non-normative reference while preserving its breadth and examples.
+- Annotate lifecycle sections as common confidence patterns rather than required sequences.
+- Present TDD, sociable/solitary units, mocking styles, and portfolio shapes as selectable conventions with tradeoffs.
+- Expand generative testing guidance to state machines, models, differential oracles, and metamorphic properties.
+- Require metric definitions, baselines, uncertainty, and actions before illustrative targets become gates.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # Best Practices - Automated Testing
 > [!definition] Definition: Automated Testing
 > [[Automated Testing]] is the use of software tools to execute predefined tests automatically, verifying that the target system works as intended and meets specified requirements.

@@ -1,3 +1,16 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The component definition depends heavily on examples of lightweight infrastructure rather than a precise supported subsystem boundary.
+- The distinction between a sociable unit, component, and integration test can be ambiguous.
+
+Proposed fixes:
+- Define the component by a coherent supported interface and state which dependencies remain inside or outside the boundary.
+- Classify tests by the semantics actually executed, not solely by process count or the use of SQLite, temporary files, or fakes.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
 
 # L3-T2 — Component Test: Design, Writing, Evaluation
 

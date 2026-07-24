@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- This project-specific harness can be mistaken for universal policy because commands, markers, cadence, and thresholds are stated prescriptively.
+- The marker expression `unit or component or contract and not slow` is ambiguous to readers without explicit Boolean grouping.
+
+Proposed fixes:
+- Label the entire document as a local implementation of the general guidance.
+- Use one structural scope plus independently composable purpose, technique, and resource markers.
+- Add explicit parentheses to compound marker expressions and document which commands produce complete versus partial evidence.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
 # Local Testing Guide
 
 This page describes the implemented local workflow for the broader policy in

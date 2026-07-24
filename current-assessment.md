@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The assessment mixes observed facts, inferred confidence, policy compliance, and project-specific thresholds.
+- Small numbers of repeated runs cannot support a precise flake probability without an explicit statistical model and interval.
+
+Proposed fixes:
+- Label each statement as observation, inference, assumption, or accepted risk.
+- Define the run population and uncertainty before quantifying flake rate; otherwise report only that no flakes were observed in the sampled runs.
+- Treat local thresholds as project evidence rather than repository-wide defaults.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
 # Current Testing Assessment
 
 ## Applicability and decision

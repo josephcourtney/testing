@@ -6,6 +6,20 @@ tags:
 title: L2-P1
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The prototype profile can be read as permitting weak evidence solely because the project is early-stage.
+- The result vocabulary and escalation conditions are less consistent than in later lifecycle procedures.
+
+Proposed fixes:
+- State that prototype work should minimize ceremony while still addressing any already-material security, data, safety, or external-impact risk.
+- Use the same pass, conditional pass, fail, and exploratory-finding vocabulary as the other profiles.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L2-P1 — Exploratory / Prototype Testing Phase
 ## Procedure L2-P1: Exploratory / Prototype Testing Phase
 
