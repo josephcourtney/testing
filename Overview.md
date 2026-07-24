@@ -38,6 +38,14 @@ Use “must” for requirements, “should” for strong recommendations.
 
 ---
 
+<!--
+SECTION REVIEW — SPLIT AND MOVE MOST CONTENT
+
+Keep in Overview.md only a concise normative statement that tests are classified along independent dimensions.
+Move detailed definitions of unit, component, integration, system, contract, purposes, techniques, and resource markers to the terminology/reference material.
+Move the pytest marker configuration example to Python/pytest implementation guidance.
+Remove the rule that `contract` is an alternative structural scope; contract should be an independently composable purpose.
+-->
 ## 2. Test taxonomy
 
 ### 2.1 Scopes
@@ -119,6 +127,12 @@ Policy:
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move this section intact to Python/pytest implementation guidance or project-specific examples.
+Directory organization is a selectable convention, not core testing policy. Retain several viable layouts and their tradeoffs rather than prescribing one universal tree.
+-->
 ## 3. Directory layout
 
 All tests must live under a top-level `tests/` directory.
@@ -146,6 +160,12 @@ Guidelines:
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move the pytest and coverage configuration examples to Python/pytest implementation guidance.
+Retain in Overview.md only tool-independent evidence-integrity requirements such as rejecting unknown configuration and distinguishing complete from partial evidence.
+-->
 ## 4. Pytest configuration policy
 
 ### 4.1 Core settings
@@ -210,6 +230,12 @@ Example (in `pyproject.toml`):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move command names, Make/just examples, pytest selections, and concrete cadence budgets to Python/pytest implementation guidance or project-specific examples.
+Retain in Overview.md only the general requirement for reproducible named evidence-producing commands and clearly distinguished complete versus partial runs.
+-->
 ## 5. Command-line entrypoints
 
 Projects should provide ergonomic commands (via `Makefile`, `justfile`, or scripts) to standardize usage.
@@ -243,6 +269,12 @@ Policy:
 
 * Developers must be able to run a fast subset locally (`test-fast`) and a full suite (`test-all`) without remembering complex filter expressions.
 
+<!--
+SECTION REVIEW — MOVE; REMOVE UNIVERSAL CADENCE PRESCRIPTION
+
+Move the table to implementation guidance as an illustrative workflow.
+Remove the claim that this exact save/commit/PR/nightly progression should be preserved universally. Cadence should follow risk, cost, feedback needs, and available infrastructure.
+-->
 ### 5.1 Recommended testing cadence
 
 Recommended mapping from workflow events to commands/markers:
@@ -259,6 +291,12 @@ Projects may adjust details and budgets, but the pattern (fast per-save / per-co
 
 ---
 
+<!--
+SECTION REVIEW — SPLIT
+
+Keep the tool-independent behavioral and invariant-oriented principles in Overview.md.
+Move Python examples, naming conventions, and Arrange–Act–Assert guidance to implementation/reference material, explicitly labeling them as useful conventions rather than universal requirements.
+-->
 ## 6. Test design guidelines
 
 ### 6.1 Design around behaviour and invariants
@@ -302,6 +340,14 @@ def test_normalize_whitespace_strips_edges():
 
 ---
 
+<!--
+SECTION REVIEW — MOVE DETAILED MATERIAL; KEEP ONLY POLICY SUMMARY
+
+Move the definition, examples, collaborator strategy, dependency-injection guidance, and mocking/fake guidance to the unit-testing procedure and Python guide.
+Keep a short policy statement that unit scope is a small chosen boundary providing localizing evidence.
+Preserve dependency injection as a selective recommendation at external-effect and variability boundaries; do not remove it or require replacement of every collaborator.
+Remove the universal ~100 ms threshold from core policy and retain it only as an illustrative project budget.
+-->
 ## 7. Unit tests
 
 Definition:
@@ -335,6 +381,12 @@ def test_calculate_price_applies_discount():
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move the definition, resource guidance, and Python example to the component-testing procedure and Python implementation guide.
+Overview.md should name component scope only as one available evidence boundary.
+-->
 ## 8. Component tests
 
 Definition:
@@ -374,6 +426,12 @@ def test_store_persists_and_loads_entities(tmp_path):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move the detailed definition, infrastructure guidance, markers, and example to the integration-testing procedure and Python implementation guide.
+Retain only the policy principle that real external semantics require evidence that executes those semantics.
+-->
 ## 9. Integration tests
 
 Definition:
@@ -405,6 +463,12 @@ def test_api_can_write_to_real_database(api_client, real_db):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move the definition, scenario list, marker advice, and subprocess example to the system-testing procedure and Python guide.
+Do not equate system scope with acceptance purpose; acceptance evidence may exist at several structural scopes.
+-->
 ## 10. System tests
 
 Definition:
@@ -437,6 +501,13 @@ def test_cli_end_to_end(tmp_path):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE AND EXPAND
+
+Move the detailed material to the contract-testing procedure and Python guide.
+Reclassify contract as a purpose that can be exercised at component, integration, or system scope.
+Expand beyond schema shape to behavioral obligations, producer/consumer expectations, version compatibility, migrations, and allowed versus breaking changes.
+-->
 ## 11. Contract tests
 
 Definition:
@@ -472,6 +543,12 @@ def test_user_table_schema(db_inspector):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move the Python-specific environment-variable and module-reload examples to the Python guide.
+Retain only the general policy that behavior varying by supported configuration or environment requires representative evidence.
+-->
 ## 12. Configuration and environment testing
 
 Policy:
@@ -507,6 +584,12 @@ def test_cache_default_disabled_in_prod(monkeypatch):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE AND EXPAND
+
+Move the detailed guidance and Hypothesis example to the generative/property-testing procedure and Python guide.
+Remove the implication that property-based testing primarily belongs to pure functions. Expand the reference material to stateful, model-based, differential, and metamorphic testing.
+-->
 ## 13. Property-based testing
 
 Policy:
@@ -544,6 +627,13 @@ def test_normalize_id_is_idempotent(s: str):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE AND SPLIT
+
+Move Python `caplog` guidance and examples to the Python guide.
+Move test-design guidance for logs, metrics, traces, and diagnostics to the non-functional/observability procedure.
+Separate instrumentation-contract checks from operational evidence that alerts and diagnostics work under realistic failure conditions.
+-->
 ## 14. Observability tests
 
 Policy:
@@ -581,6 +671,12 @@ def test_process_job_logs_success(caplog):
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+
+Move fixture, factory, test-data, and pytest examples to Python implementation guidance and the terminology/reference material.
+These are maintainability techniques rather than top-level policy.
+-->
 ## 15. Fixtures and test data
 
 Guidelines:
@@ -606,6 +702,12 @@ def user_factory():
 
 ---
 
+<!--
+SECTION REVIEW — MOVE OUT OF OVERVIEW.MD AND DISTRIBUTE
+
+Distribute mutation testing, fuzzing, chaos/resilience testing, and snapshot testing to their corresponding procedures and reference sections.
+Keep the detailed information; do not compress these techniques into a short list.
+-->
 ## 16. Advanced testing techniques
 
 ### 16.1 Mutation testing (optional)
@@ -622,6 +724,13 @@ Guidelines:
   * Pure or mostly pure functions.
   * Security-sensitive code paths.
 
+<!--
+SECTION REVIEW — MOVE; REMOVE UNSUPPORTED UNIVERSAL TARGETS
+
+Move metric interpretation to a dedicated metric-design procedure and project-specific examples.
+Remove universal coverage and mutation targets unless their population, denominator, tool configuration, baseline, uncertainty, decision, and response are explicitly defined.
+Retain the practical workflow for investigating uncovered code and surviving mutants as implementation guidance.
+-->
 ### 16.2 Coverage, mutation, and property test quality
 
 - **Coverage evaluation** – rely on the pytest-generated XML/HTML reports (`--cov`, `--cov-branch`, `--cov-report=xml`) and aim for the targets described in `Automated Testing.md:143-167` (line ≥80% backend, branch ≥70%, case/path coverage as applicable). Use `showcov` or similar tools to highlight missing lines and modules; if a critical module is below target, add focused unit/component tests or refactor to reduce dead branches so the coverage metrics better reflect exercised behaviour.
@@ -643,6 +752,12 @@ Guidelines:
   * Assertion failures.
   * Unexpected exceptions or timeouts.
 
+<!--
+SECTION REVIEW — MOVE AND EXPAND
+
+Move this material to a first-class operational/resilience procedure.
+Expand it to deployment, rollback, restart, failover, backup restoration, recovery objectives, degraded modes, runbooks, and observability validation.
+-->
 ### 16.4 Chaos and resilience testing
 
 For distributed systems and services, resilience under partial failure is critical.
@@ -665,6 +780,13 @@ Guidelines:
 
 ---
 
+<!--
+SECTION REVIEW — SPLIT AND MOVE DETAILS
+
+Move Python tool examples and command wiring to implementation guidance.
+Keep tool-independent requirements for required static, security, and supply-chain evidence only where justified by project risk and support policy.
+Replace the universal every-commit/every-PR cadence with explicit project-selected gates and documented waivers.
+-->
 ## 17. Static analysis and security checks
 
 Some checks must run regularly regardless of project specifics.
@@ -690,6 +812,13 @@ These checks should be wired into the `check` command and CI pipelines.
 
 ---
 
+<!--
+SECTION REVIEW — MOVE; REMOVE UNIVERSAL NUMERIC TARGETS
+
+Move metric definitions and examples to a dedicated metric-design procedure.
+Remove the generic 80% line coverage, 70% branch coverage, 70% mutation, and ±5–10% performance recommendations as universal guidance.
+Retain values only as clearly labeled examples after defining population, denominator, environment, baseline, uncertainty, threshold rationale, action, and owner.
+-->
 ## 18. Metrics and targets
 
 Quantitative metrics help keep the test suite effective and healthy. Targets are guidelines, not rigid laws, but deviations should be explicit and justified.
@@ -715,6 +844,13 @@ Projects may adopt stricter or looser thresholds, but they should be explicit.
 
 ---
 
+<!--
+SECTION REVIEW — SPLIT
+
+Keep genuinely tool-independent evidence-integrity prohibitions in Overview.md, such as arbitrary sleeps, hidden failures, and unreviewed suppression.
+Move scope-specific red flags to the relevant L3 procedures and Python-specific advice to the Python guide.
+Remove the universal claim that lower-level tests must carry most of the load; portfolio shape should follow risks and architecture.
+-->
 ## 19. Prohibited practices and anti-patterns
 
 To maintain isolation, efficiency, clarity, purpose, and maintainability, the following are explicitly disallowed:
@@ -746,6 +882,11 @@ If these constraints are too tight for a specific case, the exception and ration
 
 ```
 ```
+<!--
+SECTION REVIEW — REMOVE THIS DUPLICATE SECTION
+
+This is a duplicate of section 16.5 above and follows stray Markdown fences. Remove the duplicate and malformed fences after review; preserve the earlier complete snapshot-testing section and move it to the snapshot procedure/reference material.
+-->
 ### 16.5 Snapshot tests (optional)
 
 Snapshot tests capture a serialized representation (e.g. JSON, HTML) and compare against a baseline.
