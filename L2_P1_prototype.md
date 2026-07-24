@@ -2,110 +2,64 @@
 aliases:
   - L2-P1
 linter-yaml-title-alias: L2-P1
-tags:
+tags: []
 title: L2-P1
 ---
 
-# L2-P1 — Exploratory / Prototype Testing Phase
-## Procedure L2-P1: Exploratory / Prototype Testing Phase
+# L2-P1 — Exploratory and Prototype Confidence Profile
 
+## 1. Intent
 
-## 1. Phase intent
-
-**Goal:**
-Reduce uncertainty and validate feasibility with minimal friction.
-
-**Primary risks addressed:**
-Building the wrong thing; misunderstanding domain constraints.
-
-**Deferred risks:**
-Long-term correctness, regression protection, non-functional properties.
-
-(Definitions and test taxonomy per *automated_testing.md*.)
-
----
+Reduce the uncertainties that determine whether an idea, requirement, architecture, model, or dependency is viable. Avoid creating durable process or test assets before their value is understood.
 
 ## 2. Applicability
 
-Applies when:
+Use for spikes, prototypes, feasibility studies, architecture experiments, uncertain requirements, and early model or data exploration.
 
-* exploring new ideas or architectures,
-* validating assumptions,
-* building throwaway or experimental code.
+## 3. Required evidence
 
----
+No structural test scope is universally mandatory. The prototype must nevertheless address each assumption whose failure would invalidate the conclusion.
 
-## 3. Required test classes
+Suitable evidence may include:
 
-### Mandatory
+* executable examples or small unit/component checks,
+* property, differential, or metamorphic experiments,
+* integration probes against uncertain external semantics,
+* performance or capacity measurements where architecture depends on them,
+* threat or privacy analysis where sensitive data or trust boundaries are involved,
+* exploratory sessions, user observation, or usability evaluation,
+* data validation and baseline measurement,
+* written analysis where execution is not yet possible.
 
-* None.
+## 4. Procedure
 
-### Advisory
+1. State the decision the prototype is intended to inform.
+2. List the critical assumptions and unknowns.
+3. Identify the cheapest credible evidence for each.
+4. Run the experiments and record contradictory or inconclusive results.
+5. Distinguish demonstrated facts from assumptions that remain open.
+6. Decide whether code and tests are disposable, reusable as characterization evidence, or suitable for promotion after reevaluation.
 
-* **Unit tests** for critical logic or surprising behavior.
-* **Property-based tests** for core invariants or transformations.
-* **Spike or exploratory tests** used as executable experiments.
+## 5. Exit criteria
 
-### Conditional decision rule (risk acceptance)
+Return a **finding** to L1. The finding must state:
 
-If advisory tests are omitted for a critical assumption, the omission must be recorded as a risk with:
+* which uncertainties were reduced,
+* which remain material,
+* what evidence was collected,
+* whether the prototype may be promoted and under what reevaluation,
+* what evidence is required before the next decision.
 
-* description of the assumption,
-* intended validation method (test, measurement, manual check),
-* owner,
-* revisit trigger (typically promotion to L2-P2).
+Do not describe a prototype as production-ready merely because its demonstration succeeds.
 
----
+## 6. Relevant L3 procedures
 
-## 4. Explicit non-requirements
+Commonly relevant:
 
-Not required:
+* **L3-T6:** Generative Testing
+* **L3-T11:** Metric Design
+* **L3-T12:** Acceptance Testing
+* **L3-T13:** Exploratory Testing
+* **L3-T14:** Usability and Accessibility
 
-* Coverage targets
-* Component, integration, or system tests
-* Regression guarantees
-* CI enforcement
-
----
-
-## 5. Compliance criteria
-
-This phase is compliant if:
-
-1. Key assumptions are explicitly tested or otherwise validated.
-2. Tests (if written) are clearly marked as experimental.
-3. No prototype artifacts are misrepresented as production-ready.
-
----
-
-## 6. Assessment
-
-1. Identify assumptions and unknowns.
-2. Verify that major risks have been explored.
-3. Record outcomes and learning.
-
----
-
-## 7. Forward rules
-
-* Tests may be discarded or promoted in later phases.
-* Any prototype code promoted forward must be re-evaluated under L2-P2.
-
----
-
-## 8. Delegation
-
-Optional:
-
-* **L3-T1:** Unit Test (Pure Logic)
-* **L3-T6:** Property-Based Testing
-
-If either of the above is chosen, apply the corresponding L3 procedure in full and record deviations.
-
----
-
-## 9. Exit
-
-Return findings (not pass/fail) to L1.
-
+Invoke integration, security, performance, contract, or operational procedures whenever those risks are already material.
