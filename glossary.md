@@ -4,6 +4,19 @@ This document is the canonical terminology reference for this repository. It def
 
 Testing terminology varies across organizations. A project may adopt narrower or broader local definitions, but it should state them explicitly. When this glossary conflicts with a normative requirement in `Overview.md` or an L1/L2/L3 procedure, the normative document controls.
 
+## Contents
+
+1. Risk, claims, and decisions
+2. Classification dimensions
+3. Test purposes
+4. Test design techniques
+5. Test doubles and controlled dependencies
+6. Test artifacts and organization
+7. Execution and result integrity
+8. Development workflows
+9. Static and supply-chain checks
+10. Measurements
+
 ## 1. Risk, claims, and decisions
 
 ### Claim
