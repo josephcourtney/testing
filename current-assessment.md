@@ -1,79 +1,59 @@
 # Current Testing Assessment
 
-## Applicability and decision
+This is a project-specific example of applying L1 and L2-P3. Its commands, evidence formats, measurements, and thresholds are not general policy.
 
-- Lifecycle stage: beta.
-- Applicable procedure: L2-P3 stabilization and pre-release testing.
-- Primary risks: incorrect normalization, schema drift, unsafe target loading, misleading CLI
-  diagnostics, packaging drift, and tests that pass only inside the checkout.
-- Outcome: pass for L2-P3. Production remains separately gated as described in
-  `production-readiness.md`.
+## Decision context
 
-## Responsibility and invariant evidence
+* Decision: beta/stabilization readiness.
+* Primary risks: incorrect normalization, schema drift, unsafe target loading, misleading CLI diagnostics, packaging drift, and tests that pass only inside the source checkout.
+* Outcome: pass for the stated beta decision. Production remains separately gated in `production-readiness.md`.
 
-`testing-requirements.json` is the executable responsibility map. Every listed responsibility has a
-passing test at every required structural scope; an unfiltered run fails while any mapping is
-incomplete. It covers Python loading, artifact portability, target resolution, merge determinism,
-Typer observation, declaration enrichment, both schema contracts, the public API, CLI workflows,
-and CLI diagnostics.
+## Risk and evidence map
 
-Unit tests cover deterministic normalization, audit policy, rendering, configuration, worker
-protocol parsing, output limits, and error translation. Component tests exercise public subsystem
-boundaries for acquisition, Typer observation, declarations, merging, configuration, and in-process
-CLI workflows. Contract tests cover public exports, schema validation, deterministic semantic
-goldens, and the versioned test-evidence document. System smoke tests exercise the console boundary.
-`just test-wheel` separately validates the exact built wheel from outside the checkout.
+`testing-requirements.json` maps declared responsibilities to executable evidence. An unfiltered run fails when a required mapping is incomplete.
 
-## Boundary inventory
+| Claim or risk | Evidence |
+|---|---|
+| Normalization and policy behavior are deterministic | Unit examples and generated invariants |
+| Subsystems collaborate through supported interfaces | Component tests |
+| Published Python and JSON behavior remains compatible | Component/system tests marked `contract`, semantic goldens, independent consumer |
+| CLI behavior and diagnostics work through the process boundary | System smoke and regression tests |
+| Built distributions work outside the checkout | Exact-wheel isolated installation and consumer workflow |
+| Unsafe or failed target loading is bounded and diagnostic | Unit protocol, component process-boundary, security-purpose, and system evidence |
 
-| Boundary | Evidence | Status |
-| --- | --- | --- |
-| Trusted Python import subprocess | Component, unit protocol, security, and system tests | Covered |
-| Native snapshot filesystem artifact | Component, contract golden, and wheel-system reload | Covered |
-| Typer/Click framework conversion | Unit normalization and public adapter component tests | Covered |
-| CLI process and exit diagnostics | Source smoke and installed-wheel workflows | Covered |
-| Published Python and JSON interfaces | Contract tests plus independent installed consumer | Covered |
-| Built wheel and source distribution | Content inspection, digests, isolated install | Covered |
-| Database, network service, broker, external persistence | No such product boundary exists | Not applicable |
+The product has no database, network service, broker, remote persistence, or other real external-system boundary. Integration scope is therefore not applicable to the current risk map. Reassess if such a boundary is introduced.
 
-External integration tests are therefore not applicable. Reassess immediately if a remote runner,
-service protocol, database, broker, or external persistence boundary is introduced.
+## Classification and fidelity
 
-## Scope, mocking, and brittleness review
+Each test has one structural scope (`unit`, `component`, or `system` in the current portfolio) and may have independent purpose or technique markers such as `contract`, `regression`, `smoke`, `security`, `snapshot`, or `property_based`.
 
-Every collected test has exactly one structural marker. The prior component test that replaced the
-adapter's imported `get_command` function was removed; component tests now use public boundaries and
-only the loader timeout test replaces the external subprocess runner. Defensive worker protocol
-branches are tested at unit scope. Multi-behavior declaration validation was split into localized
-cases.
+Component tests use supported subsystem entrypoints and retain the subprocess boundary when process isolation is part of the component's behavior. Doubles are limited to external control points where deliberate fault injection is required. Contract-purpose tests include both local schema/public-API checks and installed-artifact system checks.
 
-Whole help/prose snapshots remain intentionally absent. The only golden documents are stable machine
-schemas, and each golden must decode, satisfy semantic assertions, and re-encode identically. Tests
-use temporary paths and direct argument vectors, network sockets are disabled by default, subprocess
-waits are bounded, and no retry hides nondeterminism.
+Whole help and prose snapshots are intentionally absent. Machine-document goldens decode, satisfy semantic assertions, and re-encode identically. Temporary paths, direct argument vectors, disabled network sockets, bounded waits, and the absence of retry-as-success support determinism.
 
-## Health evidence
+## Suite health
 
-The current full suite contains 112 tests and completes in a few seconds locally, within the five
-second unit/developer-loop and two-minute hard-gate budgets. It has no skips, expected failures, or
-flaky quarantines. Version-4 evidence stores per-test phase durations and comparable full runs under
-ignored `.cache/test-history`; `just health` reports the slowest tests and fails at a measured flake
-rate of 1% or more across the latest 20 comparable runs. There is not yet enough elapsed history to
-claim a statistically meaningful long-term flake rate.
+The full suite contains 112 tests and completes within the project's declared editing and hard-gate budgets. It currently has no skips, expected failures, or quarantines. Comparable run history records per-phase durations and suspected flakes.
 
-Current coverage is 85.75% statements and 72.35% branches, with 100% changed-line coverage. The
-initial maintained mutation cohort covers target parsing and Typer default/type normalization at
-81.73% with zero untested mutants. Expanding mutation scope is tracked explicitly rather than
-hiding weak broader results in a baseline.
+The available history is insufficient to claim a precise long-term flake probability. Current observations support “no known flake” rather than a statistically established rate.
 
-Health classification: healthy for beta. Owner: Maintainer. Reassess on every phase promotion,
-material boundary change, expired waiver, or observed flake/runtime regression.
+## Project-specific metrics
 
-## Conditional classes
+* Statement coverage: 85.75%.
+* Branch coverage: 72.35%.
+* Changed-line coverage: 100%.
+* Maintained mutation cohort: 81.73%, with zero `no_tests` mutants.
 
-| Class | Decision and mitigation | Revisit trigger |
-| --- | --- | --- |
-| Integration | Not applicable; no external-system boundary exists. | Add a service, database, broker, remote runner, or persistence dependency. |
-| Broad snapshots | Not applicable to human prose; targeted semantic machine-document goldens are used. | Human output becomes a compatibility contract. |
-| Data quality | Not applicable; no managed dataset exists. | Add persistent observation corpora or learned/statistical behavior. |
-| Chaos/privacy | Not applicable to the current local library/CLI risk profile. | Add a live service, sensitive data, authentication, or multi-system recovery behavior. |
+These values are descriptive evidence for the declared code and mutation cohorts. Their gates are defined in `local-testing.md` and must satisfy `L3_T11_metrics.md`; they are not universal quality targets.
+
+## Residual uncertainty and revisit triggers
+
+| Gap or non-applicable class | Revisit trigger |
+|---|---|
+| Real external integration semantics | Add a service, database, broker, remote runner, or persistence dependency. |
+| Human-facing prose compatibility | Make prose or help output a supported compatibility contract. |
+| Managed data-quality behavior | Add persistent observation corpora, learned behavior, or production datasets. |
+| Operational resilience and privacy | Add a live service, sensitive data, authentication, recovery objectives, or multi-system operation. |
+| Long-term flake estimate | Accumulate enough comparable runs for a defensible estimate. |
+
+Reassess on phase promotion, material boundary or audience change, expired waiver, incident, or measured suite-health degradation.
