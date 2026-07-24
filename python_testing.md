@@ -187,16 +187,16 @@ Typical commands include:
 Example `justfile` fragments:
 
 ```just
- test-dev *args:
+test-dev *args:
     uv run pytest --no-cov {{args}}
 
- test-fast:
+test-fast:
     uv run pytest -m "not slow and not destructive and not quarantined"
 
- test-all:
+test-all:
     uv run pytest
 
- check:
+check:
     uv run ruff format --check .
     uv run ruff check .
     uv run basedpyright
