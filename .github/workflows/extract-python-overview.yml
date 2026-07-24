@@ -27,3 +27,5 @@ jobs:
           git add Overview.md python_testing.md scripts/extract_python_overview.py .github/workflows/extract-python-overview.yml
           git commit -m "Extract Python-specific guidance from Overview"
           git push
+
+# This workflow removes itself after the one-time extraction.
