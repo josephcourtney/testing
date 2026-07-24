@@ -1,105 +1,108 @@
-# L3-T6 — Property-Based Testing: Design, Writing, Evaluation
+# L3-T6 — Generative, Property, Model, and Differential Testing
 
 ## 1. Purpose
 
-Use generated inputs to validate that a unit/component upholds **invariants** over a broad input space (e.g., idempotence, round-trips, bounds, monotonicity), improving defect detection beyond enumerated examples.
+Explore a broad or sequential input space using generated cases and compact oracles. Generative testing complements selected examples by searching for counterexamples, invalid transitions, implementation disagreements, and relations that should hold when a direct expected value is difficult to enumerate.
 
-## 2. Applicability
+## 2. Applicable techniques
 
-Best fit when:
+### Property-based testing
 
-* functions are pure or mostly pure (normalizers, parsers/formatters, comparators, transformations)
-* correctness can be expressed as clear properties
-* edge cases are numerous or non-obvious
+Generate inputs and assert invariants such as idempotence, round trips, bounds, monotonicity, conservation, symmetry, normalization, or compatibility.
 
-Avoid when:
+### Stateful or model-based testing
 
-* behavior is heavily stateful, timing-dependent, or requires expensive external systems (use other test types)
-* properties are ambiguous or would encode implementation instead of intent
+Generate action sequences, maintain a reference model, and compare the system state or outputs after each transition. This is appropriate for stores, protocols, workflows, parsers with modes, caches, schedulers, and other stateful behavior.
 
-### 2.1 When not to use this test type
+### Differential testing
 
-Avoid property-based testing when:
+Run the same input against independent implementations, versions, backends, execution modes, or a trusted reference and investigate disagreements.
 
-* the subject is heavily stateful or requires complex external setup (prefer **L3-T2/L3-T3/L3-T4**),
-* you cannot state 1–3 clear invariants without restating implementation,
+### Metamorphic testing
 
+Transform an input or environment and assert an expected relation between results when an exact oracle is unavailable. Examples include permutation invariance, scale relations, translation invariance, and behavior-preserving serialization changes.
 
+### Generated contract or integration testing
 
+Generate values or interaction sequences at a boundary when real infrastructure remains affordable and deterministic enough. Generative testing is not limited to pure functions or unit scope.
 
-* candidates to convert to example-based tests (if property adds little value)
+## 3. Applicability
 
-## 3. Design rules
+Use when:
 
-### 3.1 Properties must be simple and legible
+* edge cases are numerous or difficult to anticipate,
+* behavior can be expressed as properties or model transitions,
+* several implementations or modes should agree,
+* exact expected values are costly but relational oracles exist,
+* failures depend on action order or accumulated state,
+* parsers, protocols, numeric transformations, serialization, data structures, or workflow engines accept rich input domains.
 
-Prefer properties like:
+Avoid when the only available property merely restates the implementation, the generator cannot represent the relevant domain, or the execution cost prevents useful exploration without a better harness.
 
-* **Idempotence**: `f(f(x)) == f(x)`
-* **Round-trip**: `decode(encode(x)) == x` (within normalization rules)
-* **Bounds**: output length/value within constraints
-* **Symmetry**: `cmp(a,b) == -cmp(b,a)` (if relevant)
-* **Stability**: sorting/normalization preserves some order/structure guarantees
+## 4. Design rules
 
-Avoid:
+### Define the domain
 
-* “properties” that restate the code (tautologies)
-* overly complex invariants that are hard to debug
+Specify valid, invalid, boundary, adversarial, and out-of-scope regions. A generator should reflect domain structure rather than produce unconstrained noise unless arbitrary bytes are the actual interface.
 
-### 3.2 Control input domains
+### Define the oracle independently
 
-* Use generators that match **valid and near-valid** domains; include invalid inputs only if behavior is specified.
-* Constrain sizes to keep runtime predictable.
-* Explicitly handle or exclude pathological inputs when they are not in scope.
+Prefer:
 
-### 3.3 Determinism and diagnostics
+* domain invariants,
+* a simpler reference model,
+* an independently implemented algorithm,
+* a compatibility specification,
+* a metamorphic relation,
+* safety properties that must hold after every transition.
 
-* Ensure failing examples shrink to minimal counterexamples (default in Hypothesis-like tools).
-* Record counterexamples in regression tests where appropriate (see L3-T5).
+Avoid computing the expected result through the same logic used by the system under test.
 
-## 4. Writing procedure
+### Preserve diagnostics
 
-1. Identify the **subject function/component** and its domain.
-2. Write down 1–3 core **invariants** in plain language.
-3. Implement generators for the domain (start narrow).
-4. Encode properties as assertions.
-5. If a counterexample is found:
+* Keep generated examples small enough to shrink or minimize.
+* Record seeds or counterexamples when the framework does not reproduce them automatically.
+* Include the action trace and relevant state for sequential failures.
+* Convert important discovered cases into targeted regressions when a named failure mode should remain visible.
 
-   * fix the code or clarify the spec,
-   * optionally add a targeted example-based regression test for the found case.
+### Control cost without destroying coverage
 
-## 5. Evaluating an existing property-based test
+Bound sizes, sequence lengths, deadlines, and infrastructure use according to cadence. Use a small generated portfolio for rapid feedback and broader campaigns in scheduled workflows when appropriate.
 
-A good property-based test:
+## 5. Writing procedure
 
-* asserts a meaningful invariant tied to business/format semantics,
-* uses well-scoped generators (not “any bytes” unless intended),
-* runs within predictable time,
-* produces actionable minimal counterexamples.
+1. State the failure class and input or action domain.
+2. Choose property, state-machine, differential, metamorphic, or mixed technique.
+3. Define the oracle independently in plain language.
+4. Build generators that cover ordinary, boundary, invalid, and structurally diverse cases.
+5. Verify that shrinking or trace minimization produces actionable failures.
+6. Seed the test with known difficult examples when useful.
+7. Run a deliberate fault or mutation to confirm the oracle detects plausible defects.
+8. Record discovered counterexamples and clarify the specification when results are ambiguous.
+
+## 6. Evaluation
+
+A good generative test:
+
+* explores a domain wider than the example suite,
+* has a comprehensible and independent oracle,
+* produces reproducible minimal failures,
+* exercises meaningful state or boundary behavior,
+* remains within its declared cost budget.
 
 Red flags:
 
-* frequent flaky failures due to timeouts or overly broad generators
-* properties that are unclear or inconsistent with requirements
-* tests that over-constrain inputs to the point that no meaningful exploration occurs
+* generators exclude the difficult parts of the domain,
+* assertions are tautologies,
+* generated tests merely repeat a few constants,
+* sequential tests lack a reference model or invariant,
+* differential tests assume one implementation is correct without justification,
+* timeouts are treated as flaky noise rather than a harness or complexity signal.
 
-## 6. Evaluating the property-based suite
+## 7. Outputs
 
-Check:
-
-* coverage of critical invariants for transformation-heavy code
-* runtime budget and placement (unit vs separate property suite)
-* whether discovered counterexamples are being captured as regressions when appropriate
-* whether the suite complements example-based tests rather than duplicating them
-
-Outputs:
-
-* list of missing invariants
-* list of generators to refine (too broad/slow or too narrow)
-* candidates to convert to example-based tests (if property adds little value)
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a property test is effectively checking a few enumerated cases, replace with clearer example-based **unit tests (L3-T1)**.
-* If failures reveal boundary/serialization semantics, consider adding **contract (L3-T7)** coverage and capture counterexamples as **regressions (L3-T5)**.
-
+* property and model inventory,
+* generator-domain description,
+* counterexamples and regression candidates,
+* unmodeled states or unsupported domains,
+* recommended scope and cadence changes.
