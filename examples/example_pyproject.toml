@@ -1,3 +1,16 @@
+# TESTING-GUIDANCE-REVIEW: document-level annotation
+#
+# Problems identified:
+# - This configuration is useful but may be read as the repository's universal pytest, coverage, warning, and marker policy.
+# - Tool versions, warning filters, coverage collection, and marker declarations must match the adopting project's package and evidence commands.
+#
+# Proposed fixes:
+# - Label the file as an illustrative project configuration.
+# - Require adopters to replace package names, validate filters, separate partial from complete coverage runs, and define any numeric gate through an explicit metric specification.
+#
+# Review rule: preserve the original configuration. Apply any proposed fix only after explicit review.
+# testing-relevant parts of my typical pyproject.toml
+
 # testing-relevant parts of my typical pyproject.toml
 
 [dependency-groups]

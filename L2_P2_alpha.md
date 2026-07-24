@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The development profile prescribes a test inventory more directly than it connects evidence to changed responsibilities and failure modes.
+- Workflow conventions such as TDD risk being interpreted as quality requirements rather than selectable development methods.
+
+Proposed fixes:
+- Describe default confidence goals for changed behavior, interfaces, and known acceptance conditions.
+- Select scopes and techniques from risk and architecture; keep TDD and test-after workflows as justified team conventions.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 ### Procedure L2-P2: Feature Development Testing Phase
 
 #### 1. Phase intent

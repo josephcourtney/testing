@@ -1,3 +1,18 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The procedure focuses on simple pure functions and discourages stateful subjects too strongly.
+- It omits model-based state machines, command sequences, differential comparison, and metamorphic relations.
+- Generator validity, shrinking quality, oracle strength, and runtime budgets need more explicit evaluation.
+
+Proposed fixes:
+- Retain the pure-function examples but expand the procedure to stateful, model-based, differential, and metamorphic testing.
+- Require domain-valid generators, interpretable shrinking, meaningful oracles, and reproducible failing examples.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T6 — Property-Based Testing: Design, Writing, Evaluation
 
 ## 1. Purpose

@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Regression is at risk of being treated as a separate structural level rather than the reason a test exists.
+- The procedure should distinguish incident-derived regressions, characterization tests, and broad regression suites.
+
+Proposed fixes:
+- Define regression as a purpose composable with any appropriate scope and technique.
+- Require the protected behavior or failure mode to be recorded and remove obsolete regressions when the obligation no longer exists.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T5 — Regression / Sanity Test: Design, Writing, Evaluation
 
 ## 1. Purpose

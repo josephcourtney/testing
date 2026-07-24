@@ -1,3 +1,18 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Contract testing is centered on structural schema checks and is treated too much like a structural scope.
+- Behavioral semantics, consumer expectations, provider verification, version matrices, migrations, and artifact compatibility are underdeveloped.
+
+Proposed fixes:
+- Define contract as a purpose that may be exercised at component, integration, or system scope.
+- Identify producer, consumer, obligations, allowed changes, compatibility policy, and verification ownership.
+- Cover behavioral, consumer-driven, provider, persistence/migration, public API, and artifact contracts where applicable.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T7 — Contract Test: Design, Writing, Evaluation
 
 ## 1. Purpose

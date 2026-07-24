@@ -6,6 +6,21 @@ tags:
 title: L2-P3
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The stabilization profile treats named test classes as a mandatory inventory even when some classes do not correspond to actual boundaries or risks.
+- User journeys, compatibility, exploratory learning, and usability evidence are not distinguished clearly enough.
+
+Proposed fixes:
+- Frame stabilization as reducing release uncertainty across critical boundaries, compatibility obligations, and user journeys.
+- Require explicit omissions and residual risks instead of fictitious test categories.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
+
 # L2-P3 — Stabilization and Pre-Release Testing Phase
 
 ## 1. Phase intent

@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Integration is equated mainly with the presence of real external services, which can obscure protocol, framework, persistence, and platform semantics.
+- The procedure needs stronger guidance on environment identity, data isolation, failure injection, and comparability.
+
+Proposed fixes:
+- Define integration evidence by reliance on real semantics across a boundary.
+- Require explicit boundary, environment, version, isolation, cleanup, and diagnostic records.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 
 # L3-T3 — Integration Test: Design, Writing, Evaluation
 

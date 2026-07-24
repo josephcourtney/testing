@@ -1,3 +1,23 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- This document combines policy, terminology, Python/pytest configuration, examples, directory conventions, lifecycle cadence, and quantitative targets in one authority level.
+- The taxonomy treats contract as comparable to structural scopes even though contract usually describes purpose; other purposes and techniques are also mixed with scope markers.
+- Several recommendations are framed universally despite depending on project risk, architecture, environment, and feedback constraints.
+- Fixed coverage, mutation, runtime, flake, and performance targets are not accompanied by explicit populations, denominators, baselines, uncertainty, or decision rules.
+- Acceptance, exploratory, usability/accessibility, and operational/recovery evidence are underrepresented.
+
+Proposed fixes:
+- Retain the detailed material, but annotate sections by authority: normative policy, definition, recommended default, example, or project-specific convention.
+- Describe tests with orthogonal dimensions: structural scope, purpose, technique, resources/boundaries, and execution cadence.
+- Make risk and failure modes determine evidence applicability; use lifecycle only to adjust confidence, breadth, fidelity, and enforcement.
+- Replace universal numeric gates with a metric-specification procedure while retaining example values as explicitly illustrative.
+- Add dedicated guidance for acceptance, exploratory, usability/accessibility, and operational/resilience evidence.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # Testing Policy for Python Projects
 
 ## 1. Goals and principles

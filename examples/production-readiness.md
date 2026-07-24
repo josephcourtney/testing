@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The checklist can be interpreted as a universal fixed inventory rather than evidence selected from the product's actual claims and risks.
+- Operational readiness needs explicit links to deployment, observability, rollback, restoration, ownership, and residual risk.
+
+Proposed fixes:
+- Retain the checklist as a prompt, but mark each item applicable, not applicable with rationale, satisfied, waived, or unresolved.
+- Record evidence identity, environment, owner, waiver expiry, and recovery validation for material production claims.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # Production Testing Readiness
 
 This assessment applies L2-P4 without claiming compliance before all release evidence exists.

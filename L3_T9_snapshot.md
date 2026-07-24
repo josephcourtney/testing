@@ -1,3 +1,17 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Snapshot tests can approve large accidental changes and may obscure the actual behavioral oracle.
+- The procedure needs stronger canonicalization, semantic review, ownership, and update rules.
+
+Proposed fixes:
+- Require stable canonical representations and precise assertions for critical semantics alongside snapshots.
+- Treat snapshot updates as behavior changes requiring review rather than routine regeneration.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T9 — Snapshot Test: Design, Writing, Evaluation
 
 ## 1. Purpose

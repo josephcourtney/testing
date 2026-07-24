@@ -6,6 +6,21 @@ tags:
 title: L2-P5
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- The maintenance profile does not fully emphasize change-impact analysis, incident-derived tests, contract revalidation, or decay of operational evidence.
+- A fixed regression inventory may miss newly introduced risks while preserving obsolete checks.
+
+Proposed fixes:
+- Start from the changed claims, affected boundaries, incidents, dependency updates, and observed production behavior.
+- Retire stale evidence and add focused regression, contract, migration, recovery, or monitoring evidence as risks evolve.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
+
 # L2-P5 — Maintenance and Change Testing Phase
 
 ## 1. Phase intent

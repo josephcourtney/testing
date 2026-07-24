@@ -6,6 +6,21 @@ tags:
 title: L2-P4
 ---
 
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Production readiness is expressed mainly as pre-release automated test coverage rather than a complete operational claim.
+- Deployment, rollback, restoration, observability, capacity, incident response, accessibility, and human operation need first-class treatment where material.
+
+Proposed fixes:
+- Add production claims and evidence for operability, recovery, security, performance, data integrity, and supported user journeys.
+- Make each category risk-applicable and record waivers, mitigations, owners, and revisit triggers.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
+
 # L2-P4 — Release and Hardening Testing Phase
 
 ## 1. Phase intent

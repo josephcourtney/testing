@@ -1,3 +1,19 @@
+<!--
+TESTING-GUIDANCE-REVIEW: document-level annotation
+
+Problems identified:
+- Performance, security, data quality, and observability are grouped together despite requiring different threats, workloads, environments, and oracles.
+- Generic percentage tolerances and thresholds can be mistaken for valid gates without measurement design.
+- Accessibility, privacy, capacity, resilience, and recovery are not fully represented.
+
+Proposed fixes:
+- Keep the broad overview but annotate each evidence type with its own claim, workload or threat model, environment, measurement method, and uncertainty.
+- Move threshold design into an explicit metric procedure and retain numeric examples only as illustrations.
+- Add or cross-reference dedicated accessibility/usability and operational/resilience procedures.
+
+Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
+-->
+
 # L3-T8 — Non-Functional Tests (Risk-Driven): Design, Writing, Evaluation
 
 ## 1. Purpose
