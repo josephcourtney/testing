@@ -1,101 +1,70 @@
-### Procedure L2-P2: Feature Development Testing Phase
-
-#### 1. Phase intent
-
-**Goal:**
-Establish correctness of newly introduced or modified behavior while enabling rapid iteration.
-
-**Primary risks addressed:**
-Incorrect core logic, poor isolation, tests that impede refactoring.
-
-**Deferred risks:**
-Full integration coverage, system-level behavior, non-functional properties unless risk dictates otherwise.
-
-(See *automated_testing.md* for definitions of test levels and purposes.)
-
+---
+aliases:
+  - L2-P2
+linter-yaml-title-alias: L2-P2
+tags: []
+title: L2-P2
 ---
 
-#### 2. Applicability
+# L2-P2 — Feature Development Confidence Profile
 
-This phase applies when:
+## 1. Intent
 
-* implementing new features or workflows,
-* modifying core business logic,
-* performing significant refactors prior to stabilization.
+Provide rapid, localizing evidence that changed responsibilities behave as intended while interfaces and design may still evolve.
 
-This phase assumes interfaces are still evolving; contract tests written here may be provisional.
+## 2. Applicability
 
----
+Use for new features, refactors, behavior changes, and defect corrections during active development.
 
-#### 3. Required test classes
+## 3. Default evidence expectations
 
-##### Mandatory
+For each changed responsibility:
 
-* **Unit tests** for all core logic and invariants.
-* **Component tests** for non-trivial subsystems.
+* identify the intended behavior, invariants, and acceptance conditions,
+* add executable evidence at a scope that preserves the relevant semantics,
+* add a regression purpose when correcting a distinct failure mode,
+* exercise a real boundary early when its semantics are a material source of uncertainty,
+* define contract obligations when another consumer already relies on the interface,
+* include security, data, performance, usability, or accessibility evidence when those risks affect the design.
 
-##### Conditional
+Unit and component evidence are common because they usually provide fast localization. They are not mandatory categories when another form of evidence is more direct and credible.
 
-* **Regression tests** for non-trivial bug fixes.
+## 4. Development workflow
 
-##### Advisory
+Test-driven, acceptance-first, test-after, characterization, and exploratory workflows are all permitted. Select the workflow according to how well the behavior is understood and the cost of obtaining an oracle.
 
-* Contract, integration, observability, or snapshot tests where interfaces stabilize early or risk is elevated.
+Mocking is not required. Retain inexpensive real collaborators within the chosen boundary when they improve confidence. Use doubles where control, speed, or deliberate fault injection is valuable, and add alignment evidence when fidelity matters.
 
-(Definitions and boundaries per *automated_testing.md*.)
+## 5. Procedure
 
-#### 4. Explicit non-requirements
+1. Identify changed responsibilities and affected consumers.
+2. Update the L1 risk and evidence map.
+3. Select structural scope, purpose, technique, and resources independently.
+4. Add or update evidence that fails when the intended behavior is absent.
+5. Run the fastest relevant feedback loop during implementation.
+6. Run the complete pre-merge evidence set before declaring the change complete.
+7. Record any material risk intentionally deferred to stabilization.
 
-Not required by default in this phase:
+## 6. Exit criteria
 
-* System / end-to-end tests
-* Performance, security, chaos testing
+Return pass, conditional pass, or fail to L1.
 
-#### 5. Compliance criteria
+A pass requires:
 
-The phase is compliant if:
+* executable evidence for material changed behavior,
+* no known high-impact gap concealed by a double or omitted boundary,
+* acceptance conditions that are either demonstrated or explicitly deferred,
+* evidence that remains readable and sufficiently localizing for continued development.
 
-1. All new or changed responsibilities have executable tests.
-2. Tests assert observable behavior and localize failures.
-3. Code structure supports isolation and dependency injection.
-4. No unacknowledged high-risk gaps remain.
+## 7. Common L3 procedures
 
-#### 5.1 Conditional decision rule (risk acceptance)
+* **L3-T1:** Unit Testing
+* **L3-T2:** Component Testing
+* **L3-T3:** Integration Testing
+* **L3-T5:** Regression Testing
+* **L3-T6:** Generative Testing
+* **L3-T7:** Contract Testing
+* **L3-T12:** Acceptance Testing
+* **L3-T13:** Exploratory Testing
 
-When a conditional or advisory test class is omitted, the omission must be explicitly recorded with:
-
-* the risk and failure mode being accepted,
-* rationale for omission (cost, phase appropriateness, mitigations),
-* owner,
-* revisit trigger (typically L2-P3 or before release).
-
-#### 6. Assessment
-
-1. Identify changed responsibilities.
-2. Verify required test classes exist.
-3. For each **mandatory** test class, apply the corresponding **L3 procedure** in full and record deviations.
-4. For conditional/advisory test classes selected, apply the corresponding **L3 procedure** in full and record deviations.
-4. Record outcome: pass / conditional pass / fail.
-
-#### 7. Forward rules
-
-* Tests written here persist as regression assets.
-* Documented gaps must be revisited in later phases.
-* Short-term testing shortcuts must be explicit.
-
-#### 8. Delegation
-
-Invoke as needed:
-
-* **L3-T1:** Unit Test (Pure Logic)
-* **L3-T2:** Component Test
-* **L3-T5:** Regression / Sanity
-* **L3-T6:** Property-Based Testing
-
-Also consider (risk-driven):
-
-* **L3-T7:** Contract Test
-* **L3-T9:** Snapshot Test
-* **L3-T10:** Health and Metrics (suite-level)
-
-
+Use other L3 procedures whenever the risk map calls for them.
