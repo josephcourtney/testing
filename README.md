@@ -15,6 +15,8 @@ This repository separates testing policy, definitions, procedures, reference mat
 
 When terminology is unclear, consult `glossary.md`; when a detailed evidence procedure is needed, consult the corresponding `L3_*.md`; when implementing the model in Python, consult `python_testing.md`.
 
+Authority is ordered by role, not by list position: normative requirements in `Overview.md` and the applicable L1/L2/L3 procedure override glossary wording; the glossary controls repository terminology where no normative requirement defines the term; reference, implementation, and example documents do not create general requirements.
+
 Normative language appears only in policy and procedure documents. In those documents, **must** indicates a requirement and **should** indicates a strong recommendation that may be overridden with a documented reason.
 
 The repository intentionally does not define one universal test pyramid, development workflow, directory layout, coverage percentage, mutation score, or CI cadence. Projects select those conventions according to their risks and operating constraints.
