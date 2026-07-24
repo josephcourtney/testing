@@ -12,6 +12,12 @@ Testing exists to provide justified confidence in claims about a system. A proje
 
 No test type, metric, lifecycle stage, or tool is a substitute for this connection.
 
+### 1.1 Terminology and implementation guidance
+
+`glossary.md` is the canonical terminology reference for this policy and the L1/L2/L3 procedures. If a glossary definition conflicts with a normative requirement, this policy or the applicable procedure controls.
+
+`automated_testing.md` is non-normative conceptual reference material. `python_testing.md` is non-normative Python and pytest implementation guidance. Project-specific conventions and thresholds belong under `examples/` or in the adopting project's own documentation.
+
 ## 2. Core requirements
 
 A testing strategy must:
