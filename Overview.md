@@ -97,8 +97,8 @@ Policy:
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
-Move this section intact to Python/pytest implementation guidance or project-specific examples.
-Directory organization is a selectable convention, not core testing policy. Retain several viable layouts and their tradeoffs rather than prescribing one universal tree.
+This section has moved intact to `python_testing.md`.
+Directory organization remains a selectable convention, not core testing policy; the extracted material should retain viable layouts and their tradeoffs rather than prescribe one universal tree.
 -->
 <!--
 PYTHON-SPECIFIC CONTENT EXTRACTED
@@ -112,8 +112,8 @@ The move separates Python/pytest implementation guidance from the general testin
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
-Move the pytest and coverage configuration examples to Python/pytest implementation guidance.
-Retain in Overview.md only tool-independent evidence-integrity requirements such as rejecting unknown configuration and distinguishing complete from partial evidence.
+The pytest and coverage configuration material has moved intact to `python_testing.md`.
+Overview.md now retains only the surrounding tool-independent policy and review direction.
 -->
 <!--
 PYTHON-SPECIFIC CONTENT EXTRACTED
@@ -127,8 +127,8 @@ The move separates Python/pytest implementation guidance from the general testin
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
-Move command names, Make/just examples, pytest selections, and concrete cadence budgets to Python/pytest implementation guidance or project-specific examples.
-Retain in Overview.md only the general requirement for reproducible named evidence-producing commands and clearly distinguished complete versus partial runs.
+Command names, Make/just examples, pytest selections, and concrete cadence budgets have moved intact to `python_testing.md`.
+A later policy edit should retain here only the general requirement for reproducible named evidence-producing commands and clearly distinguished complete versus partial runs.
 -->
 <!--
 PYTHON-SPECIFIC CONTENT EXTRACTED
