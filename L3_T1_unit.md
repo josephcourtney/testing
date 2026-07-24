@@ -51,6 +51,20 @@ Disallowed:
 * real time, sleeps, non-deterministic randomness (unless seeded and bounded)
 * reliance on global state or test order
 
+The isolation boundary should be chosen deliberately rather than inferred from
+the size of a class or function. Use dependency injection and small interfaces
+where control or substitution is needed. When replacing collaborators, prefer
+simple, explicit fakes; when mocking is necessary, mock at integration
+boundaries such as an HTTP client or repository interface rather than deep
+internals.
+
+Unit tests must not:
+
+* hit real network endpoints,
+* use real databases or queues,
+* read from or write to persistent files or directories, or
+* depend on real-time sleeps or nondeterministic timing.
+
 ### 3.2 What to assert
 
 Prefer:

@@ -45,7 +45,11 @@ Avoid system tests when:
   * startup/shutdown
   * one “happy path” per top-tier user journey
   * one critical error-handling journey (if high risk)
+  * cross-service flows whose failures only appear in the assembled distributed system
 * Avoid comprehensive scenario matrices; push detail down to unit/component/integration.
+
+Classify these tests as system scope and, when appropriate, as slow-running.
+Do not treat system scope itself as evidence of stakeholder acceptance.
 
 ### 3.2 Black-box assertions only
 

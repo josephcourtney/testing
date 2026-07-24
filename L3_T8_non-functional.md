@@ -35,6 +35,16 @@ Use when:
 * the system is customer-facing or compliance-constrained,
 * the risk profile explicitly requires it (L2-P4).
 
+Configuration-dependent behavior also requires representative evidence. Test
+supported runtime profiles, feature flags, cache toggles, environment-variable
+combinations, and other settings where a configuration change can alter
+behavior or risk.
+
+Configuration tests may occur at unit, component, integration, or system scope.
+Choose the lowest scope that executes the semantics at risk, and include
+realistic environment or infrastructure semantics when a local substitute is
+not sufficient.
+
 ### 2.1 When not to use this test type
 
 Avoid non-functional tests that:
@@ -82,6 +92,22 @@ Avoid non-functional tests that:
 * Add targeted dynamic tests where abuse cases are known (authZ, injection boundaries, unsafe deserialization).
 * Prefer boundary-focused tests over deep internal mocking.
 
+Static, security, and supply-chain checks should be selected according to the
+project's risk and support policy. A typical automated check set includes:
+
+* a formatter,
+* a linter,
+* a type checker,
+* a dependency vulnerability scanner, and
+* a repository-level secret scanner.
+
+Projects should explicitly select which checks run on commits, pull requests,
+scheduled workflows, and releases. CI should fail on lint or type errors when
+those checks are designated gates, and on blocker security findings unless an
+explicitly documented waiver has been reviewed. The selected checks should be
+available through the project's normal aggregate check command and CI
+pipelines.
+
 **Evaluate a test**
 
 * Does it reflect a realistic threat model?
@@ -120,6 +146,16 @@ Avoid non-functional tests that:
 
 ### 4.4 Observability tests
 
+For critical flows, logs, metrics, and traces may be part of the public or
+operational contract. Focus assertions on:
+
+* presence and structure of key signals,
+* correct signals for error conditions, and
+* identifiers needed for diagnosis, such as request or entity IDs.
+
+In pytest projects, `caplog` may be used for log assertions. Tests should carry
+an observability classification in addition to their structural scope.
+
 **Design**
 
 * Treat key logs/metrics/traces as a contract for critical flows.
@@ -134,6 +170,53 @@ Avoid non-functional tests that:
 
 * Coverage of critical flows and error paths.
 * Signals are sufficient to diagnose failures without guesswork.
+
+---
+
+### 4.5 Mutation testing
+
+Projects with high-criticality code may use mutation testing to assess whether
+the suite detects plausible defects. Run mutation analysis in dedicated
+workflows because it is expensive, and use surviving mutants to identify weakly
+tested paths rather than imposing a universal hard gate.
+
+Prioritize core business logic, pure or mostly pure functions, and
+security-sensitive paths.
+
+---
+
+### 4.6 Fuzz testing
+
+Use fuzzing where inputs are complex, adversarial, or security-relevant, such as
+parsers, protocol handlers, and API boundaries. Begin with property-based
+generators when they provide adequate exploration before adding external
+fuzzers.
+
+Look specifically for crashes, assertion failures, unexpected exceptions, and
+timeouts.
+
+---
+
+### 4.7 Chaos, resilience, and recovery testing
+
+Distributed systems and services require evidence about behavior under partial
+failure. Select a small set of risk-driven scenarios such as database latency,
+dependency errors, intermittent network failures, restart, failover, rollback,
+backup restoration, and degraded operation.
+
+Automate these scenarios at integration or system scope where feasible. Verify
+that logs, metrics, and traces clearly identify degraded modes and recovery, and
+that the resulting evidence supports applicable recovery objectives and
+runbooks.
+
+---
+
+### 4.8 Snapshot testing
+
+Use snapshots sparingly for outputs that are large but structurally stable.
+Keep snapshots readable and review them like code. Do not use snapshots as a
+substitute for precise behavioral assertions when those assertions are
+feasible; see L3-T9 for the full procedure.
 
 ---
 

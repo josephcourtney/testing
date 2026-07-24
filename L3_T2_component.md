@@ -59,6 +59,10 @@ Prefer:
 * in-memory repositories, fake clients, stub servers in-process
 * lightweight real deps only when they are stable and low-friction (e.g., SQLite for a persistence adapter)
 
+Temporary resources such as temporary directories or SQLite databases in
+temporary files are appropriate when they remain inside the declared component
+boundary and preserve deterministic cleanup.
+
 Avoid:
 
 * extensive mocking frameworks that reproduce the component’s internal structure

@@ -27,6 +27,15 @@ Best fit when:
 * correctness can be expressed as clear properties
 * edge cases are numerous or non-obvious
 
+Common subjects include normalization functions, parsers and formatters,
+comparators and similarity functions, and simple but critical transformations.
+The same approach can also be used for stateful, model-based, differential, and
+metamorphic testing when suitable generators and oracles exist.
+
+Projects using a dedicated property-test layout may place these tests under
+`tests/property/`; tests should carry a property-based classification plus the
+applicable structural scope.
+
 Avoid when:
 
 * behavior is heavily stateful, timing-dependent, or requires expensive external systems (use other test types)
@@ -47,6 +56,9 @@ Avoid property-based testing when:
 ## 3. Design rules
 
 ### 3.1 Properties must be simple and legible
+
+Properties should remain simple and easy to understand, including idempotence,
+round trips, bounds, and symmetry.
 
 Prefer properties like:
 

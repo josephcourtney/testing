@@ -49,6 +49,11 @@ Integration tests should:
 * run against **dedicated, resettable** test resources (prefer containerized services)
 * be repeatable and isolated (clean state per test or per suite)
 * avoid shared mutable state across tests unless explicitly managed
+* use dedicated test databases, services, or other resources so tests cannot
+  affect production data or settings
+* run in CI in a reproducible environment
+* carry the `integration` classification and any applicable cross-cutting
+  classifications such as database, security, performance, or slow execution
 
 ### 3.2 What to assert
 

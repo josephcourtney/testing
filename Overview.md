@@ -1,438 +1,274 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- This document combines policy, terminology, lifecycle cadence, and quantitative targets in one authority level.
-- The taxonomy treats contract as comparable to structural scopes even though contract usually describes purpose; other purposes and techniques are also mixed with scope markers.
-- Several recommendations are framed universally despite depending on project risk, architecture, environment, and feedback constraints.
-- Fixed coverage, mutation, runtime, flake, and performance targets are not accompanied by explicit populations, denominators, baselines, uncertainty, or decision rules.
-- Acceptance, exploratory, usability/accessibility, and operational/recovery evidence are underrepresented.
-
-Proposed fixes:
-- Retain the detailed material, but annotate sections by authority: normative policy, definition, recommended default, example, or project-specific convention.
-- Describe tests with orthogonal dimensions: structural scope, purpose, technique, resources/boundaries, and execution cadence.
-- Make risk and failure modes determine evidence applicability; use lifecycle only to adjust confidence, breadth, fidelity, and enforcement.
-- Replace universal numeric gates with a metric-specification procedure while retaining example values as explicitly illustrative.
-- Add dedicated guidance for acceptance, exploratory, usability/accessibility, and operational/resilience evidence.
--->
-
 # Testing Policy
 
-## 1. Goals and principles
+## 1. Purpose
 
-1. Tests must provide:
+This document defines the project-wide policy for selecting, designing, executing, and evaluating testing evidence.
 
-   * High confidence in correctness.
-   * Fast feedback for most changes.
-   * Clear localization of failures.
-2. Test suites must be:
+Detailed procedures for individual test scopes and techniques are defined in the corresponding `L3_T*.md` documents. Language- and tool-specific implementation guidance belongs in the relevant implementation guide rather than in this policy.
 
-   * Structured by scope and intent.
-   * Predictable to run (no hidden side effects).
-   * Strictly configured (misconfigurations should fail, not be silently ignored).
+## 2. Goals and principles
 
-Language conventions:
-Use “must” for requirements, “should” for strong recommendations.
+Tests must provide:
 
----
+* Confidence proportionate to the consequences and likelihood of failure.
+* Fast feedback for most changes.
+* Clear localization and diagnosis of failures.
+* Evidence that the system satisfies its functional and non-functional obligations.
 
-<!--
-SECTION REVIEW — SPLIT AND MOVE MOST CONTENT
+Test suites must be:
 
-Keep in Overview.md only a concise normative statement that tests are classified along independent dimensions.
-Remove the rule that `contract` is an alternative structural scope; contract should be an independently composable purpose.
--->
-## 2. Test taxonomy
+* Structured by explicit scope and intent.
+* Predictable to run, without hidden side effects.
+* Strictly configured so that invalid configuration fails rather than being silently ignored.
+* Repeatable within the limits of the system and environment being tested.
+* Maintained as production assets rather than treated as disposable scaffolding.
 
-### 2.1 Scopes
+Use **must** for requirements and **should** for strong recommendations.
 
-Each test must declare its scope via markers:
+## 3. Risk-driven evidence
 
-### 2.2 Cross-cutting markers
+Testing must be selected from identified claims, risks, and failure modes.
 
-Use additional markers to express other dimensions:
+For each material risk, determine:
 
-Policy:
+* What claim must be supported.
+* Which failure modes could invalidate that claim.
+* What evidence can detect those failures.
+* Which environment, resources, data, and system boundaries the evidence must exercise.
+* How frequently the evidence must be collected.
+* What result blocks progression, requires follow-up, or is informational.
 
-* Every test must have at least one scope marker (`unit`, `component`, `integration`, `system`, or `contract`).
-* Cross-cutting markers are optional but recommended when applicable.
+Lifecycle stage may change the breadth, fidelity, cadence, and enforcement of evidence, but it does not determine which test types are intrinsically applicable.
 
----
+A project must not rely on one test scope, technique, or metric as a substitute for a risk-appropriate evidence portfolio.
 
-<!--
-SECTION REVIEW — SPLIT
+## 4. Test classification
 
-Keep the tool-independent behavioral and invariant-oriented principles in Overview.md.
--->
-## 6. Test design guidelines
+Tests must be described using independent dimensions rather than a single flat taxonomy.
 
-### 6.1 Design around behaviour and invariants
+### 4.1 Structural scope
 
-For each module or component:
+Each automated functional test must identify the structural boundary it exercises:
+
+* **Unit** â€” a small local behavioral boundary.
+* **Component** â€” a coherent subsystem exercised through a supported interface.
+* **Integration** â€” behavior that depends on real semantics across a boundary.
+* **System** â€” an assembled system exercised at an external user or operator boundary.
+
+The selected scope must reflect the semantics actually executed, not merely the directory, process count, fixture type, or tool used.
+
+### 4.2 Purpose
+
+A test may serve one or more purposes, including:
+
+* Regression detection.
+* Acceptance.
+* Contract verification.
+* Smoke verification.
+* Compatibility.
+* Resilience or recovery.
+* Security.
+* Performance.
+* Data quality.
+* Observability.
+* Accessibility or usability.
+
+Purpose does not replace structural scope. For example, a contract test may execute at component, integration, or system scope.
+
+### 4.3 Technique
+
+Techniques include:
+
+* Example-based testing.
+* Property-based and generative testing.
+* Model-based or state-machine testing.
+* Differential and metamorphic testing.
+* Fuzzing.
+* Mutation testing.
+* Snapshot testing.
+* Static analysis.
+* Exploratory testing.
+* Fault-injection and chaos testing.
+
+Techniques must be selected according to the failure modes they can reveal.
+
+### 4.4 Resources and boundaries
+
+Tests should identify material resources and boundaries when relevant, including:
+
+* Databases and persistent storage.
+* Filesystems.
+* Networks and external services.
+* Message brokers.
+* Clocks and schedulers.
+* Processes and containers.
+* Hardware or platform dependencies.
+* Configuration and environment.
+* Production-derived or synthetic data.
+
+### 4.5 Execution cadence
+
+Cadence must be selected according to evidence value, cost, and required feedback latency.
+
+Common cadences include:
+
+* Local development.
+* Pre-commit.
+* Pull request.
+* Scheduled or nightly.
+* Pre-release.
+* Post-deployment.
+* Continuous operational monitoring.
+
+No test type or check is universally required at every cadence.
+
+## 5. Test design
+
+### 5.1 Design around behavior and invariants
+
+For each tested boundary:
 
 * Identify responsibilities in plain language.
-* Identify invariants (“this can never happen”) and state transitions.
-* Write tests that reflect these, not just line coverage.
+* Identify invariants, state transitions, and externally observable obligations.
+* Write tests that support those claims rather than merely executing lines of code.
+* Exercise real external semantics when correctness depends on those semantics.
+* Prefer the lowest-cost scope that can validly detect the targeted failure mode.
 
-### 6.2 Naming and structure
+### 5.2 Assertions and observability
 
-* Test function names must describe behaviour, not implementation details:
+Tests should assert stable, externally meaningful behavior.
 
-  * `test_parse_header_handles_missing_fields` instead of `test_parser_case3`.
-* Each test should assert one conceptual behaviour; multiple small tests are preferred over one large one.
-* Arrange test body roughly as:
+Avoid assertions on private state, incidental call sequences, unstable formatting, or non-contractual log text unless those details are the explicit subject of the test.
 
-  * Arrange (set up),
-  * Act (call),
-  * Assert (checks).
+Failures must provide enough context to identify the violated claim, relevant inputs, environment, and boundary.
 
----
+### 5.3 Isolation and realism
 
-<!--
-SECTION REVIEW — MOVE DETAILED MATERIAL; KEEP ONLY POLICY SUMMARY
+Isolation and realism must be balanced according to the risk being tested.
 
-Move the collaborator strategy, dependency-injection guidance, and mocking/fake guidance to the unit-testing procedure.
-Keep a short policy statement that unit scope is a small chosen boundary providing localizing evidence.
-Preserve dependency injection as a selective recommendation at external-effect and variability boundaries; do not remove it or require replacement of every collaborator.
-Remove the universal ~100 ms threshold from core policy and retain it only as an illustrative project budget.
--->
-## 7. Unit tests
+Use controlled substitutes when they improve determinism, fault injection, or feedback speed without removing the semantics under examination.
 
-Guidelines:
+Use real dependencies or representative environments when substitutes cannot provide valid evidence.
 
-* Aim for unit tests to be very fast; most should complete in under ~100 ms, and the entire unit suite should be runnable on every save or commit.
-* Use dependency injection and small interfaces to avoid mocking deep internals.
-* When mocking, mock at integration boundaries (`requests` layer, repository interface), not internals.
-* Use simple, explicit fakes when possible.
-* Avoid asserting on private attributes or unstable implementation details; prefer observable behaviour.
+A fake, mock, emulator, or recorded response must not be treated as proof of behavior that depends on the real system it replaces.
 
----
+### 5.4 Configuration and environment
 
-<!--
-SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+Behavior that varies across supported configuration, environment, platform, feature flags, deployment modes, or compatibility versions must have representative evidence.
 
-Move the definition and resource guidance to the component-testing procedure.
-Overview.md should name component scope only as one available evidence boundary.
--->
-## 8. Component tests
+The selected combinations should be justified by support commitments, usage, architecture, and risk. Exhaustive matrices are not required unless the combinations are themselves contractual.
 
-Guidelines:
+## 6. Evidence portfolio
 
-* Use temporary resources (temp directories, SQLite in a temp file, etc.).
-* Test through public APIs; avoid reaching into internal implementation details.
-* Only mock or fake at the boundaries of the component under test.
+A project should maintain a portfolio that may include:
 
----
+* Localizing functional tests across appropriate structural scopes.
+* Contract and compatibility evidence for depended-upon interfaces.
+* Acceptance evidence for stakeholder-visible obligations.
+* Exploratory evidence for poorly understood or rapidly changing risks.
+* Static, security, and supply-chain analysis where justified.
+* Performance, capacity, accessibility, data-quality, privacy, and observability evidence where failure would be material.
+* Operational evidence for startup, shutdown, deployment, rollback, restart, failover, backup restoration, degraded operation, and recovery where applicable.
 
-<!--
-SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+The portfolio shape must follow project risks and architecture. A fixed testing pyramid or universal ratio between scopes is not required.
 
-Move the infrastructure guidance to the integration-testing procedure.
-Retain only the policy principle that real external semantics require evidence that executes those semantics.
--->
-## 9. Integration tests
+## 7. Static analysis and security checks
 
-Guidelines:
+Projects must define the static, security, and supply-chain checks required by their languages, dependencies, threat model, and support policy.
 
-* Mark tests as `integration` and any relevant cross-cutting markers (`db`, `slow`, `security`, `performance`).
-* Use dedicated test resources (test databases, stub services) to avoid affecting production data/settings.
-* Ensure tests are repeatable and can be run in CI.
-* Prefer containerized or isolated test instances of infrastructure where possible.
+Required checks may include:
 
----
-<!--
-SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
+* Formatting and linting.
+* Type checking.
+* Dependency and vulnerability analysis.
+* Secret scanning.
+* License or policy checks.
+* Configuration validation.
+* Artifact integrity or provenance checks.
 
-Move the scenario list to the system-testing procedure.
-Do not equate system scope with acceptance purpose; acceptance evidence may exist at several structural scopes.
--->
-## 10. System tests
+Each required check must have:
 
-Guidelines:
+* A documented execution cadence.
+* A defined failure policy.
+* An owner.
+* A process for triage, waiver, expiration, and follow-up.
 
-* Mark as `system` and usually `slow`.
-* Prefer a small set of critical scenarios:
+Blocking findings must not be suppressed without documented review.
 
-  * Startup and shutdown behaviour.
-  * Happy-path workflows.
-  * Critical error handling paths.
-  * Cross-service flows in a distributed system.
+## 8. Metrics and targets
 
----
+Metrics are evidence about the testing system; they are not substitutes for test quality or risk coverage.
 
-<!--
-SECTION REVIEW — MOVE AND EXPAND
+Before a metric is used for comparison or gating, define:
 
-Move the detailed material to the contract-testing procedure.
-Reclassify contract as a purpose that can be exercised at component, integration, or system scope.
-Expand beyond schema shape to behavioral obligations, producer/consumer expectations, version compatibility, migrations, and allowed versus breaking changes.
--->
-## 11. Contract tests
+* The claim or decision it informs.
+* Population and denominator.
+* Tool and configuration.
+* Environment and data.
+* Measurement window.
+* Baseline and expected variability.
+* Threshold rationale.
+* Required response.
+* Owner.
 
-Guidelines:
+Relevant metrics may include:
 
-* Mark as `contract`.
-* For databases:
+* Feedback latency and suite runtime.
+* Flake rate and retry rate.
+* Failure localization and diagnostic quality.
+* Coverage of identified risks, responsibilities, boundaries, and contracts.
+* Code coverage.
+* Mutation results.
+* Snapshot churn.
+* Maintenance burden.
+* Performance or resource regressions.
 
-  * Assert column presence, nullability, types, and relationships.
-* For APIs:
+Projects may establish quantitative targets, but values must be project-specific, justified, and periodically reviewed. Improving a metric must not be pursued through tests or assertions that add no defect-detection value.
 
-  * Assert that responses match a schema (e.g. via JSON Schema or Pydantic models).
-* For events/messages:
+## 9. Exceptions and waivers
 
-  * Assert payload structure, required fields, and versioning rules.
+A policy exception must record:
 
----
-
-<!--
-SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
-
-Retain only the general policy that behavior varying by supported configuration or environment requires representative evidence.
--->
-## 12. Configuration and environment testing
-
-Policy:
-
-* Behaviour that depends on configuration or environment variables must have tests.
-
-Examples:
-
-* Different runtime profiles (dev vs prod).
-* Feature flags.
-* Cache toggles.
-
----
-
-<!--
-SECTION REVIEW — MOVE AND EXPAND
-
-Move the detailed guidance to the generative/property-testing procedure.
-Remove the implication that property-based testing primarily belongs to pure functions. Expand the reference material to stateful, model-based, differential, and metamorphic testing.
--->
-## 13. Property-based testing
-
-Policy:
-
-* Property-based tests should be used for:
-
-  * Normalization functions.
-  * Parsers and formatters.
-  * Comparators and similarity functions.
-  * Simple but critical transformations.
-
-Guidelines:
-
-* Place such tests under `tests/property/` and mark them `property_based` (plus a scope marker).
-* Properties should be simple and easy to understand (idempotence, round-trip, bounds, symmetry).
-* Prefer pure, side-effect-free functions as subjects of property-based tests.
-
----
-
-<!--
-SECTION REVIEW — MOVE AND SPLIT
-
-Move test-design guidance for logs, metrics, traces, and diagnostics to the non-functional/observability procedure.
-Separate instrumentation-contract checks from operational evidence that alerts and diagnostics work under realistic failure conditions.
--->
-## 14. Observability tests
-
-Policy:
-
-* For critical flows, log messages and metrics are part of the public contract and may be tested.
-
-Guidelines:
-
-* Use the `caplog` fixture for log assertions.
-* Mark tests with `observability`.
-* Focus on:
-
-  * Presence and shape of key log messages.
-  * Correct logging of error conditions.
-  * Inclusion of identifiers (e.g. request IDs, entity IDs) needed for debugging.
-
----
-
-<!--
-SECTION REVIEW — MOVE OUT OF OVERVIEW.MD AND DISTRIBUTE
-
-Distribute mutation testing, fuzzing, chaos/resilience testing, and snapshot testing to their corresponding procedures and reference sections.
-Keep the detailed information; do not compress these techniques into a short list.
--->
-## 16. Advanced testing techniques
-
-### 16.1 Mutation testing (optional)
-
-Projects with high criticality may adopt mutation testing tools to assess test suite strength.
-
-Guidelines:
-
-* Run mutation tests only in dedicated workflows (they are slow).
-* Use them to identify weakly tested code paths, not as a hard gate for all changes.
-* Focus mutation testing on:
-
-  * Core business logic.
-  * Pure or mostly pure functions.
-  * Security-sensitive code paths.
-
-<!--
-SECTION REVIEW — MOVE; REMOVE UNSUPPORTED UNIVERSAL TARGETS
-
-Move metric interpretation to a dedicated metric-design procedure and project-specific examples.
-Remove universal coverage and mutation targets unless their population, denominator, tool configuration, baseline, uncertainty, decision, and response are explicitly defined.
-Retain the practical workflow for investigating uncovered code and surviving mutants as implementation guidance.
--->
-
-### 16.3 Fuzz testing
-
-Use fuzzing where inputs are complex, adversarial, or security-relevant (parsers, protocol handlers, API boundaries).
-
-Guidelines:
-
-* Start with property-based generators (e.g. Hypothesis) before introducing external fuzzers.
-* Focus on:
-
-  * Crashing behaviours.
-  * Assertion failures.
-  * Unexpected exceptions or timeouts.
-
-<!--
-SECTION REVIEW — MOVE AND EXPAND
-
-Move this material to a first-class operational/resilience procedure.
-Expand it to deployment, rollback, restart, failover, backup restoration, recovery objectives, degraded modes, runbooks, and observability validation.
--->
-### 16.4 Chaos and resilience testing
-
-For distributed systems and services, resilience under partial failure is critical.
-
-Guidelines:
-
-* Design a small set of chaos scenarios (e.g. DB latency, dependency returning errors, intermittent network failures).
-* Automate these in integration/system tests where feasible.
-* Ensure observability (logs/metrics/traces) clearly indicate degraded modes and recovery.
-
-### 16.5 Snapshot tests (optional)
-
-Guidelines:
-
-* Use sparingly, when outputs are large but structurally stable.
-* Keep snapshots readable and reviewed like code.
-* Avoid using snapshots as a substitute for precise behavioural assertions when those are feasible.
-
----
-
-<!--
-SECTION REVIEW — SPLIT AND MOVE DETAILS
-
-Keep tool-independent requirements for required static, security, and supply-chain evidence only where justified by project risk and support policy.
-Replace the universal every-commit/every-PR cadence with explicit project-selected gates and documented waivers.
--->
-## 17. Static analysis and security checks
-
-Some checks must run regularly regardless of project specifics.
-
-Policy:
-
-* On every commit and every PR, run:
-
-  * Formatter (e.g. `ruff format`, `black`).
-  * Linter (e.g. `ruff check`).
-  * Type checker (e.g. `mypy`, `pyright`, `ty`).
-  * Dependency scanner (e.g. `pip-audit`, `safety`, or platform SCA).
-  * Secret scanner (e.g. `gitleaks`, `trufflehog`, or platform equivalent) at the repository level.
-
-Guidelines:
-
-* CI must fail on:
-
-  * Lint or type errors.
-  * Blocker security findings (critical/high CVEs, leaked secrets), unless explicitly triaged with a documented waiver.
-
-These checks should be wired into the `check` command and CI pipelines.
-
----
-
-<!--
-SECTION REVIEW — MOVE; REMOVE UNIVERSAL NUMERIC TARGETS
-
-Move metric definitions and examples to a dedicated metric-design procedure.
-Remove the generic 80% line coverage, 70% branch coverage, 70% mutation, and ±5–10% performance recommendations as universal guidance.
-Retain values only as clearly labeled examples after defining population, denominator, environment, baseline, uncertainty, threshold rationale, action, and owner.
--->
-## 18. Metrics and targets
-
-Quantitative metrics help keep the test suite effective and healthy. Targets are guidelines, not rigid laws, but deviations should be explicit and justified.
-
-Recommended targets:
-
-* Coverage:
-
-  * Line coverage: target ≥ 80% for backend Python code.
-  * Branch coverage: target ≥ 70%.
-  * For critical modules, higher targets are encouraged.
-* Mutation score (where used):
-
-  * Target ≥ 70% for core business logic.
-* Flake rate:
-
-  * Flaky tests should be rare; if the same test flakes multiple times in a short window, it must be investigated, fixed, or quarantined.
-* Performance regression:
-
-  * For performance tests, new versions should remain within an agreed band (e.g. ±5–10%) of baseline latency/throughput for key endpoints, unless an intentional change has been documented.
-
-Projects may adopt stricter or looser thresholds, but they should be explicit.
-
----
-
-<!--
-SECTION REVIEW — SPLIT
-
-Keep genuinely tool-independent evidence-integrity prohibitions in Overview.md, such as arbitrary sleeps, hidden failures, and unreviewed suppression.
-Move scope-specific red flags to the relevant L3 procedures.
-Remove the universal claim that lower-level tests must carry most of the load; portfolio shape should follow risks and architecture.
--->
-## 19. Prohibited practices and anti-patterns
-
-To maintain isolation, efficiency, clarity, purpose, and maintainability, the following are explicitly disallowed:
-
-* Unit tests must not:
-
-  * Hit real network endpoints.
-  * Use real databases or queues.
-  * Read from or write to persistent files or directories.
-  * Depend on real-time sleeps or non-deterministic timing.
-
-* Test suites must not:
-
-  * Rely on arbitrary `time.sleep` calls to “stabilize” behaviour; use proper synchronization (e.g. polling, hooks, events) instead.
-  * Treat large, slow end-to-end suites as the primary safety net; lower levels must carry most of the load.
-
-* Tests must not:
-
-  * Chase 100% line coverage with trivial assertions that add no defect-detection value.
-  * Assert on unstable implementation details (private attributes, log strings that are not part of the contract) without a clear reason.
-  * Silently ignore failing tests or leave known flaky tests untriaged for long periods.
-
-* Security/tooling:
-
-  * Secret-scanner and vulnerability-scan warnings must not be casually suppressed; waivers must be documented and reviewed.
-  * Disabling static analysis or test suites “temporarily” without an issue/ticket and clear follow-up is not acceptable.
-
-If these constraints are too tight for a specific case, the exception and rationale must be documented in code comments and, where relevant, in project docs.
-
-```
-```
-<!--
-SECTION REVIEW — REMOVE THIS DUPLICATE SECTION
-
-This is a duplicate of section 16.5 above and follows stray Markdown fences. Remove the duplicate and malformed fences after review; preserve the earlier complete snapshot-testing section and move it to the snapshot procedure/reference material.
--->
-### 16.5 Snapshot tests (optional)
-
-Snapshot tests capture a serialized representation (e.g. JSON, HTML) and compare against a baseline.
-
-Guidelines:
-
-* Use sparingly, when outputs are large but structurally stable.
-* Keep snapshots readable and reviewed like code.
-* Avoid using snapshots as a substitute for precise behavioural assertions when those are feasible.
+* The requirement being waived.
+* The reason the requirement is not currently appropriate or feasible.
+* The affected scope and risk.
+* Compensating evidence or controls.
+* The owner.
+* The review or expiration condition.
+
+Temporary disabling of tests, static analysis, or security checks must have a tracked follow-up and must not become an undocumented permanent state.
+
+## 10. Prohibited practices
+
+Tests and test suites must not:
+
+* Rely on arbitrary sleeps to stabilize behavior when explicit synchronization, readiness checks, bounded polling, hooks, or events are available.
+* Depend on hidden execution order or undocumented shared mutable state.
+* Access production data or mutate production resources unless the test is explicitly designed, authorized, and controlled for that environment.
+* Silently ignore failures.
+* Leave known flaky tests untriaged indefinitely.
+* Chase coverage or other numeric targets with trivial assertions that add no meaningful defect-detection value.
+* Use broad snapshots as a substitute for practical semantic assertions.
+* Assert unstable implementation details without a documented reason.
+* Treat a mocked, faked, or emulated dependency as proof of real integration semantics.
+* Casually suppress secret-scanner, vulnerability, static-analysis, or test failures.
+* Disable required evidence without a documented exception and follow-up.
+
+Where a prohibition cannot be followed, the exception process in Section 9 applies.
+
+## 11. Detailed procedures
+
+Detailed design, writing, and evaluation guidance is defined in:
+
+* `L3_T1_unit.md`
+* `L3_T2_component.md`
+* `L3_T3_integration.md`
+* `L3_T4_system.md`
+* `L3_T5_regression.md`
+* `L3_T6_property-based.md`
+* `L3_T7_contract.md`
+* `L3_T8_non-functional.md`
+* `L3_T9_snapshot.md`
+* `L3_T10_health_and_metrics.md`
+
+Project-specific commands, tools, directory layouts, markers, thresholds, and runtime budgets belong in project configuration or implementation guidance.

@@ -18,6 +18,7 @@ Review rule: preserve the original document text. Apply any proposed fix only af
 ## 1. Purpose
 
 Validate **interfaces other systems rely on**: API schemas, DB schemas, event payloads, versioned contracts. Contract tests reduce “silent breakage” across boundaries.
+Contract is a testing purpose rather than a structural scope. A contract may be verified at component, integration, or system scope, depending on which semantics the evidence must execute.
 
 ## 2. Applicability
 
@@ -50,6 +51,12 @@ Contracts should reference an explicit artifact where possible:
 * OpenAPI / JSON Schema / Pydantic model
 * DB migration expectations (columns, types, constraints)
 * Event schema/version rules
+
+For databases, include column presence, nullability, types, relationships, and
+migration compatibility. For APIs, validate responses against the published
+schema and behavioral obligations. For events or messages, validate payload
+structure, required fields, versioning rules, and producer/consumer
+expectations.
 
 ### 3.2 Assert stable semantics, not incidental fields
 
