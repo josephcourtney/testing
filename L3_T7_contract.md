@@ -1,130 +1,110 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- Contract testing is centered on structural schema checks and is treated too much like a structural scope.
-- Behavioral semantics, consumer expectations, provider verification, version matrices, migrations, and artifact compatibility are underdeveloped.
-
-Proposed fixes:
-- Define contract as a purpose that may be exercised at component, integration, or system scope.
-- Identify producer, consumer, obligations, allowed changes, compatibility policy, and verification ownership.
-- Cover behavioral, consumer-driven, provider, persistence/migration, public API, and artifact contracts where applicable.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# L3-T7 — Contract Test: Design, Writing, Evaluation
+# L3-T7 — Contract and Compatibility Testing
 
 ## 1. Purpose
 
-Validate **interfaces other systems rely on**: API schemas, DB schemas, event payloads, versioned contracts. Contract tests reduce “silent breakage” across boundaries.
-Contract is a testing purpose rather than a structural scope. A contract may be verified at component, integration, or system scope, depending on which semantics the evidence must execute.
+Verify obligations between a producer and one or more consumers, including what may change, what must remain compatible, and how compatibility is demonstrated across versions and environments.
 
-## 2. Applicability
+Contract is a test purpose, not a structural scope. Contract evidence may execute at unit, component, integration, or system scope.
+
+## 2. Contract forms
+
+### Schema conformance
+
+Validate required fields, types, constraints, encodings, database structure, event shape, or document format against an explicit schema.
+
+### Behavioral protocol contract
+
+Validate interaction semantics such as status codes, error behavior, ordering, idempotency, pagination, retries, authentication, authorization, and state transitions.
+
+### Consumer-driven contract
+
+Capture expectations derived from actual consumer behavior, publish versioned interactions, and verify them against provider versions before deployment.
+
+### Provider compatibility
+
+Verify that a producer continues to satisfy declared consumers, including supported-version and deployment compatibility rules.
+
+### Data and migration contract
+
+Verify schema evolution, backward and forward readability, migration preconditions, rollback limits, defaults, constraints, and retention obligations.
+
+### Platform and artifact compatibility
+
+Verify public Python APIs, CLI behavior, file formats, plugins, operating systems, runtimes, browsers, devices, or other supported execution cells.
+
+## 3. Applicability
 
 Use when:
 
-* you publish or consume an interface used by another component/team/system,
-* backward compatibility matters,
-* you need early detection of schema/contract drift.
+* another component, team, version, deployment, or external user depends on an interface,
+* compatibility or versioning rules matter,
+* producer and consumer release independently,
+* recorded examples or fakes must remain aligned with reality,
+* schemas or protocols evolve,
+* installed artifacts or multiple platforms are supported.
 
-Contract tests complement (not replace) integration/system tests:
+Do not use contract tests as a substitute for real-infrastructure integration tests when the risk is infrastructure semantics, or for system tests when the claim is a complete user journey.
 
-* **Contract**: shape/semantics of the boundary
-* **Integration**: behavior with real external systems
-* **System**: user-visible workflows across wiring
+## 4. Define the contract
 
-### 2.1 When not to use this test type
+Record:
 
-Avoid contract tests when:
+* producer and consumers,
+* contract artifact or source of truth,
+* required and optional behavior,
+* compatibility policy,
+* version and deprecation rules,
+* ownership and publication process,
+* provider-verification process,
+* environments or artifact forms in which the contract must hold.
 
-* you are trying to validate internal business logic (use **L3-T1/L3-T2**),
-* you need confidence in runtime behavior with real infrastructure (use **L3-T3**),
-* the interface is not stable enough to define a meaningful contract yet (defer to L2-P1/L2-P2 and revisit in L2-P3).
+A schema alone is insufficient when consumers depend on behavioral semantics not expressed by the schema.
 
-## 3. Design rules
+## 5. Design rules
 
-### 3.1 Define the contract artifact
+* Assert only obligations on which consumers may rely.
+* Include allowed evolution, not only the current shape.
+* Verify representative negative and error behavior.
+* Use canonical examples only when they remain connected to real producer or consumer behavior.
+* Prevent stale contracts from passing independently of the deployed participants.
+* Retain versioned verification evidence when deployment safety depends on version combinations.
+* Test the built or installed artifact when packaging is part of the public contract.
 
-Contracts should reference an explicit artifact where possible:
+## 6. Writing procedure
 
-* OpenAPI / JSON Schema / Pydantic model
-* DB migration expectations (columns, types, constraints)
-* Event schema/version rules
+1. Identify the boundary, producer, consumers, and independent release units.
+2. Enumerate schema, behavioral, compatibility, and versioning obligations.
+3. Choose an explicit artifact: schema, protocol specification, consumer interaction, migration rule, public API inventory, or compatibility matrix.
+4. Select structural scope according to the semantics required.
+5. Add positive, negative, and evolution cases.
+6. Verify providers against actual or representative consumer expectations.
+7. Record which producer/consumer versions and environments were verified.
+8. Add focused integration evidence for real infrastructure behavior that the contract harness cannot establish.
 
-For databases, include column presence, nullability, types, relationships, and
-migration compatibility. For APIs, validate responses against the published
-schema and behavioral obligations. For events or messages, validate payload
-structure, required fields, versioning rules, and producer/consumer
-expectations.
+## 7. Evaluation
 
-### 3.2 Assert stable semantics, not incidental fields
+A good contract suite:
 
-Assert:
-
-* required fields and types
-* allowed value constraints
-* compatibility rules (e.g., additive changes OK; breaking removals not)
-* error response structure (where part of the contract)
-
-Avoid:
-
-* asserting entire payload equality when only part is contractual (unless truly required)
-
-### 3.3 Fast, local, and deterministic
-
-Many contract tests can run without full end-to-end harness:
-
-* schema validation against recorded exemplars
-* DB schema inspection against expectations
-* consumer/source contract frameworks where appropriate
-
-## 4. Writing procedure
-
-1. **Identify the consumer-facing boundary** and who depends on it.
-2. **Enumerate contract obligations**:
-
-   * required fields
-   * types/formats
-   * constraints
-   * versioning/compat rules
-3. **Encode the contract**:
-
-   * validate real responses/records/events against schema, or
-   * assert schema structure directly (DB inspector, OpenAPI validator, etc.)
-4. Add **one negative case** where valuable (e.g., missing required field yields expected error structure).
-
-## 5. Evaluating an existing contract test
-
-A good contract test:
-
-* fails only when a dependency-relevant change occurs,
-* clearly identifies what contract clause broke,
-* is resilient to non-contractual changes.
+* fails on dependency-relevant breaking change,
+* tolerates changes declared compatible,
+* identifies the affected obligation and consumer,
+* remains connected to real producer and consumer behavior,
+* supports deployment decisions across versions.
 
 Red flags:
 
-* overly broad snapshots that create noisy diffs
-* tests that duplicate unit/component logic rather than boundary semantics
-* missing versioning/compatibility intent (test exists but doesn’t express “what is allowed to change”)
+* whole-payload equality when only a subset is contractual,
+* schemas with no behavioral or versioning policy,
+* hand-maintained examples that no participant verifies,
+* contract tests classified as a separate structural level regardless of execution,
+* provider verification that does not run against the built artifact,
+* no record of which versions are safe together.
 
-## 6. Evaluating the contract suite
+## 8. Outputs
 
-Check:
-
-* **Boundary inventory**: every published interface has at least one contract test.
-* **Change detection**: likely breaking changes trigger failures early (PR time).
-* **Noise level**: tests should rarely fail due to non-contractual changes.
-* **Alignment**: contract tests match real consumers’ expectations (update contract artifact as needed).
-
-Outputs:
-
-* boundary → contract coverage map
-* list of brittle/noisy contract tests to narrow
-* list of uncovered or ambiguous contracts to formalize
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a contract test is validating full behavior rather than interface obligations, downscope to **unit/component** tests.
-* If a contract test frequently fails due to environment or live dependency quirks, split: keep the contract test local, and add a focused **integration test (L3-T3)** for the infra semantics.
-
+* boundary and consumer inventory,
+* contract artifacts and ownership,
+* compatibility and deprecation rules,
+* producer/consumer verification matrix,
+* uncovered behavioral obligations,
+* required integration or system evidence.
