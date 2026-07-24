@@ -32,6 +32,9 @@ Here `component` states the execution boundary; `contract` states why the test e
 A system-level compatibility test can use the same purpose:
 
 ```python
+import pytest
+
+
 @pytest.mark.system
 @pytest.mark.contract
 @pytest.mark.compatibility
@@ -238,6 +241,9 @@ def test_parser_case_3(): ...
 Arrange–Act–Assert is a useful default when it improves readability:
 
 ```python
+import pytest
+
+
 @pytest.mark.unit
 def test_calculate_price_applies_discount():
     base_price = 100
@@ -268,6 +274,9 @@ Unit tests should avoid uncontrolled network, database, process, clock, randomne
 ### Pure example
 
 ```python
+import pytest
+
+
 @pytest.mark.unit
 def test_normalize_whitespace_is_idempotent():
     original = "  Foo   bar \n baz  "
@@ -281,6 +290,11 @@ def test_normalize_whitespace_is_idempotent():
 ### Sociable unit example
 
 ```python
+from decimal import Decimal
+
+import pytest
+
+
 @pytest.mark.unit
 def test_invoice_total_uses_domain_tax_policy():
     invoice = Invoice(lines=[LineItem(price=100)])
@@ -294,6 +308,9 @@ Both collaborators remain real because they are inexpensive, deterministic, and 
 ### Solitary unit example
 
 ```python
+import pytest
+
+
 @pytest.mark.unit
 def test_notification_service_reports_rejected_delivery():
     gateway = StubGateway(result=DeliveryResult.rejected("blocked"))
@@ -311,6 +328,9 @@ The gateway is replaced because external delivery is outside the boundary and co
 Component tests exercise a coherent subsystem through supported interfaces. Internal collaborators generally remain real.
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.filesystem
 def test_store_persists_and_loads_entities(tmp_path):
@@ -328,6 +348,9 @@ Using a temporary SQLite database is appropriate when the component contract inc
 Use integration scope when the claim depends on real semantics across an external boundary.
 
 ```python
+import pytest
+
+
 @pytest.mark.integration
 @pytest.mark.db
 @pytest.mark.slow
@@ -354,6 +377,11 @@ Containers are useful when they supply the real implementation cheaply, but cont
 System tests exercise the assembled product through a supported user or operator boundary.
 
 ```python
+import subprocess
+
+import pytest
+
+
 @pytest.mark.system
 @pytest.mark.process
 @pytest.mark.smoke
@@ -388,6 +416,9 @@ Behavior controlled by configuration, environment variables, feature flags, loca
 Prefer configuration objects that can be constructed explicitly:
 
 ```python
+import pytest
+
+
 @pytest.mark.unit
 @pytest.mark.parametrize(
     ("environment", "expected_cache"),
@@ -402,6 +433,9 @@ def test_cache_default_depends_on_environment(environment, expected_cache):
 When import-time environment behavior is itself the contract, isolate module loading carefully:
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.process
 def test_invalid_production_configuration_fails_at_startup(run_module):
@@ -430,6 +464,9 @@ Prefer the simplest representation that keeps the behavior legible.
 Example factory:
 
 ```python
+import pytest
+
+
 @pytest.fixture
 def user_factory():
     def make_user(
@@ -450,6 +487,9 @@ Use session-scoped expensive fixtures only when isolation and reset semantics ar
 Use `tmp_path` when real path, encoding, permission, atomic-write, rename, or serialization behavior matters.
 
 ```python
+import pytest
+
+
 @pytest.mark.unit
 @pytest.mark.filesystem
 def test_configuration_round_trips(tmp_path):
@@ -514,6 +554,7 @@ Property-based testing is not limited to pure functions.
 
 ```python
 import hypothesis.strategies as st
+import pytest
 from hypothesis import given
 
 
@@ -561,6 +602,10 @@ Constrain generators to the intended domain and runtime budget. A property that 
 Differential testing is useful during refactoring, migration, parser replacement, optimization, or cross-platform support:
 
 ```python
+import pytest
+from hypothesis import given
+
+
 @given(valid_documents())
 @pytest.mark.component
 @pytest.mark.differential
@@ -571,6 +616,10 @@ def test_new_parser_matches_reference(document):
 Metamorphic testing is useful when exact expected outputs are unavailable:
 
 ```python
+import pytest
+from hypothesis import given
+
+
 @given(valid_rows())
 @pytest.mark.unit
 @pytest.mark.metamorphic
@@ -587,6 +636,9 @@ Contract tests should identify the producer, consumer, obligations, allowed chan
 ### Schema check
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.contract
 def test_response_conforms_to_schema(api_component):
@@ -598,6 +650,9 @@ def test_response_conforms_to_schema(api_component):
 ### Behavioral contract
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.contract
 def test_unknown_user_has_stable_error_semantics(api_component):
@@ -632,6 +687,9 @@ Before comparison:
 * keep snapshots small enough to review.
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.snapshot
 def test_manifest_matches_reviewed_golden(manifest, snapshot):
@@ -648,6 +706,9 @@ Updating a snapshot means accepting a behavior change. Review the semantic diff 
 Prefer structured fields over exact prose unless wording is itself contractual.
 
 ```python
+import pytest
+
+
 @pytest.mark.component
 @pytest.mark.observability
 def test_failed_job_emits_diagnostic_context(caplog, worker):
