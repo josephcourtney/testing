@@ -1,107 +1,102 @@
-# L3-T1 — Unit Test (Pure Logic): Design, Writing, Evaluation
+# L3-T1 — Unit Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Validate correctness of a **single unit** (function/method/class) in **isolation** with fast, deterministic feedback. Unit tests should predominantly assert **input→output**, raised exceptions, and invariants.
+Provide fast, deterministic, highly localizing evidence about behavior inside a small chosen boundary.
+
+A unit is an operational testing boundary, not necessarily a single function, method, or class. Projects may use solitary units with replaced collaborators, sociable units with inexpensive real collaborators, or both.
 
 ## 2. Applicability
 
-Use when the behavior is primarily:
+Use unit scope when:
 
-* calculation, transformation, parsing/formatting, decision logic
-* state transitions local to a unit (without real I/O)
-* invariants (“this can never happen”)
+* the relevant semantics are local to a small boundary,
+* failures can be diagnosed without exercising external infrastructure,
+* the test can remain fast and deterministic,
+* replacing or retaining collaborators does not remove the failure mode being tested.
 
-Do **not** use unit tests to validate third-party systems, framework behavior, or network/db/filesystem interactions.
+Do not use unit tests to claim confidence in SQL dialects, wire protocols, authentication systems, framework integration, deployment behavior, or other semantics that the unit boundary does not execute.
 
-### 2.1 When not to use this test type
+## 3. Define the boundary
 
-Avoid unit tests when correctness depends on real external semantics (SQL dialects, auth flows, wire formats, retries). Use **L3-T3** (integration) and/or **L3-T7** (contract) instead.
+Before writing the test, identify:
 
-## 3. Design rules
+* the public or supported entrypoint,
+* the behavior or invariant under test,
+* collaborators inside the chosen unit,
+* dependencies outside the unit,
+* the external semantics deliberately excluded.
 
-### 3.1 What a unit test may depend on
+The boundary may contain multiple objects when their collaboration is cheap, stable, and central to the behavior.
 
-Allowed:
+## 4. Collaborator strategy
 
-* pure inputs (scalars, small dicts, dataclasses)
-* in-memory fixtures and deterministic fakes
-* dependency injection (pass collaborators in)
+### Retain real collaborators when
 
-Disallowed:
+* they are deterministic and inexpensive,
+* their behavior is part of the chosen unit,
+* retaining them improves confidence without harming localization.
 
-* real network, real DB, persistent filesystem
-* real time, sleeps, non-deterministic randomness (unless seeded and bounded)
-* reliance on global state or test order
+### Replace collaborators when
 
-### 3.2 What to assert
+* deliberate fault injection or rare responses are required,
+* the real collaborator is slow, nondeterministic, destructive, or unavailable,
+* the dependency lies outside the chosen unit boundary.
+
+Prefer simple fakes or stubs when interaction verification adds no value. Use mocks when the interaction itself is contractual. Do not reproduce an internal call graph merely to make the test pass.
+
+When double fidelity is consequential, pair the unit tests with contract or integration evidence.
+
+## 5. Assertions
 
 Prefer:
 
-* explicit expected outputs
-* explicit exceptions and error messages only if message text is part of the contract
-* invariants and idempotence (consider property-based in L3-T6 if broad)
+* explicit outputs and state transitions,
+* specified exceptions and error categories,
+* domain events or observable effects,
+* invariants, algebraic properties, and idempotence.
 
 Avoid:
 
-* private attributes, internal call sequences, incidental intermediate values
-* asserting “this helper was called” unless it is the *observable contract* (rare)
+* private attributes and incidental intermediate values,
+* internal call sequences that are not contractual,
+* tautological assertions derived from the implementation,
+* broad snapshots used instead of a comprehensible oracle.
 
-### 3.3 Structuring tests
+## 6. Writing procedure
 
-* Arrange–Act–Assert is the default structure.
-* One conceptual behavior per test; split cases rather than building long scenario tests.
+1. State the behavior and the failure mode the test should detect.
+2. Choose the unit boundary and collaborator strategy.
+3. Select representative nominal, boundary, and invalid cases.
+4. Add properties or generated cases where examples undersample the domain.
+5. Assert observable behavior.
+6. Verify that the test fails when the behavior is removed or plausibly broken.
+7. Record excluded semantics that require higher-scope evidence.
 
-## 4. Writing procedure
+Arrange–Act–Assert is a useful convention, not a requirement. Use another structure when it communicates the behavior more clearly.
 
-1. **Name the behavior** (not the implementation): `test_<behavior>_<condition>()`.
-2. **Select representative cases**:
+## 7. Evaluation
 
-   * nominal
-   * boundary/edge
-   * invalid input / error path (if specified)
-3. **Assert the contract**:
+A good unit test:
 
-   * returned value(s), raised exception type, or emitted domain event (if your unit returns them)
-4. **Refactor for purity if friction is high**:
-
-   * extract pure function
-   * introduce explicit dependencies
-   * move I/O behind wrappers (tested elsewhere)
-
-## 5. Evaluating an existing unit test (single-test review)
-
-A unit test is **good** if:
-
-* It fails for the right reason and localizes to a small code region.
-* It is deterministic and isolated (no hidden dependencies).
-* It asserts behavior, not implementation details.
-* It is readable in under ~30 seconds.
+* detects a meaningful local failure,
+* is deterministic and independent of test order,
+* remains stable under behavior-preserving refactoring,
+* has a comprehensible oracle,
+* runs within the project's intended rapid-feedback budget.
 
 Red flags:
 
-* mocks stacked deep into internals (indicates missing boundary/wrapper)
-* assertions that mirror the implementation line-by-line
-* time-based waiting or reliance on ordering
-* broad snapshots used to avoid thinking (prefer targeted assertions)
+* deep stacks of mocks,
+* fixtures larger than the behavior being tested,
+* interaction assertions that mirror implementation,
+* hidden global state,
+* real-time waits,
+* tests labeled unit despite depending on semantics they do not execute.
 
-## 6. Evaluating the unit test suite (suite review)
+## 8. Scope adjustment
 
-Check:
-
-* **Coverage of responsibilities**: each core business rule and invariant has at least one test.
-* **Speed**: unit suite supports rapid iteration (avoid slow creep).
-* **Signal quality**: failures point to one unit/behavior with minimal noise.
-* **Maintenance load**: refactors should not break many unit tests unless behavior changed.
-
-Outputs:
-
-* list of missing behaviors/invariants
-* list of brittle tests to rewrite (implementation-coupled)
-* list of refactors to increase purity / injection
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a unit test requires deep mocks of internals, refactor for clearer boundaries or promote to a **component test (L3-T2)** with faked externals.
----
-
+* Move to component scope when the meaningful behavior is collaboration across a coherent subsystem.
+* Move to integration scope when correctness depends on real external semantics.
+* Move to system scope when only assembled user-visible behavior provides the required oracle.
+* Do not move downward merely to obtain a preferred portfolio shape if doing so removes sensitivity to the risk.
