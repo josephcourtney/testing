@@ -50,7 +50,7 @@ Test modules are organized under scope-aligned `tests/unit`, `tests/component`,
 | `tests/property` | `unit` plus `property_based` | Bounded generated checks for deterministic codec and normalization invariants. |
 | `tests/component` | `component` | Typer acquisition, target loading, declaration enrichment, and in-process CLI workflows. |
 | `tests/contract` | `contract` | Public Python exports and versioned snapshot/declaration document contracts. |
-| `tests/system` | `system` | Fast development-console smoke and regression workflows treating `clinspect` as a black box. |
+| `tests/system` | `system` | Fast development-console smoke and regression workflows treating `package_name` as a black box. |
 
 Add `tests/integration` only when the product gains a genuine external
 integration boundary. Module-level markers remain the enforced source of truth
