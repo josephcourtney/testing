@@ -11,19 +11,20 @@ moved = []
 def replace_section(number: int, title: str, destination_title: str | None = None) -> None:
     global text
     pattern = re.compile(
-        rf'(?ms)^## {number}\. {re.escape(title)}\n.*?(?=^---\n\n^## |\Z)'
+        rf'(?ms)^## {number}\. {re.escape(title)}\n.*?^---\n'
     )
     match = pattern.search(text)
     if not match:
         raise RuntimeError(f'missing section {number}: {title}')
-    block = match.group(0).rstrip()
+    block = match.group(0).removesuffix('---\n').rstrip()
     moved.append((destination_title or f'{number}. {title}', block))
     replacement = (
         '<!--\n'
         'PYTHON-SPECIFIC CONTENT EXTRACTED\n\n'
         f'This section moved intact to `python_testing.md` under "{destination_title or title}".\n'
         'The move separates Python/pytest implementation guidance from the general testing policy.\n'
-        '-->\n'
+        '-->\n\n'
+        '---\n'
     )
     text = text[:match.start()] + replacement + text[match.end():]
 
