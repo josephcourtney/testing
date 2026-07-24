@@ -2,110 +2,67 @@
 aliases:
   - L2-P4
 linter-yaml-title-alias: L2-P4
-tags:
+tags: []
 title: L2-P4
 ---
 
-# L2-P4 — Release and Hardening Testing Phase
+# L2-P4 — Production Release and Hardening Confidence Profile
 
-## 1. Phase intent
+## 1. Intent
 
-**Goal:**
-Ensure correctness, reliability, and operability for production use.
-
-**Primary risks addressed:**
-Production outages, data corruption, security failures, unacceptable performance.
-
----
+Determine whether evidence supports production use under the stated audience, workload, trust, compatibility, availability, recovery, and compliance conditions.
 
 ## 2. Applicability
 
-Applies when:
+Use for production releases, major rollouts, materially changed operational conditions, and systems subject to SLA, security, privacy, safety, or regulatory obligations.
 
-* preparing a production release,
-* enabling a major user cohort,
-* operating under regulatory or SLA constraints.
+## 3. Required release evidence
 
----
+The release assessment must address every material claim in the L1 risk and evidence map. Relevant evidence commonly includes:
 
-## 3. Required test classes
+* correctness of critical responsibilities and invariants,
+* real integration and protocol semantics,
+* consumer and provider compatibility,
+* critical acceptance and system journeys,
+* built-artifact, installation, configuration, migration, and deployment behavior,
+* supported platform and dependency combinations,
+* performance and capacity under justified workloads,
+* threat-model-driven security and privacy checks,
+* data integrity and quality checks,
+* accessibility obligations,
+* observability and diagnostic sufficiency,
+* rollback, restoration, failover, and degraded-mode behavior,
+* production monitoring, canary, or staged-rollout controls.
 
-### Mandatory
+No item is automatically required when it has no corresponding material claim or risk. Conversely, a material risk cannot be waived merely because its test type is described as optional elsewhere.
 
-* **Unit and component tests** (baseline correctness).
-* **Integration tests** for all critical dependencies.
-* **System/smoke tests** for key user flows.
-* **Contract tests** for all published interfaces.
+## 4. Procedure
 
-### Conditional (risk-driven)
+1. Freeze the release scope, artifact identity, environment matrix, and intended operating conditions.
+2. Confirm that evidence is fresh, complete, and comparable to those conditions.
+3. Verify critical contracts, integrations, journeys, and operational controls.
+4. Apply **L3-T11** to every metric used as a release gate.
+5. Apply **L3-T15** to deployment, monitoring, rollback, recovery, and resilience claims.
+6. Review unresolved incidents, regressions, quarantines, and waivers.
+7. Record residual uncertainty, rollout limits, monitoring, and stop/rollback conditions.
+8. Return the release decision.
 
-* **Performance tests**
-* **Security tests**
-* **Data-quality tests**
-* **Observability tests**
+## 5. Exit criteria
 
-### Conditional decision rule (risk acceptance)
+Return pass, conditional pass, or fail to L1.
 
-For any conditional category that is relevant to the risk profile but not implemented, record:
+A production pass requires evidence sufficient for the declared operating envelope and explicit treatment of residual risk. Missing material evidence is a fail unless a responsible authority accepts a bounded, time-limited risk with concrete mitigation and detection.
 
-* the specific failure mode(s) being accepted,
-* why it is acceptable now (mitigations, limited rollout, monitoring),
-* owner,
-* revisit trigger (next release, incident, scale threshold, regulatory milestone).
----
+## 6. Common L3 procedures
 
-## 4. Explicit non-requirements
+All L3 procedures may be relevant. Frequently used procedures include:
 
-Not required:
-
-* Exhaustive edge-case exploration beyond defined risk scope.
-
----
-
-## 5. Compliance criteria
-
-The phase is compliant if:
-
-1. All release-critical paths pass under realistic conditions.
-2. External contracts are verified.
-3. Operational signals (logs/metrics) are sufficient to diagnose failure.
-4. Identified risks are mitigated or explicitly accepted.
-
----
-
-## 6. Assessment
-
-1. Review release scope and risk profile.
-2. Verify required test evidence.
-3. Apply L3 procedures for each mandatory test class and record deviations.
-4. Evaluate suite health and enforcement readiness via **L3-T10**.
-5. Confirm CI and release gates enforce required tests.
-6. Record release decision.
-
----
-
-## 7. Forward rules
-
-* Release tests remain gating for future releases.
-* Operational failures must feed back into L2-P5.
-
----
-
-## 8. Delegation
-
-Invoke as needed:
-
-* **L3-T3:** Integration Test
-* **L3-T4:** System / Smoke Test
-* **L3-T7:** Contract Test
-* **L3-T8:** Performance / Security / Data Quality (as applicable)
-* **L3-T10:** Health and Metrics
-
----
-
-## 9. Exit
-
-Return release decision to L1.
-
----
-
+* **L3-T3:** Integration Testing
+* **L3-T4:** System and Smoke Testing
+* **L3-T7:** Contract and Compatibility Testing
+* **L3-T8:** Non-Functional Testing
+* **L3-T10:** Suite Health
+* **L3-T11:** Metric Design
+* **L3-T12:** Acceptance Testing
+* **L3-T14:** Usability and Accessibility
+* **L3-T15:** Operational and Resilience Testing
