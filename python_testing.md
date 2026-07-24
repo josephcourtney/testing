@@ -527,6 +527,7 @@ def test_normalize_id_is_idempotent(value):
 ### Stateful example
 
 ```python
+import hypothesis.strategies as st
 from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
 
 
