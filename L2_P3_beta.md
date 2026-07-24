@@ -2,115 +2,61 @@
 aliases:
   - L2-P3
 linter-yaml-title-alias: L2-P3
-tags:
+tags: []
 title: L2-P3
 ---
 
-# L2-P3 — Stabilization and Pre-Release Testing Phase
+# L2-P3 — Stabilization and Pre-Release Confidence Profile
 
-## 1. Phase intent
+## 1. Intent
 
-**Goal:**
-Stabilize behavior, validate integrations, and reduce release risk.
-
-**Primary risks addressed:**
-Integration failures, regressions, contract drift.
-
-**Deferred risks:**
-Long-term performance optimization, rare failure modes.
-
----
+Increase confidence that the assembled behavior, important boundaries, published obligations, supported environments, and critical user journeys are stable enough for beta or release-candidate use.
 
 ## 2. Applicability
 
-Applies when:
+Use when interfaces are becoming commitments, the feature set is largely complete, or a broader audience will depend on the system.
 
-* feature set is largely complete,
-* preparing for beta or release,
-* APIs and data models are stabilizing.
+## 3. Default evidence expectations
 
-This phase assumes interfaces are stable enough to be treated as commitments.
+The evidence map should now address:
 
----
+* critical responsibilities and invariants,
+* real semantics at every material external boundary,
+* published and consumed contracts, including compatibility rules,
+* critical user and operator journeys,
+* packaging, installation, configuration, and deployment behavior,
+* representative supported environments,
+* known regressions and high-severity failure classes,
+* accessibility, usability, security, data quality, performance, and resilience where material,
+* suite health and evidence freshness.
 
-## 3. Required test classes
+A category is required because a risk or claim needs it, not merely because the project is called beta. A local library with no external system boundary need not invent integration tests; a beta service with authentication and persistence normally does.
 
-### Mandatory
+## 4. Procedure
 
-* **Unit tests** for all core logic.
-* **Component tests** for subsystems.
-* **Integration tests** for critical external boundaries.
-* **Contract tests** for stable APIs/schemas.
-* **Smoke/system tests** for critical end-to-end paths.
+1. Enumerate critical user, operator, and system flows.
+2. Inventory external boundaries, consumers, deployment artifacts, and supported environments.
+3. Confirm that selected evidence exercises real semantics where doubles are insufficient.
+4. Verify compatibility obligations and negative/error behavior.
+5. Perform targeted exploratory and usability work for behavior not adequately covered by predefined automation.
+6. Assess suite health with **L3-T10** and metric validity with **L3-T11**.
+7. Record residual uncertainty and any time-bounded mitigation.
 
-### Conditional
+## 5. Exit criteria
 
-* **Regression tests** for discovered issues.
+Return pass, conditional pass, or fail to L1.
 
-### Conditional decision rule (risk acceptance)
+A pass requires evidence sufficient for the stated beta or pre-release audience, reliable execution of the selected gates, and no unacknowledged material boundary, compatibility, user-journey, or operational gap.
 
-If any mandatory class is waived due to exceptional circumstances, the waiver must be recorded with:
+## 6. Common L3 procedures
 
-* explicit scope of waiver,
-* operational mitigations (monitoring, rollback plan),
-* owner and expiration/revisit date,
-* planned remediation tests to add.
----
-
-## 4. Explicit non-requirements
-
-Not required by default:
-
-* Exhaustive performance testing
-* Chaos testing
-* Full security penetration testing
-
----
-
-## 5. Compliance criteria
-
-The phase is compliant if:
-
-1. Critical paths are covered at unit → integration → smoke level.
-2. External interfaces behave according to contract.
-3. Regressions are caught early and localized.
-4. Test suite is reliable and repeatable.
-
----
-
-## 6. Assessment
-
-1. Enumerate critical user and system flows.
-2. Verify coverage across required test classes.
-3. Apply L3 procedures for each mandatory test class and record deviations.
-4. Evaluate suite health (runtime, flakiness, clarity) via **L3-T10**.
-4. Record outcome.
-
----
-
-## 7. Forward rules
-
-* Stabilization tests become permanent release gates.
-* Known risks must be tracked explicitly if deferred.
-
----
-
-## 8. Delegation
-
-Invoke as needed:
-
-* **L3-T1:** Unit Test
-* **L3-T2:** Component Test
-* **L3-T3:** Integration Test
-* **L3-T4:** System / Smoke Test
-* **L3-T7:** Contract Test
-* **L3-T10:** Health and Metrics
-
----
-
-## 9. Exit
-
-Return pass / conditional pass / fail to L1.
-
----
-
+* **L3-T2:** Component Testing
+* **L3-T3:** Integration Testing
+* **L3-T4:** System and Smoke Testing
+* **L3-T7:** Contract and Compatibility Testing
+* **L3-T10:** Suite Health
+* **L3-T11:** Metric Design
+* **L3-T12:** Acceptance Testing
+* **L3-T13:** Exploratory Testing
+* **L3-T14:** Usability and Accessibility
+* **L3-T15:** Operational and Resilience Testing
