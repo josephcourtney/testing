@@ -1,137 +1,113 @@
-# L3-T8 — Non-Functional Tests (Risk-Driven): Design, Writing, Evaluation
+# L3-T8 — Non-Functional Testing
 
 ## 1. Purpose
 
-Validate properties other than functional correctness, selected based on **risk profile**:
+Evaluate material properties not captured by ordinary functional examples, including performance, security, privacy, data quality, and observability.
 
-* **Performance** (latency/throughput/resource)
-* **Security** (vulnerability/abuse resistance)
-* **Data quality** (freshness/integrity/anomaly)
-* **Observability** (logs/metrics/traces as contract)
+These categories are selected from the risk profile. They are not deferred automatically to a late lifecycle phase.
 
-These tests are typically gating in release/hardening phases for relevant systems.
+## 2. Common design rules
 
-## 2. Applicability
+For every non-functional claim:
 
-Use when:
+* identify the failure mode and affected user, operator, data, or obligation,
+* define an observable property or measurement,
+* select a harness that preserves the relevant environment and workload semantics,
+* separate diagnostic measurement from a release gate,
+* apply **L3-T11** before adopting any numeric threshold,
+* record environmental noise, exclusions, and residual uncertainty,
+* choose cadence according to cost and the time at which evidence can still affect the decision.
 
-* non-functional failure would cause material harm (SLA breach, data corruption, incident response failure),
-* the system is customer-facing or compliance-constrained,
-* the risk profile explicitly requires it (L2-P4).
+## 3. Performance
 
-### 2.1 When not to use this test type
+Define the operation, workload, data shape, concurrency, resource limits, environment, warmup, sample method, statistic, and practically meaningful regression.
 
-Avoid non-functional tests that:
+Evaluate:
 
-* have no explicit measurable contract (threshold, invariant, required signal),
-* are too noisy to be actionable (uncontrolled variance),
-* are run at an inappropriate cadence (e.g., heavy perf gates on every save).
+* latency distributions rather than isolated timings where appropriate,
+* throughput, memory, CPU, I/O, or capacity relevant to the claim,
+* scaling behavior and saturation points,
+* comparability of artifacts and environments,
+* whether the harness detects a deliberate material slowdown.
 
-## 3. Design rules (common)
+Do not use a generic percentage band as a portable default.
 
-* Define the **measurable contract** (threshold, invariant, required signal).
-* Prefer repeatable harnesses; isolate environmental noise where feasible.
-* Keep assertions robust to small variance; avoid brittle micro-benchmarks.
-* Separate “diagnostic measurement” from “gating thresholds” where necessary.
+## 4. Security and privacy
 
-## 4. Sub-procedures by category
+Start from a threat and data-flow model. Evidence may include:
 
-### 4.1 Performance tests
+* static analysis and dependency or secret scanning,
+* authorization and authentication checks,
+* injection, deserialization, path, command, and protocol abuse cases,
+* fuzzing and malformed-input handling,
+* least-privilege and failure-closed behavior,
+* privacy purpose, retention, deletion, access, and disclosure obligations,
+* supply-chain and artifact verification,
+* expert review or penetration testing where the threat warrants it.
 
-**Design**
+A scanner result is evidence about its ruleset, not proof of security.
 
-* Identify critical endpoints/operations and the metric (p50/p95 latency, throughput, memory).
-* Establish a baseline and acceptable band (e.g., ±5–10% where appropriate).
-* Control data sizes and warmup; avoid conflating functional and perf assertions.
+## 5. Data quality
 
-**Evaluate a test**
+Define invariants and service expectations for relevant datasets and transformations:
 
-* Does it measure something stable and meaningful?
-* Is variance controlled (warmup, fixed dataset, pinned environment)?
-* Are thresholds justified and not arbitrary?
+* schema and type,
+* uniqueness and referential integrity,
+* null and range constraints,
+* freshness and completeness,
+* aggregation and backfill correctness,
+* lineage and version compatibility,
+* distribution or model-input drift.
 
-**Evaluate the suite**
+Use L3-T11 for statistical thresholds. Distinguish conditions that should block processing from those that should alert or trigger investigation.
 
-* Coverage of top critical paths.
-* Trend tracking and regression detection strategy.
-* Runtime placement (PR vs nightly) aligned to cost.
+## 6. Observability
 
----
+Treat operator-critical signals as contracts. Evaluate whether critical success, degradation, and failure paths provide:
 
-### 4.2 Security tests
+* stable event or metric identity,
+* relevant entity and correlation identifiers,
+* severity and error classification,
+* actionable context without sensitive-data leakage,
+* enough information to distinguish product, dependency, environment, and configuration failures.
 
-**Design**
+Prefer structured fields and semantic assertions over complete log-message equality.
 
-* Include static security scanning and dependency checks as baseline.
-* Add targeted dynamic tests where abuse cases are known (authZ, injection boundaries, unsafe deserialization).
-* Prefer boundary-focused tests over deep internal mocking.
+## 7. Procedure
 
-**Evaluate a test**
+1. Select material non-functional claims from the L1 risk map.
+2. Define the environment, workload, threat, dataset, or operator scenario.
+3. Identify an observable contract and evidence source.
+4. Build or select a repeatable harness.
+5. Validate the measurement or detector with a known fault where practical.
+6. Apply L3-T11 to gates and thresholds.
+7. Run at the cadence appropriate to cost and risk.
+8. Record results, limitations, and required action.
 
-* Does it reflect a realistic threat model?
-* Does it fail closed with actionable diagnostics?
-* Is it maintained as dependencies and attack surface evolve?
+## 8. Evaluation
 
-**Evaluate the suite**
+Good non-functional evidence:
 
-* Coverage of authentication/authorization and data-handling boundaries.
-* Handling of known CVEs and secret scanning hygiene.
-* Regular cadence and gating rules.
+* corresponds to a material claim,
+* exercises realistic semantics,
+* controls or reports important variance,
+* has an actionable oracle,
+* remains comparable across the decisions for which it is used.
 
----
+Red flags:
 
-### 4.3 Data quality tests
+* arbitrary thresholds,
+* uncontrolled microbenchmarks,
+* security tests unrelated to a threat model,
+* drift alarms with no operational interpretation,
+* logs tested only for wording,
+* measurements used as gates before baseline stability is established.
 
-**Design**
+## 9. Outputs
 
-* Define invariants: referential integrity, uniqueness, null bounds, freshness windows, distribution constraints.
-* Place checks near ingestion/transformation boundaries.
-* Include backfill and aggregation accuracy checks when relevant.
-
-**Evaluate a test**
-
-* Does it detect the failure mode early (before consumers are harmed)?
-* Are thresholds justified (not overly sensitive)?
-* Does it localize which dataset/transform broke?
-
-**Evaluate the suite**
-
-* Coverage across critical datasets and transforms.
-* Handling of drift/anomaly over time (alerting vs gating).
-* Runtime strategy (CI vs scheduled validation).
-
----
-
-### 4.4 Observability tests
-
-**Design**
-
-* Treat key logs/metrics/traces as a contract for critical flows.
-* Assert on presence/shape of signals (event emitted, fields included), not full text unless explicitly contractual.
-
-**Evaluate a test**
-
-* Does it test what operators need (IDs, error codes, key metrics)?
-* Is it robust to log phrasing changes (prefer structured fields)?
-
-**Evaluate the suite**
-
-* Coverage of critical flows and error paths.
-* Signals are sufficient to diagnose failures without guesswork.
-
----
-
-## 5. Assessment outputs
-
-For each non-functional category in scope:
-
-* coverage map (critical path → test coverage)
-* thresholds/baselines and justification
-* flakiness/noise analysis
-* recommendation: PR gating vs nightly vs pre-release
-
-### 6. Scope adjustment guidance (downscope / upscope)
-
-* If non-functional checks are stable and low-cost, move them earlier (PR gating).
-* If checks are expensive or noisy, move them to scheduled runs while improving harness fidelity and observability.
-
+* claim and failure-mode inventory,
+* harness and environment specification,
+* validated metrics or invariants,
+* cadence and gating decision,
+* uncertainty and comparability limits,
+* remediation and ownership.
