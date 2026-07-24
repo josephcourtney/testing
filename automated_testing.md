@@ -29,6 +29,8 @@ No technique maximizes all of these simultaneously.
 
 ## Classification dimensions
 
+This section is an overview. Consult `glossary.md` for the canonical definitions and distinctions used by the policy and procedures.
+
 ### Structural scope
 
 * **Unit** — a small chosen execution boundary. Some teams use solitary units with replaced collaborators; others use sociable units with inexpensive real collaborators.
