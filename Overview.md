@@ -9,7 +9,7 @@ Problems identified:
 - Acceptance, exploratory, usability/accessibility, and operational/recovery evidence are underrepresented.
 
 Proposed fixes:
-- Retain the detailed material, but annotate sections by authority: normative policy, definition, recommended default, example, or project-specific convention.
+- Retain the detailed material, but annotate sections by authority: normative policy, definition, recommended default, example, or project-specific convention. Definitions have now been extracted into `glossary.md`; remove duplicated definitions from this file only after separate review.
 - Describe tests with orthogonal dimensions: structural scope, purpose, technique, resources/boundaries, and execution cadence.
 - Make risk and failure modes determine evidence applicability; use lifecycle only to adjust confidence, breadth, fidelity, and enforcement.
 - Replace universal numeric gates with a metric-specification procedure while retaining example values as explicitly illustrative.
@@ -42,7 +42,7 @@ Use “must” for requirements, “should” for strong recommendations.
 SECTION REVIEW — SPLIT AND MOVE MOST CONTENT
 
 Keep in Overview.md only a concise normative statement that tests are classified along independent dimensions.
-Move detailed definitions of unit, component, integration, system, contract, purposes, techniques, and resource markers to the terminology/reference material.
+Definitions of unit, component, integration, system, contract, purposes, techniques, and resource markers have been extracted into `glossary.md`. Remove the duplicated definitions from this section only after separate review.
 The pytest marker configuration example has moved to `python_testing.md`.
 Remove the rule that `contract` is an alternative structural scope; contract should be an independently composable purpose.
 -->
@@ -176,6 +176,7 @@ Example invariant tests:
 <!--
 SECTION REVIEW — MOVE DETAILED MATERIAL; KEEP ONLY POLICY SUMMARY
 
+Definition status: the unit-test and dependency-injection terminology has been extracted into `glossary.md`; this section still contains the original text pending separate removal or relocation.
 Move the definition, examples, collaborator strategy, dependency-injection guidance, and mocking/fake guidance to the unit-testing procedure and Python guide.
 Keep a short policy statement that unit scope is a small chosen boundary providing localizing evidence.
 Preserve dependency injection as a selective recommendation at external-effect and variability boundaries; do not remove it or require replacement of every collaborator.
@@ -208,6 +209,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
+Definition status: the component-test definition has been extracted into `glossary.md`; this section still contains the original text pending separate removal or relocation.
 Move the definition, resource guidance, and Python example to the component-testing procedure and Python implementation guide.
 Overview.md should name component scope only as one available evidence boundary.
 -->
@@ -236,6 +238,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
+Definition status: the integration-test definition has been extracted into `glossary.md`; this section still contains the original text pending separate removal or relocation.
 Move the detailed definition, infrastructure guidance, markers, and example to the integration-testing procedure and Python implementation guide.
 Retain only the policy principle that real external semantics require evidence that executes those semantics.
 -->
@@ -257,10 +260,10 @@ Example:
 <!-- PYTHON-SPECIFIC EXAMPLE EXTRACTED: this code block moved to `python_testing.md` under "Python example 4". -->
 
 ---
-
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
+Definition status: the system-test definition has been extracted into `glossary.md`; this section still contains the original text pending separate removal or relocation.
 Move the definition, scenario list, marker advice, and subprocess example to the system-testing procedure and Python guide.
 Do not equate system scope with acceptance purpose; acceptance evidence may exist at several structural scopes.
 -->
@@ -289,6 +292,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE AND EXPAND
 
+Definition status: the contract-test definition has been extracted into `glossary.md`; this section still contains the original text pending separate removal or relocation.
 Move the detailed material to the contract-testing procedure and Python guide.
 Reclassify contract as a purpose that can be exercised at component, integration, or system scope.
 Expand beyond schema shape to behavioral obligations, producer/consumer expectations, version compatibility, migrations, and allowed versus breaking changes.
@@ -345,6 +349,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE AND EXPAND
 
+Definition status: the property-based-testing definition has been extracted into `glossary.md`; this section still contains the original policy, guidance, and example pending separate relocation.
 Move the detailed guidance and Hypothesis example to the generative/property-testing procedure and Python guide.
 Remove the implication that property-based testing primarily belongs to pure functions. Expand the reference material to stateful, model-based, differential, and metamorphic testing.
 -->
@@ -374,6 +379,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE AND SPLIT
 
+Definition status: the observability-test definition has been extracted into `glossary.md`; this section still contains the original policy, guidance, and example pending separate relocation.
 Move Python `caplog` guidance and examples to the Python guide.
 Move test-design guidance for logs, metrics, traces, and diagnostics to the non-functional/observability procedure.
 Separate instrumentation-contract checks from operational evidence that alerts and diagnostics work under realistic failure conditions.
@@ -403,6 +409,7 @@ Example:
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD
 
+Fixture terminology has been extracted into `glossary.md`; the original fixture guidance has already moved to `python_testing.md`.
 Move fixture, factory, test-data, and pytest examples to Python implementation guidance and the terminology/reference material.
 These are maintainability techniques rather than top-level policy.
 -->
@@ -418,6 +425,7 @@ The move separates Python/pytest implementation guidance from the general testin
 <!--
 SECTION REVIEW — MOVE OUT OF OVERVIEW.MD AND DISTRIBUTE
 
+Definition status: mutation testing, fuzz testing, chaos testing, and snapshot testing have been extracted into `glossary.md`; this section still contains the original guidance pending separate relocation.
 Distribute mutation testing, fuzzing, chaos/resilience testing, and snapshot testing to their corresponding procedures and reference sections.
 Keep the detailed information; do not compress these techniques into a short list.
 -->
@@ -526,6 +534,7 @@ These checks should be wired into the `check` command and CI pipelines.
 <!--
 SECTION REVIEW — MOVE; REMOVE UNIVERSAL NUMERIC TARGETS
 
+Definition status: line coverage, branch coverage, mutation score, flake rate, and performance regression have been extracted into `glossary.md`; this section still contains the original targets pending separate review.
 Move metric definitions and examples to a dedicated metric-design procedure.
 Remove the generic 80% line coverage, 70% branch coverage, 70% mutation, and ±5–10% performance recommendations as universal guidance.
 Retain values only as clearly labeled examples after defining population, denominator, environment, baseline, uncertainty, threshold rationale, action, and owner.
@@ -607,4 +616,3 @@ Guidelines:
 * Use sparingly, when outputs are large but structurally stable.
 * Keep snapshots readable and reviewed like code.
 * Avoid using snapshots as a substitute for precise behavioural assertions when those are feasible.
-
