@@ -1,0 +1,149 @@
+# testing-relevant parts of my typical pyproject.toml
+
+[dependency-groups]
+  dev = [
+    "coverage>=7.14.1",
+    "diff-cover>=10.3.0",
+    "freezegun>=1.5.5",
+    "hypothesis>=6.155.3",
+    "import-linter>=2.11",
+    "mutmut>=3.6.0",
+    "pip-audit>=2.10.1",
+    "pytest>=9.1.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-testmon>=2.2.0",
+    "pytest-json-report>=1.5.0",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "pytest-randomly>=4.1.0",
+    "pytest-socket>=0.8.0",
+    "radon>=5.1.0",
+    "ruff>=0.15.17",
+    "rust-just>=1.52.0",
+    "ty>=0.0.49",
+    "vulture>=2.16",
+    "wily>=1.25.0",
+    "msgpack>=1.2.1",
+  ]
+
+[tool.ruff]
+  extend         = "./ruff.default.toml"
+  target-version = "py313"
+
+  [tool.ruff.lint]
+    ignore = [
+      "PLC1901", # `x == ""` can be simplified to `not x` as an empty string is falsey
+      "DOC201",  # `return` is not documented in docstring
+      "DOC402",  # `yield` is not documented in docstring
+      "DOC501",  # Raised exception missing from docstring
+      "RUF001",  # String contains ambiguous {symbol}. Did you mean {standard symbol}?
+      "RUF002",  # Docstring contains ambiguous {symbol}. Did you mean {standard symbol}?
+      "RUF003",  # Comment contains ambiguous {symbol}. Did you mean {standard symbol}?
+      "N802",    # invalid-function-name: Function name should be lowercase
+
+    ]
+    [tool.ruff.lint.extend-per-file-ignores]
+      "tests/**/*.py" = [
+        "ANN001", # Missing type annotation for function argument
+        "E402",   # Module level import not at top of file
+      ]
+      "tests/fixtures/wheel_target/**/*.py" = [
+        "INP001", # This directory is an independent package fixture with its own source root.
+      ]
+
+# ==================================== typecheck ====================================
+[tool.ty.src]
+  include = ["scripts", "src", "tests"]
+
+# =================================== test ===================================
+[tool.pytest.ini_options]
+  minversion = "9.0"
+
+  testpaths = [
+    "tests",
+  ]
+
+  addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+    "--cov-branch",
+    "--cov=package_name",
+    "--cov-report=",
+    "--cov-context=test",
+    "--disable-socket",
+  ]
+
+  xfail_strict = true
+
+  log_cli = false
+  log_cli_level = "INFO"
+  log_cli_format = "%%(asctime)s [%%(levelname)s] %%(name)s - %%(message)s"
+  log_cli_date_format = "%%Y-%%m-%%d %%H:%%M:%%S"
+  filterwarnings = [
+    "error::DeprecationWarning:package_name\\.",
+    "ignore::DeprecationWarning:pkg_resources",
+    "ignore::DeprecationWarning:distutils",
+    "ignore::UserWarning:hypothesis",
+    "ignore:A test tried to use socket.socket\\.:UserWarning:pytest_socket",
+  ]
+
+  markers = [
+    # Structural levels
+    "unit: Fast, isolated tests of individual functions/classes. No real I/O.",
+    "component: Tests of a subsystem via public APIs; may use local fakes or lightweight real deps.",
+    "integration: Tests involving real external dependencies (DB, HTTP APIs, queues).",
+    "system: End-to-end tests treating the app as a black box.",
+    "contract: Tests of API or schema contracts.",
+
+    # Purpose markers
+    "acceptance: Requirement-driven system tests tied to user stories or acceptance criteria.",
+    "regression: Guards against previously reported bugs.",
+    "sanity: Narrow checks verifying specific bugfixes or features.",
+    "smoke: Fast, critical-path tests for quick feedback.",
+    "performance: Performance or performance-regression tests.",
+    "performance_regression: Tests comparing runtime metrics to stored baselines.",
+    "security: Security-focused tests.",
+    "fuzz: Fuzzing-style tests feeding malformed/randomized inputs.",
+    "chaos: Chaos/resilience tests injecting faults or disruptions.",
+    "privacy: Privacy-impact tests ensuring correct PII/data handling.",
+    "data_quality: Tests of data integrity or freshness.",
+    "drift: Model/data drift detection tests (PSI, KS, etc.).",
+    "usability: Automated usability tests (accessibility, i18n).",
+    "synthetic_monitoring: Synthetic production probes.",
+
+    # Technique / infra markers
+    "snapshot: Snapshot-based tests.",
+    "property_based: Property-based tests (e.g. Hypothesis).",
+    "mutation: Mutation-testing related.",
+    "observability: Tests asserting on logs, metrics, or traces.",
+    "requirement(id): Links a test to a critical responsibility in testing-requirements.json.",
+
+    # Operational/meta
+    "slow: Known slow tests.",
+    "flaky: Known flaky tests under triage.",
+    "experimental: Experimental tests or tooling not yet mandatory.",
+
+    # Domain-specific
+    "db: Tests that exercise database behaviour or schema.",
+    "api: API-centric tests (HTTP/RPC).",
+    "ml: ML-related tests.",
+    "ui: UI-layer tests (web, CLI).",
+  ]
+
+  asyncio_mode = "auto"
+
+# =================================== test:coverage ===================================
+[tool.coverage.run]
+  source   = ["package_name"]
+  branch   = true
+  parallel = true
+
+# =================================== test:mutation ===================================
+[tool.mutmut]
+  source_paths = [
+  ]
+  pytest_add_cli_args = ["-o", "addopts="]
+  pytest_add_cli_args_test_selection = [
+  ]
+  also_copy = ["src", "scripts", "schemas", "uv.lock"]
