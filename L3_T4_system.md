@@ -1,112 +1,72 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- System, smoke, end-to-end, and acceptance testing are treated as nearly interchangeable even though they describe different dimensions.
-- A small smoke selection cannot establish all stakeholder acceptance conditions or system risks.
-
-Proposed fixes:
-- Keep system as structural scope, smoke as selection purpose, and acceptance as stakeholder-facing purpose.
-- State which assembled artifact, environment, user/operator boundary, and critical journeys are exercised.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# L3-T4 — System / Smoke Test: Design, Writing, Evaluation
+# L3-T4 — System Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Validate **end-to-end, user-facing behavior** by treating the application as a **black box**. “Smoke” is the **small, critical-path subset** used for fast gating.
+Provide evidence about the assembled product through a supported user- or operator-visible boundary.
+
+System is a structural scope. **Smoke** describes a small critical-capability selection or purpose; **acceptance** describes stakeholder relevance; **end-to-end** describes a complete representative workflow. These terms are not interchangeable.
 
 ## 2. Applicability
 
-Use when you need confidence that:
+Use system scope when the claim concerns:
 
-* the system boots and runs in a realistic configuration,
-* critical workflows function across real wiring,
-* major regressions are caught at the user boundary.
+* startup, shutdown, installation, or deployed wiring,
+* behavior through a CLI, public API, browser, device, or operator interface,
+* cross-component behavior visible only in the assembled artifact,
+* a complete or representative workflow,
+* production-like configuration or packaging.
 
-Do not use system tests to replace unit/component coverage; they are slower, more brittle, and less localizing.
+Use lower scopes when they preserve the relevant semantics with better control or localization.
 
-### 2.1 When not to use this test type
+## 3. Define the system evidence
 
-Avoid system tests when:
+Record:
 
-* the behavior can be validated at unit/component scope with better localization (prefer **L3-T1/L3-T2**),
-* the risk is boundary semantics rather than full wiring (prefer **L3-T3** and/or **L3-T7**),
-* a snapshot would be used as a substitute for semantic assertions (prefer targeted assertions; use **L3-T9** sparingly).
+* exact assembled artifact,
+* supported entrypoint,
+* environment and configuration,
+* dependencies retained or controlled,
+* user or operator role,
+* workflow and observable outcome,
+* whether the selection is smoke, acceptance, compatibility, regression, or another purpose.
 
-## 3. Design rules
+## 4. Design rules
 
-### 3.1 Keep scope minimal and critical
+* Exercise supported public boundaries.
+* Assert stable user- or operator-visible behavior.
+* Keep smoke selections small enough for their intended cadence.
+* Do not infer stakeholder acceptance merely from system scope.
+* Use readiness checks, bounded waits, isolated resources, and deterministic data.
+* Retain diagnostics sufficient to distinguish product, environment, dependency, and harness failure.
+* Test the installed or deployed artifact when packaging or deployment is part of the claim.
 
-* Prefer a **small set of high-value flows**:
+## 5. Writing procedure
 
-  * startup/shutdown
-  * one “happy path” per top-tier user journey
-  * one critical error-handling journey (if high risk)
-  * cross-service flows whose failures only appear in the assembled distributed system
-* Avoid comprehensive scenario matrices; push detail down to unit/component/integration.
+1. State the system claim and purpose.
+2. Identify artifact, environment, role, and entrypoint.
+3. Bring up the product through supported mechanisms.
+4. Drive a representative workflow.
+5. Assert externally visible outcomes and critical diagnostics.
+6. Verify teardown and cleanup.
+7. Record controlled dependencies and residual differences from production.
 
-Classify these tests as system scope and, when appropriate, as slow-running.
-Do not treat system scope itself as evidence of stakeholder acceptance.
+## 6. Evaluation
 
-### 3.2 Black-box assertions only
+Good system evidence:
 
-Assert:
+* covers a material assembled-product claim,
+* uses an appropriate public boundary,
+* identifies artifact and environment,
+* is stable and diagnosable,
+* adds semantics unavailable at lower scope,
+* remains small enough for its declared cadence.
 
-* externally visible outputs (HTTP responses, CLI output, produced files, UI render results)
-* stable contract-level properties (status codes, key fields, artifacts created)
+Red flags include giant scenario matrices, hidden source-tree imports, fixed sleeps, volatile full-output assertions, unrecorded external state, and system tests used as a substitute for all localizing evidence.
 
-Avoid:
+## 7. Outputs
 
-* internal call graphs
-* incidental logs unless logs are declared part of the contract (that’s observability testing)
-
-### 3.3 Determinism and isolation
-
-* Use controlled environments (ephemeral ports, temp dirs, isolated containers).
-* Avoid arbitrary sleeps; use readiness probes, polling with timeouts, or explicit hooks.
-
-## 4. Writing procedure
-
-1. **Select a critical flow** and define its pass/fail criteria.
-2. **Bring up the app** as a black box (process/container).
-3. **Drive inputs** as a user would (HTTP client, CLI invocation).
-4. **Assert outcomes** at the boundary.
-5. If the test is a **smoke test**, minimize setup and assertions to what’s necessary for a fast, reliable gate.
-
-## 5. Evaluating an existing system/smoke test
-
-A good system/smoke test:
-
-* covers a top critical path with minimal steps,
-* fails with actionable signals (clear boundary symptom + context),
-* is stable across environments (no port collisions, timing flake, hidden state).
-
-Red flags:
-
-* broad end-to-end suites duplicating lower-level checks (slow and brittle)
-* heavy reliance on sleeps or fixed timing
-* assertions on volatile UI/serialized details without need (consider targeted assertions or selective snapshots)
-
-## 6. Evaluating the system/smoke suite
-
-Check:
-
-* **Smoke set size**: small enough to run frequently.
-* **Flow selection**: aligned to business-critical journeys.
-* **Runtime and flake rate**: if flaky/slow, reduce scope, improve harnessing, or push to nightly.
-* **Redundancy**: ensure system tests are not doing the job of unit/component.
-
-Outputs:
-
-* curated smoke list
-* list of system tests to split (move logic checks down a level)
-* harness improvements (readiness, isolation, deterministic data)
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If system tests are duplicating logic checks, push those checks down to **unit/component/integration**.
-* If system tests are flaky due to environment complexity, reduce scope to a smaller smoke set and move heavier scenarios to scheduled runs with a stronger harness.
-
+* system claim and workflow inventory,
+* smoke and other purpose selections,
+* artifact and environment identity,
+* harness and diagnostic gaps,
+* scenarios to move, split, or supplement.
