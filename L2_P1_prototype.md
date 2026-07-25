@@ -2,125 +2,169 @@
 aliases:
   - L2-P1
 linter-yaml-title-alias: L2-P1
-tags:
+tags: []
 title: L2-P1
 ---
 
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- The prototype profile can be read as permitting weak evidence solely because the project is early-stage.
-- The result vocabulary and escalation conditions are less consistent than in later lifecycle procedures.
-
-Proposed fixes:
-- State that prototype work should minimize ceremony while still addressing any already-material security, data, safety, or external-impact risk.
-- Use the same pass, conditional pass, fail, and exploratory-finding vocabulary as the other profiles.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-
 # L2-P1 — Exploratory / Prototype Testing Phase
+
 ## Procedure L2-P1: Exploratory / Prototype Testing Phase
 
+## 1. Profile role
 
-## 1. Phase intent
+This is a lifecycle **confidence and governance profile**, not a universal test
+inventory. It minimizes ceremony while reducing the uncertainty that matters to
+the current decision.
+
+Material security, privacy, safety, data, accessibility, external-impact, or
+irreversibility risks are not deferred merely because the project is a
+prototype. Apply L1 first and invoke whatever L3 procedures those risks require.
+
+## 2. Phase intent
 
 **Goal:**
 Reduce uncertainty and validate feasibility with minimal friction.
 
 **Primary risks addressed:**
-Building the wrong thing; misunderstanding domain constraints.
+Building the wrong thing; misunderstanding domain constraints; committing to an
+architecture or interface before important assumptions are tested.
 
-**Deferred risks:**
-Long-term correctness, regression protection, non-functional properties.
+**Risks commonly deferred when they are not yet material:**
+Long-term regression protection, broad compatibility, sustained performance,
+production operations, and complete non-functional evidence.
 
-(Definitions and test taxonomy per *automated_testing.md*.)
+Deferral is a recorded decision, not an automatic property of the phase.
+
+Terminology is defined by `glossary.md`; general policy is defined by
+`Overview.md`.
 
 ---
 
-## 2. Applicability
+## 3. Applicability
 
 Applies when:
 
-* exploring new ideas or architectures,
+* exploring new ideas, algorithms, workflows, or architectures,
 * validating assumptions,
-* building throwaway or experimental code.
+* building throwaway or experimental code,
+* evaluating data, tools, dependencies, or feasibility,
+* deciding whether a concept should advance into durable development.
+
+This profile may also apply to a bounded experimental branch inside a mature
+project. The surrounding production system may still require stronger evidence.
 
 ---
 
-## 3. Required test classes
+## 4. Assessment inputs
 
-### Mandatory
+Record:
 
-* None.
+* the decision the prototype supports,
+* assumptions and questions being investigated,
+* users, operators, data, and systems exposed to the prototype,
+* irreversible or expensive consequences,
+* expected lifetime and whether the code may be promoted,
+* evidence needed to distinguish useful learning from a misleading result.
 
-### Advisory
+## 5. Default evidence expectations
+
+These are defaults to evaluate after L1, not mandatory categories that must be
+created when they do not fit the risk.
+
+### Required by the profile itself
+
+No particular automated test scope is universally mandatory.
+
+The assessment record, important assumptions, material risks, observations, and
+limitations are required.
+
+### Commonly useful
 
 * **Unit tests** for critical logic or surprising behavior.
-* **Property-based tests** for core invariants or transformations.
-* **Spike or exploratory tests** used as executable experiments.
+* **Property-based or differential tests** for core invariants,
+  transformations, numeric behavior, parsers, or competing implementations.
+* **Exploratory tests or scripts** used as executable experiments.
+* **Acceptance examples** that make a fuzzy goal concrete.
+* **Measurements or baseline capture** where feasibility depends on performance,
+  data behavior, model quality, capacity, or resource use.
+* **Contract or integration evidence** when the prototype's claim depends on a
+  real interface or dependency.
+* **Security, privacy, accessibility, or usability evaluation** when people,
+  sensitive data, or external systems are materially exposed.
 
-### Conditional decision rule (risk acceptance)
+### Conditional decision rule
 
-If advisory tests are omitted for a critical assumption, the omission must be recorded as a risk with:
+If evidence is omitted for a critical assumption or material failure mode,
+record:
 
-* description of the assumption,
-* intended validation method (test, measurement, manual check),
+* the assumption, claim, or failure mode,
+* why the omission is acceptable for the current decision,
+* compensating observation, containment, or mitigation,
 * owner,
-* revisit trigger (typically promotion to L2-P2).
+* revisit trigger, often promotion to L2-P2, external use, handling real data,
+  or an architecture commitment.
 
 ---
 
-## 4. Explicit non-requirements
+## 6. Explicit default non-requirements
 
-Not required:
+Unless L1 identifies a corresponding material claim, this profile does not by
+itself require:
 
-* Coverage targets
-* Component, integration, or system tests
-* Regression guarantees
-* CI enforcement
+* repository-wide coverage targets,
+* a complete unit/component/integration/system portfolio,
+* broad regression guarantees,
+* full CI enforcement,
+* production-scale performance testing,
+* production operational-readiness exercises,
+* compatibility matrices for unsupported platforms.
 
----
-
-## 5. Compliance criteria
-
-This phase is compliant if:
-
-1. Key assumptions are explicitly tested or otherwise validated.
-2. Tests (if written) are clearly marked as experimental.
-3. No prototype artifacts are misrepresented as production-ready.
+These are defaults only. A real risk overrides them.
 
 ---
 
-## 6. Assessment
+## 7. Procedure
 
-1. Identify assumptions and unknowns.
-2. Verify that major risks have been explored.
-3. Record outcomes and learning.
+1. State the question, decision, and assumptions.
+2. Select the smallest credible experiment or evidence source.
+3. Define what observation would support, weaken, or reject the assumption.
+4. Exercise representative, boundary, and failure conditions where they affect
+   feasibility.
+5. Record environment, data, versions, and important uncontrolled variables.
+6. Capture exploratory findings, counterexamples, measurements, and unanswered
+   questions.
+7. Distinguish disposable scaffolding from evidence or code intended for
+   promotion.
+8. Decide whether to continue, revise, stop, or promote the work.
+9. Convert durable discoveries into requirements, acceptance conditions,
+   regression tests, contracts, or design constraints as appropriate.
 
----
+## 8. Compliance and outcome
 
-## 7. Forward rules
+The profile is satisfied when:
 
-* Tests may be discarded or promoted in later phases.
-* Any prototype code promoted forward must be re-evaluated under L2-P2.
+* important assumptions and material risks are explicit,
+* the selected evidence is capable of changing the decision,
+* observations and limitations are recorded,
+* no material exposure is dismissed solely because the work is early-stage,
+* promotion conditions and unresolved risks have owners or triggers.
 
----
+Record one of:
 
-## 8. Delegation
+* **pass** — sufficient evidence supports the prototype decision,
+* **conditional pass** — continuation is bounded by explicit conditions,
+* **fail** — the evidence rejects a required assumption or leaves an
+  unacceptable gap,
+* **exploratory finding** — useful learning was produced without a pass/fail
+  conclusion,
+* **risk acceptance** — an authorized owner accepts a documented residual risk.
 
-Optional:
+## 9. Outputs
 
-* **L3-T1:** Unit Test (Pure Logic)
-* **L3-T6:** Property-Based Testing
-
-If either of the above is chosen, apply the corresponding L3 procedure in full and record deviations.
-
----
-
-## 9. Exit
-
-Return findings (not pass/fail) to L1.
-
+* assumption and question inventory,
+* prototype environment and data identity,
+* experiments, tests, measurements, or review artifacts,
+* findings and counterexamples,
+* limitations and unexplored areas,
+* promotion, discard, or continuation decision,
+* follow-up evidence and revisit triggers.
