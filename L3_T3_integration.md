@@ -1,125 +1,79 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- Integration is equated mainly with the presence of real external services, which can obscure protocol, framework, persistence, and platform semantics.
-- The procedure needs stronger guidance on environment identity, data isolation, failure injection, and comparability.
-
-Proposed fixes:
-- Define integration evidence by reliance on real semantics across a boundary.
-- Require explicit boundary, environment, version, isolation, cleanup, and diagnostic records.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-
-# L3-T3 — Integration Test: Design, Writing, Evaluation
+# L3-T3 — Integration Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Validate behavior **across real integration boundaries** (DB engine, HTTP service, broker, etc.), focusing on correctness of interactions, schemas, authn/z, error handling, and operational failure modes.
+Provide evidence whose value depends on real semantics across a process, persistence, protocol, framework, service, platform, or infrastructure boundary.
+
+Integration scope is defined by semantic fidelity, not merely by the number of modules or the presence of a container.
 
 ## 2. Applicability
 
-Use when:
+Use when correctness depends on behavior such as:
 
-* correctness depends on real external semantics (SQL dialect, transaction behavior, auth, serialization, retries)
-* you need confidence that contracts hold under real infrastructure
-* component tests’ fakes are insufficient to model risk
+* SQL dialect, constraints, transactions, or migrations,
+* serialization, wire protocols, authentication, or authorization,
+* framework or operating-system integration,
+* retries, timeouts, partial failure, or resource behavior,
+* externally versioned services or deployed components.
 
-Avoid using integration tests to:
+Do not use integration scope merely to retest local business logic or full user journeys.
 
-* exhaustively test internal business logic (unit/component do that)
-* simulate full user workflows (system tests do that)
+## 3. Evidence identity
 
-### 2.1 When not to use this test type
+Record:
 
-Avoid integration tests when:
+* boundary and claim,
+* dependency implementation and version,
+* artifact under test,
+* operating system, runtime, configuration, and feature flags,
+* schema or migration state,
+* test data identity,
+* provisioning, readiness, reset, and cleanup method,
+* network and credential assumptions,
+* comparability rules.
 
-* the behavior is fully local/pure (prefer **L3-T1**),
-* a fake models the risk adequately and keeps feedback faster (prefer **L3-T2**),
-* you are primarily validating the shape of an interface (prefer **L3-T7**).
+## 4. Environment and isolation
 
-## 3. Design rules
+Integration resources must be dedicated or safely partitioned, bounded by timeouts, isolated from production, and reset predictably.
 
-### 3.1 Real dependencies, controlled environment
+Containers may provide reproducibility but do not by themselves establish representativeness. Shared environments require ownership, contention controls, and state identity.
 
-Integration tests should:
+Use readiness probes or explicit synchronization rather than arbitrary sleeps.
 
-* run against **dedicated, resettable** test resources (prefer containerized services)
-* be repeatable and isolated (clean state per test or per suite)
-* avoid shared mutable state across tests unless explicitly managed
-* use dedicated test databases, services, or other resources so tests cannot
-  affect production data or settings
-* run in CI in a reproducible environment
-* carry the `integration` classification and any applicable cross-cutting
-  classifications such as database, security, performance, or slow execution
+## 5. Assertions and faults
 
-### 3.2 What to assert
+Assert boundary-observable behavior, including data, protocol responses, authorization, errors, retries, and recovery where relevant.
 
-Assert:
+Include representative negative or degraded cases when they materially increase confidence. Distinguish product, dependency, environment, and harness failure in diagnostics.
 
-* request/response structure and codes (for APIs)
-* schema validity and migrations (for DB)
-* authorization behaviors
-* handling of common disruptions (timeouts, retries, partial failure) where feasible
+## 6. Writing procedure
 
-Avoid:
+1. State the claim and real semantic required.
+2. Select a representative dependency and environment.
+3. Provision and verify a known state.
+4. Exercise the boundary through production code paths.
+5. Assert boundary-visible outcomes.
+6. Introduce a plausible fault or incompatibility where practical.
+7. Verify cleanup and evidence identity.
+8. Record limitations and unsupported production differences.
 
-* asserting fine-grained internal behavior (logs, call sequences) unless the test is explicitly observability-focused
-* broad “end-to-end” expectations spanning many systems unless intentionally a system test
+## 7. Evaluation
 
-### 3.3 Keep count low, value high
+Good integration evidence:
 
-Integration tests are slower; prioritize high-risk boundaries and “unknown unknowns.” The goal is confidence per test, not volume.
+* would lose value if replaced by a fake,
+* uses sufficiently representative real semantics,
+* is repeatable and isolated,
+* records artifact and environment identity,
+* localizes failures to a boundary,
+* remains comparable across the decision it supports.
 
-## 4. Writing procedure
+Red flags include undocumented dependency drift, shared mutable state, arbitrary sleeps, excessive internal mocking, uncontrolled external services, and measurements combined across incompatible environments.
 
-1. **Select the boundary** (DB, service, queue) and the specific risk.
-2. **Provision real dependency** in a known state:
+## 8. Outputs
 
-   * migrations applied
-   * seed minimal data
-3. **Exercise interaction** through the production client/repository layer (not mocks).
-4. **Assert boundary-observable outcomes**:
-
-   * persisted data correctness
-   * API response semantics
-   * contract conformance
-5. **Add one negative case** per boundary where it meaningfully increases confidence (e.g., constraint violation, auth failure, timeout path).
-
-## 5. Evaluating an existing integration test
-
-A test is **good** if:
-
-* it validates something that would be easy to get wrong with a fake
-* it is repeatable and cleans up after itself
-* failures are diagnosable (clear setup, clear assertions)
-* it avoids brittle timing and arbitrary sleeps
-
-Red flags:
-
-* nondeterminism/flakiness (race conditions, sleeps, shared state)
-* tests that are effectively system tests but lack proper harnessing
-* excessive mocking inside an integration test (dilutes the point)
-
-## 6. Evaluating the integration test suite
-
-Check:
-
-* **Boundary coverage**: each critical external dependency has at least one high-value test.
-* **Runtime budget**: suite remains feasible in CI; push heavy tests to nightly where needed (per cadence guidance).
-* **State management**: consistent reset strategy.
-* **Failure localization**: failures should implicate a specific boundary or contract.
-
-Outputs:
-
-* inventory: boundary → tests → risks covered
-* list of flaky tests and root causes
-* recommendations: move tests (unit↔component↔integration↔system), add contract tests, improve harness
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a test does not rely on real external semantics, downscope to **component (L3-T2)**.
-* If a test spans multiple systems and is asserting user-visible workflows, upscope intentionally to **system (L3-T4)** and harden the harness accordingly.
-
+* boundary and risk inventory,
+* environment and dependency specification,
+* covered positive, negative, and degraded behavior,
+* comparability and residual-uncertainty record,
+* harness and scope recommendations.
