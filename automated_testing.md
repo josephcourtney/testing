@@ -7,231 +7,325 @@ tags: []
 title: Best Practices - Automated Testing
 ---
 
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+# Best Practices — Automated Testing
 
-Problems identified:
-- The document alternates between encyclopedia, prescription, and lifecycle policy without stating which statements are normative.
-- The lifecycle sequence can be read as making test applicability depend on phase rather than current risk.
-- TDD, isolation style, portfolio shape, and test ordering are presented more universally than the evidence supports.
-- Property-based testing is described too narrowly, especially for stateful systems, model-based testing, differential testing, and metamorphic relations.
-- Quantitative targets are presented without a complete measurement design.
+> [!important]
+> This document is a **non-normative conceptual reference**. It preserves a broad
+> set of practices, definitions, examples, and lifecycle patterns that may be
+> useful when designing a project-specific strategy. `Overview.md` defines
+> policy, `glossary.md` defines terminology, and the L1/L2/L3 procedures govern
+> decisions. When this document sounds prescriptive, read the statement as a
+> practice to evaluate unless a normative document independently requires it.
 
-Proposed fixes:
-- Mark the document as a non-normative reference while preserving its breadth and examples.
-- Annotate lifecycle sections as common confidence patterns rather than required sequences.
-- Present TDD, sociable/solitary units, mocking styles, and portfolio shapes as selectable conventions with tradeoffs.
-- Expand generative testing guidance to state machines, models, differential oracles, and metamorphic properties.
-- Require metric definitions, baselines, uncertainty, and actions before illustrative targets become gates.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-
-# Best Practices - Automated Testing
 > [!definition] Definition: Automated Testing
-> [[Automated Testing]] is the use of software tools to execute predefined tests automatically, verifying that the target system works as intended and meets specified requirements.
+> Automated testing is the use of software tools to execute checks and collect
+> evidence automatically. Automated evidence may verify specified behavior,
+> search for counterexamples, measure properties, inspect artifacts, or monitor
+> a deployed system. It is one evidence source among testing, review, formal
+> analysis, exploratory work, usability evaluation, measurement, and production
+> observation.
 
-## Core Principles
-When writing and using tests, follow these principles:
-- **Isolation**: A test's outcome must not depend on other tests or global state.
-- **Efficiency**: Fast feedback sustains developer flow; slow tests are skipped and forgotten.
-- **Clarity**: Test code must stay easy to read and diagnose.
-- **Purpose**: Tests should signal whether the code has the right behavior.
-- **Maintainability**: Tests should evolve with minimal churn not be brittle or overly high-level.
-- **Diligence**: Failures, flakiness, and low metrics should prompt investigation.
-- **Practicality**: Automate first where impact × likelihood of failure is highest.
+## Core principles
 
-## Project Lifecycle
-- **Always**
-    - Run **static analysis** on all code: formatters, linters, type checkers
-    - Run **security tests**: secret scanners, dependency scans, and supply-chain verification
-    - **Exploration** - clarify goals, reduce uncertainty
-    - Given a fuzzy goal, build a prototype
-    - Iterate, evaluate, and analyze the prototype to formalize requirements as **acceptance tests**
-    - If fitting models, begin **data validation**, **metric tracking**, or **baseline capture**.
-- **Development** - implement functionality
-    - Discard prototype; scaffold production code.
-    - For each feature, iterate until acceptance test passes
-    - Build bottom-up with test-driven development:
-        - Write **unit tests** and **component tests**, implement unit, repeat
-        - Add **contract tests** for service boundaries
-    - Refactor while keeping tests passing
-    - Add **snapshot tests** once interface stabilizes
-    - If applicable
-        - add appropriate metrics
-        - implement **data freshness**, **referential integrity**, **aggregation accuracy**, **anomaly detection**, **backfill**,
-        - add hooks for observability, monitoring schema evolution, and/or data lineage
-    - Implement test result and metric history tracking
-- **Polishing** - improve behavior, code, and UX quality
-    - Add **integration tests** and **system tests**
-    - Add **usability tests**
-    - Add **performance tests**
-    - Optimize test suite with **smoke tests**
-- **Hardening** - ensure robustness, security, and compliance
-    - Implement **regression testing** and **rollback testing**
-    - Add **compatibility testing**, **mutation testing**, **fuzzing**, and **chaos testing**
-    - Add **privacy-impact tests**
-- **Maintenance** - monitor, adapt, and refactor
-    - Implement **synthetic monitoring**, **chaos testing**, and **model drift detection**
-    - monitor project health; when it worsens, repair and refactor
-    - If applicable, monitor **model accuracy drift**, **dataset shift**, and retrain when thresholds are breached
-    - Track **flake rate**, **defect escape**, **test latency**, and **performance drift**.
-    - When new requirements or threats emerge, return to **Development**
-    - When fixing bugs, add **sanity tests**
+The following principles are useful design prompts rather than independent proof
+of quality:
 
-## Testing Definitions
-### Level
-Tests can be categorized according their structural scope.
-- **Static Analysis** evaluates code without executing it. It typically uses methods like pattern matching to identify potential problems.
-- **Unit tests** confirm that a single function, method, or object is performing as expected, in isolation. They tend to involve isolating the unit, and mocking any external entities so that the unit can be treated as a pure function. They typically include evaluations of input-output pairs, confirmations that exceptions are raised under the correct conditions, and property-based testing. Unit tests should be fast (< 100 ms) so that they can be run often, possibly on every save, during development. They are typically structured according to the Arrange-Act-Assert pattern. They should utilize mocking of external dependencies and must not read or modify persistent state.
-- **Component tests** evaluate the interactions between multiple units in a bounded context like a module. They should use only the public interfaces of the components and should only mock elements outside of the specified component.
-- **System tests** evaluate the high-level, user-facing behavior, treating it as a black box. They are typically slow and resource-heavy as they involve simulating user interaction.
-- **Integration tests** evaluate the interactions between units or components of two separate systems. They are used to evaluate APIs, authorization and authentication, communication disruption handling, schema validation, version contracts, etc. They often make use of containerized services to allow their state to be reset for every test.
+* **Isolation and control** — protect results from uncontrolled shared state,
+  ordering, ambient services, time, randomness, and configuration. Isolation
+  does not require replacing inexpensive deterministic collaborators that belong
+  inside the chosen boundary.
+* **Semantic fidelity** — preserve the real behavior needed by the claim. A fast
+  fake is not useful if it removes the failure mode under examination.
+* **Efficiency** — keep evidence timely enough that it affects editing, merge,
+  release, and operational decisions. Different evidence may belong at different
+  cadences.
+* **Clarity** — make the claim, inputs, oracle, boundary, and failure easy to
+  understand.
+* **Purpose** — know whether an item exists for acceptance, regression, contract,
+  exploration, performance, security, observability, or another reason.
+* **Maintainability** — avoid unnecessary coupling, hidden setup, duplicated
+  scenarios, noisy snapshots, and obsolete obligations.
+* **Diagnostics** — retain enough context to distinguish product, dependency,
+  environment, configuration, and harness failure.
+* **Diligence** — investigate failures, flakes, unexplained metric changes, and
+  weak oracles rather than normalizing them.
+* **Practicality** — prioritize evidence according to impact, likelihood,
+  uncertainty, reversibility, and the cost of learning.
+* **Evidence integrity** — distinguish complete from partial runs, fresh from
+  stale results, and comparable from non-comparable measurements.
+
+## A common lifecycle pattern
+
+The sequence below is one common pattern, not a required project lifecycle.
+Material risks apply whenever they arise. A prototype handling sensitive data
+may need strong security and privacy controls; a production utility without a
+network boundary does not need fictitious service integration tests.
+
+### Always or continuously
+
+Common recurring practices include:
+
+* run appropriate static analysis, such as formatters, linters, and type checkers,
+* run threat-relevant secret, dependency, vulnerability, license, and
+  supply-chain checks,
+* keep test and metric artifacts distinguishable by revision, environment,
+  selection, and freshness,
+* investigate flakes, degraded diagnostics, and growing feedback latency,
+* revisit the risk model when users, dependencies, data, scale, threats, or
+  operating conditions change.
+
+The exact tools and cadence are project decisions.
+
+### Exploration and prototyping
+
+A common approach is to:
+
+* clarify goals and reduce uncertainty,
+* build a prototype from a fuzzy goal,
+* iterate, evaluate, and analyze the prototype,
+* formalize useful discoveries as acceptance conditions, invariants, models, or
+  constraints,
+* begin data validation, metric tracking, or baseline capture when feasibility
+  depends on them,
+* discard or deliberately promote prototype code and tests.
+
+Exploratory scripts and measurements may be more valuable than a conventional
+unit suite at this stage. Material external, security, data, or safety risks
+still require credible evidence.
+
+### Development
+
+A common development pattern is to:
+
+* scaffold durable production code from validated assumptions,
+* define stakeholder-visible examples or acceptance conditions,
+* implement local behavior with unit and component evidence,
+* add contract evidence for independently consumed boundaries,
+* refactor while behavior remains protected,
+* add snapshots when a large stable representation benefits from reviewed diffs,
+* add data freshness, referential integrity, aggregation, anomaly, backfill,
+  schema-evolution, lineage, or model checks where applicable,
+* add observability hooks and verify operator-critical signals,
+* begin retaining test-result and metric history.
+
+Teams may use TDD, acceptance-test-driven development, test-after development,
+or mixed exploratory workflows. TDD is a development technique, not a universal
+quality requirement.
+
+### Stabilization and polishing
+
+As interfaces and workflows stabilize, projects often increase:
+
+* real-dependency integration evidence,
+* installed-artifact and system evidence,
+* contract and compatibility verification,
+* exploratory evaluation of ambiguous and high-risk areas,
+* usability and accessibility evaluation,
+* performance measurement and capacity exploration,
+* a small reliable smoke selection for frequent gating,
+* suite-health assessment and diagnostic cleanup.
+
+Do not postpone a material integration, usability, security, or performance risk
+until this stage merely because it appears here in the common sequence.
+
+### Hardening and release
+
+Common hardening activities include:
+
+* focused regression tests for learned failure modes,
+* migration and rollback testing,
+* supported-version and platform compatibility testing,
+* mutation testing to evaluate suite sensitivity,
+* fuzzing and malformed-input campaigns,
+* security and privacy assessment tied to threats and data flows,
+* fault injection and controlled resilience testing,
+* deployment, observability, restoration, and recovery exercises,
+* validation of quantitative gates, baselines, and comparability rules.
+
+These activities are selected from release claims and risk. They are not a
+mandatory checklist for every product.
+
+### Maintenance and operation
+
+Common maintenance practices include:
+
+* synthetic monitoring of critical deployed transactions,
+* change-impact and incident-derived regression analysis,
+* contract and compatibility revalidation after dependency or platform change,
+* performance, capacity, data, and model drift monitoring,
+* periodic rollback, restoration, failover, and runbook exercises,
+* test-suite health, flake, latency, defect, and maintenance-cost review,
+* retiring stale evidence and updating obsolete baselines,
+* returning to development or stabilization practices when requirements or
+  threats change.
+
+A bug fix may begin with a narrow sanity check and result in durable regression,
+contract, property, integration, monitoring, or operational evidence.
+
+## Classification dimensions
+
+Tests should not be forced into one hierarchy that combines scope, purpose,
+technique, resources, and cadence.
+
+### Structural scope
+
+* **Unit tests** exercise a small chosen boundary and provide highly localizing
+  feedback. A unit may be a function, class, module, or cluster of collaborating
+  objects. Solitary tests replace outside collaborators; sociable tests retain
+  inexpensive deterministic collaborators inside the unit.
+* **Component tests** exercise a coherent subsystem through a supported
+  interface. Internal implementation normally collaborates for real, while
+  outside dependencies may be controlled or represented by lightweight real
+  implementations.
+* **Integration tests** depend for their evidential value on real semantics
+  across a persistence, process, protocol, platform, framework, service, or
+  infrastructure boundary.
+* **System tests** exercise the assembled product through a user- or
+  operator-visible boundary.
+* **End-to-end tests** are system tests that traverse a complete representative
+  workflow relative to a declared product boundary. They need not use every
+  external production dependency.
+
+Static analysis is an evidence technique rather than a structural test scope.
+Contract, acceptance, regression, smoke, performance, and security describe
+purposes rather than structural levels.
 
 ### Purpose
-Tests can be categorized according to their purpose or the aspect they are intended to evaluate.
-- **Acceptance tests**: satisfy requirements the code was written to address.
-- **Regression tests**: prevent unintended degradation over time.
-  - **Sanity tests**: confirm that a specific bug fix or feature implementation behaves as expected.
-  - **Rollback tests**: verify that a system or database can revert cleanly to a prior state after a deployment or migration. It typically involves applying a migration, running validation, executing the rollback, and re-verifying state consistency.
-  - **Performance Regression tests**: confirm that latency, throughput, and resource use do not degrade significantly compared to typical values.
-- **Smoke tests**: verify that the most critical system features are functioning and stable enough to proceed with more detailed testing.
-- **Compatibility tests**: check that functionality works across different operating systems, browsers, or devices to ensure consistent behavior and presentation. Typically they are executed using grid-execution platforms.
-- **Data quality tests**: validate incoming or transformed datasets against expectations for null values, statistical norms, freshness, referential integrity, and uniqueness.
-- **Database tests**: validate the correctness, integrity, and performance of database operations. It checks CRUD logic, constraint enforcement, transaction behavior, indexing, stored procedures, and triggers.
-  - **Queries & schema tests**: evaluate the correctness and stability of database queries and schema definitions. They verify that expected indexes, constraints, and table structures are present and that SQL queries return correct and performant results.
-- **Performance tests**: confirm that latency, throughput, and resource use targets are met.
-- **Security tests**: encompass static code analysis, dependency scanning, fuzzing of authentication flows, and penetration testing to uncover vulnerabilities.
-  - **Vulnerability scans**: detect known security issues in source code, dependencies, and deployed systems using databases like CVE/NVD or custom signatures.
-  - **Secret scans**: prevent leaking of credentials, API keys, and other sensitive values in source code and build artifacts.
-  - **Privacy-impact tests**: verify conformance to privacy regulations such as GDPR or CPRA by analyzing data flows and enforcing constraints like differential privacy budgets.
-  - **Supply-chain verifications**: evaluate dependencies for verified provenance, approved licensing, and absence of known vulnerabilities, failing builds when criteria are not met. This is performed at static and integration stages.
-- **Service/API tests**: validate the functionality, reliability, and contract compliance of a service's public interface (typically HTTP or RPC). They test response structure, status codes, authorization handling, edge cases, and error conditions.
-  - **Contract tests**: verify that the interaction between a service source and consumer adheres to a shared schema or expectation, without requiring end-to-end environments.
-  - **Schema validation tests**: ensure that data structures (e.g., JSON, Avro, database schemas) conform to a defined specification, catching mismatches or invalid formats before processing.
-- **Usability tests**: attempt to evaluate the user experience. In general, UX is impossible to evaluate with full automation. Automated usability tests typically cover accessibility, internationalization, and heuristics like conforming to UI style guides and avoiding antipatterns.
-  - **Accessibility and internationalization tests**: verify that systems comply with standards like WCAG and behave correctly across locales, languages, and encodings.
-- **Continuous Behavior**
-  - **Synthetic monitoring**: simulate real user interactions with a production system on a recurring schedule to detect regressions, latency increases, or downtime. It operates continuously and externally, typically testing user-critical flows like login, checkout, or API endpoints.
-  - **Model drift detection**: monitor deployed machine learning models for input distribution shifts or degraded predictive performance due to data drift.
-- **Linting**: identifies stylistic and programming errors by analyzing source code against a set of predefined rules. It enforces code quality standards and detects issues like unused variables, unreachable code, or dangerous patterns.
-- **Formatting**: enforces a consistent code layout (e.g. indentation, spacing, line length) according to a predefined style guide. It is typically automated and does not affect program behavior.
-- **Type Checking**: validates that variables, function arguments, and return values conform to declared or inferred types. It can be static (at compile time) or dynamic (at runtime) and prevents type errors before or during execution.
-- **Dataflow Analysis**: traces the flow of data through variables and control structures to detect issues like uninitialized variables, tainted input propagation, or dead code. It supports optimization and security auditing.
-- **Abstract Interpretation**: approximates program behavior by interpreting code over abstract domains instead of concrete values, enabling sound detection of properties like possible null dereferences, integer overflows, or unreachable code.
-- **Formal Verification**: uses mathematical proofs to verify that a system adheres to its specification under all possible conditions. It is applied to critical systems where exhaustive correctness is required.
+
+* **Acceptance tests** demonstrate concrete conditions that matter to a user,
+  operator, stakeholder, regulator, or dependent system.
+* **Regression tests** protect established behavior or a learned failure mode.
+* **Characterization tests** record existing behavior before modification without
+  automatically endorsing it.
+* **Sanity tests** provide narrow plausibility checks for a change or fix before
+  broader evaluation.
+* **Smoke tests** provide a small critical-capability selection indicating that a
+  build, deployment, or environment is suitable for further testing or use.
+* **Compatibility tests** evaluate supported versions, platforms, devices,
+  browsers, consumers, data formats, or environments.
+* **Contract tests** verify producer-consumer obligations, including structure,
+  semantics, errors, ordering, versioning, timing, and artifact identity.
+* **Schema tests** verify structural constraints but do not by themselves prove
+  behavioral compatibility.
+* **Migration tests** verify intended state transitions for data, configuration,
+  schema, or platform changes.
+* **Rollback tests** verify return to a previous acceptable state and any limits
+  on reversibility.
+* **Performance tests** evaluate latency, throughput, responsiveness, capacity,
+  scalability, or resource use under a defined workload and environment.
+* **Performance regression tests** compare against a valid baseline or objective
+  and require practically meaningful thresholds.
+* **Load tests** exercise expected or specified demand.
+* **Stress tests** exceed expected capacity to reveal saturation, failure, and
+  recovery behavior.
+* **Soak tests** run for long durations to reveal leaks, accumulation, and
+  degradation.
+* **Security tests** evaluate threat-relevant properties including authentication,
+  authorization, unsafe parsing, injection, confidentiality, integrity,
+  availability, and supply-chain risk.
+* **Vulnerability scans** search source, dependencies, artifacts, or deployed
+  systems for known or rule-defined security issues.
+* **Secret scans** detect credentials, keys, tokens, or sensitive values in code,
+  history, configuration, and artifacts.
+* **Privacy-impact tests and reviews** evaluate data purpose, minimization,
+  consent, access, retention, deletion, disclosure, anonymization, and privacy
+  mechanisms such as differential-privacy budgets where applicable.
+* **Supply-chain verification** evaluates dependency provenance, integrity,
+  signatures, builds, allowed sources, licensing, and known vulnerabilities.
+* **Service/API tests** evaluate the functionality, reliability, errors,
+  authorization, and contract compliance of a public service interface; their
+  structural scope depends on the real boundary exercised.
+* **Data-quality tests** evaluate validity, completeness, consistency, freshness,
+  uniqueness, referential integrity, lineage, aggregation, anomaly, and
+  distribution claims.
+* **Database tests** evaluate query, schema, constraint, transaction, indexing,
+  trigger, migration, integrity, or performance behavior. `database` is also a
+  useful resource classification; the structural scope depends on the boundary.
+* **Queries and schema tests** verify expected tables, indexes, constraints,
+  query results, plans, and schema evolution.
+* **Usability tests** evaluate whether intended users can understand and complete
+  tasks, including error and recovery behavior.
+* **Accessibility tests** evaluate whether people with relevant disabilities can
+  perceive, navigate, understand, and operate the product. Automated conformance
+  scans are partial evidence, not complete accessibility evaluation.
+* **Internationalization and localization tests** evaluate locales, encodings,
+  text expansion, formats, translation, layout, and culturally dependent
+  behavior.
+* **Observability tests** verify that logs, metrics, traces, health signals, and
+  diagnostics support detection and diagnosis.
+* **Resilience tests** evaluate behavior under partial failure, overload,
+  interruption, and dependency degradation.
+* **Recovery tests** evaluate restart, rollback, failover, restoration, and
+  return to a known-good state.
+* **Synthetic monitoring** repeatedly executes representative deployed
+  transactions to detect loss of capability, latency degradation, or downtime.
+* **Model and data drift detection** observes changes in input distributions,
+  output distributions, calibration, or predictive performance. Generic PSI,
+  KS, or accuracy thresholds are not portable defaults.
 
 ### Techniques
-These techniques can be used to create or structure tests.
-- **Arrange-Act-Assert**: A unit test structure where setup is performed (*Arrange*), the behavior is invoked (*Act*), and outcomes are verified (*Assert*).
-- **AI-assisted test generation** leverages large language models to generate, deduplicate, and automatically repair tests based on source code and runtime data. These tools span unit to system level and include platforms like Diffblue, Copilot-tests, and TestGPT.
-- **Canary (chaos canary)**: A pre-identified workload or subsystem monitored during chaos experiments to detect early signs of systemic degradation or failure.
-- **Chaos engineering** intentionally injects faults into a running system to validate resilience, recovery mechanisms, and observability. It targets integration and system levels using tools such as Gremlin and ChaosMesh.
-- **Fuzzing** supplies malformed, unexpected, or semi-random inputs to a system to uncover crashes, memory issues, or unhandled exceptions. It applies from unit to system level, with tools like AFL, libFuzzer, and OSS-Fuzz supporting coverage-guided input generation.
-- **In-process fakes**: Test doubles (e.g., fake databases or services) that run in the same process as the system under test, offering deterministic, fast substitutes for external dependencies.
-- **Instrumentation and tracing** embed hooks into a system to record metrics, logs, or spans during test execution, supporting runtime analysis and debugging. These techniques apply at the integration and system level and are often powered by OpenTelemetry.
-- **Mocking and faking** involve substituting real dependencies with controlled test doubles to isolate behavior under test. This practice is common in unit and component testing, supported by frameworks such as Mockito and `pytest-mock`.
-- **Mutation testing** introduces small changes (mutations) into code and verifies that existing tests fail in response, thereby measuring test suite effectiveness. This is typically applied at the unit level using tools such as Pitest or Stryker.
-- **Observability hooks in tests** export structured logs, metrics, and traces from the test environment to help diagnose failures. These hooks are used during integration and system tests, often integrated with observability stacks via OpenTelemetry collectors.
-- **Parallelization** divide test suites into shards and use test-impact analysis to prioritize only the most relevant tests, reducing feedback time. This approach is applied across large-scale unit to system testing environments.
-- **Property-based testing** generates randomized inputs to verify that a system upholds defined invariants across a wide input space. It is most effective at the unit or component level and is implemented using libraries like Hypothesis or QuickCheck.
-- **Runtime chaos**: Fault injection during live system execution to test resilience—such as killing services, injecting latency, or corrupting network traffic—performed in controlled environments.
-- **Snapshotting** captures and stores outputs (visual, structural, or serialized) and compares them against future test runs to detect unintended changes. This technique is used in unit, component, and UI testing contexts, with tools like Jest and Syrupy.
 
-### Test Input
-data required to run tests
-- **Feature-store contracts**: Schemas and data quality expectations attached to ML feature definitions in a feature store, ensuring that feature generation remains consistent across training and inference contexts.
-- **Version contracts**: Explicit agreements that define how services or data consumers interact with specific versions of APIs or schemas, preventing breaking changes in evolving systems.
-- **Service-contract**: A formal specification of a service's input-output behavior (e.g., API spec), including required fields, error codes, and data formats, enabling safe integration and validation.
-- **Snapshot**:
-- **Differential-privacy budgets**: Constraints on the cumulative privacy loss allowed in queries to sensitive datasets, quantified by parameters (e.g., ε) to manage re-identification risk under differential privacy.
-- **Anonymization**:
-- **Data Synthesis**:
+* **Example-based testing** checks selected scenarios against explicit expected
+  outcomes.
+* **Table-driven testing** represents several examples as data under one test
+  structure.
+* **Property-based testing** generates inputs and checks invariants, with
+  shrinking or minimization where supported.
+* **Stateful or state-machine testing** generates action sequences and checks
+  state models, preconditions, postconditions, and invariants.
+* **Model-based testing** derives or evaluates behavior from an explicit model of
+  states, transitions, or outputs.
+* **Differential testing** compares independent implementations, versions,
+  backends, modes, or platforms using the same inputs.
+* **Metamorphic testing** checks expected relations between transformed inputs and
+  outputs when exact expected values are unavailable.
+* **Fuzzing** generates or mutates malformed, adversarial, random, or
+  coverage-guided inputs to find crashes, hangs, security defects, and invariant
+  violations.
+* **Mutation testing** deliberately changes implementation behavior to evaluate
+  whether the selected suite detects the change.
+* **Snapshot or golden testing** compares canonicalized output with a reviewed
+  stored baseline.
+* **Fault injection** deliberately introduces controlled failures, errors,
+  corruption, or latency.
+* **Chaos engineering** performs hypothesis-driven fault experiments with
+  controlled blast radius, stop conditions, observability, and recovery checks.
+* **Simulation and emulation** provide controlled approximations of systems,
+  devices, protocols, environments, or physical processes.
+* **Formal verification** proves specified properties under an explicit model and
+  assumptions.
+* **Exploratory testing** combines learning, test design, and execution under a
+  charter.
 
-## Guidelines
-### Testing Cadence
+## Static and build-time checks
 
-| Trigger              | Tests to run                                                          | Rationale                                           |
-| -------------------- | --------------------------------------------------------------------- | --------------------------------------------------- |
-| Every save           | Static, quick Unit                                                    | Keep feedback less than a few seconds.              |
-| Every commit         | Static, Unit, tiny Component                                          | Keep feedback ≤ 2 min                               |
-| Pull request         | Component, Contract, Smoke Performance                                | Block regressions before merge                      |
-| Nightly              | Full Integration, Mutation, Extended Performance, Fuzz, Flake tracker | Deep safety net without slowing daytime work        |
-| Pre-release          | End-to-End, Compliance, Chaos, Full-load Performance                  | Validate system health and standards compliance     |
-| Post-deploy (24 × 7) | Synthetic Monitoring, Light Chaos                                     | Detect production issues and resilience regressions |
+* **Linting** detects selected correctness, maintainability, stylistic, and
+  suspicious-code patterns.
+* **Formatting** rewrites code into a consistent layout without intending to
+  change behavior.
+* **Type checking** evaluates declared or inferred type relationships. It may be
+  static or dynamic, but the repository's static-analysis policy should state
+  the actual tool, scope, and failure handling.
+* **Dependency scanning** evaluates declared or resolved dependencies for known
+  vulnerabilities, unsupported versions, provenance, policy, or licensing
+  concerns.
+* **Artifact validation** verifies package metadata, contents, signatures,
+  digests, entry points, dependency declarations, and installability.
 
-### Metrics
+These checks are valuable evidence about their configured rules and inputs. A
+passing tool does not establish properties it does not analyze.
 
-- **Compatibility Matrix**: test results stratified by platform, device, or browser configurations.
-    - **Target**: test success on hardware where code is used most
-- **Coverage**
-  - **Line Coverage**: Percentage of executed lines of code during test execution.
-    - **Target**: > 80% (back-end), > 70% (front-end)
-  - **Branch Coverage**: Percentage of executed code branches (e.g., if/else, switch cases) during tests.
-    - **Target**: > 70% (back-end), > 60% (front-end)
-  - **Case Coverage**: Proportion of defined logical or business-critical cases that are exercized by tests.
-    - **Target**: 100% for critical paths
-  - **Path Coverage**: Percentage of all possible execution paths through the code that are tested.
-    - **Target**: > 50% general; > 80% for safety-critical or regulated domains
-- **Mutation Score**: Percentage of artificial defects (mutants) introduced into code that are detected (i.e., killed) by the test suite.
-  - **Target**: > 85% (safety-critical systems), > 70% (general purpose)
-- **Flake Rate**: Percentage of tests that intermittently fail without code changes (i.e., nondeterministic failures).
-  - **Target**: < 1%; alert if 2 out of 20 recent failures are flaky
-- **Defect-Escape Rate**: Number of defects discovered in production per 1,000 lines of code.
-  - **Target**: < 0.5 defects per 1 KLOC
-- **Performance Regression**: Degree to which a new version of the system is slower or more resource-intensive than a baseline version, measured via latency, throughput, or memory/cpu usage.
-  - **Target**: Must remain within defined thresholds; typically ±5-10% from baselines unless justified
-- **Population Stability Index (PSI)**: A statistical measure of distributional shift in input or output data between two samples (e.g., training vs. production).
-    - **Target**: depend. Typical ranges: low: < 0.1; 0.1 ≤ medium < 0.25; high ≥ 0.25
-- **Kolmogorov-Smirnov Statistic**: Measures the maximum distance between two cumulative distribution functions. Often used to evaluate binary classifiers and data drift.
-  - **Target**:
-    - For classifier separation (e.g., fraud vs. legit): KS > 0.2 is considered acceptable; KS > 0.4 is strong
-    - For drift detection: significant change if KS ≥ 0.1 depending on context
-- **Cyclomatic Complexity**: Definition
-  - **Target**: Target
-- **Code Duplication**: Definition
-  - **Target**: Target
-- **Coupling**: Definition
-  - **Target**: Target
-- **Comment Density**: Definition
-  - **Target**: Target
+## Development and portfolio conventions
 
-## Bad Habits
-- Violation of Isolation
-  - Unit tests that read or write real files, hit the network, or change global state without cleanup.
-- Violation of Efficiency
-  - Arbitrary sleeps or waits in asynchronous tests that hide race conditions and slow feedback.
-  - Oversized end-to-end suites duplicating lower-level checks and extending CI cycle time.
-- Violation of Clarity
-  - Snapshots that capture incidental UI or data details, producing noisy diffs and masking true regressions.
-  - Over-mocking external dependencies, concealing breaking API changes and weakening behavioral checks.
-- Violation of Purpose
-  - Chasing 100 % line-coverage targets with trivial assertions that add little defect-detection value.
-  - Tests that depend on internal implementation details become change-detectors rather than proper tests.
-- Violation of Maintainability
-  - Mocking external faults instead of using a containerized replica, giving false confidence.
-  - Accumulating overlapping test frameworks or tools that increase cognitive load and maintenance effort.
-- Violation of Diligence
-  - Suppressing or ignoring secret-scanner or vulnerability-scan warnings.
-  - Using metrics solely as pass/fail gates without probing underlying causes or suite gaps.
+The following choices can be useful when a project states why it adopted them:
 
-## References
+* test-driven, test-after, or acceptance-test-driven development,
+* solitary or sociable unit testing,
+* Arrange–Act–Assert, Given–When–Then, or domain-specific structures,
+* source-mirroring, scope-oriented, feature-oriented, or colocated directories,
+* test pyramids, trophies, honeycombs, or other portfolio heuristics,
+* mocks, fakes, simulators, emulators, containers, or shared environments,
+* per-edit, pre-commit, pre-merge, scheduled, release, or production cadence.
 
-- **Kent Beck:** *Test-Driven Development by Example*
-- **Martin Fowler:** Test Pyramid; "Mocks Aren't Stubs"
-- **Roy Osherove:** *The Art of Unit Testing*
-- **Michael Feathers:** *Working Effectively with Legacy Code*
-- **Lisa Crispin & Janet Gregory:** Agile Testing Quadrants
-- **Mike Cohn:** *Succeeding with Agile*
-- **John Hughes:** QuickCheck and property-based testing
-- **Hypothesis:** Python property-based testing
-- **Pact:** Contract testing for APIs
-- **Pitest / Stryker:** Mutation testing
-- **Gremlin:** Chaos engineering
-- **AFL / libFuzzer:** Coverage-guided fuzzers
-- **Buildkite Flaky Test Reporter:** Flake tracking
-- **ISTQB:** Risk-based and compliance testing standards
-- **Modern observability vendors:** Synthetic monitoring (Datadog, Splunk)
-- [kiwicom/pytest-recording](https://github.com/kiwicom/pytest-recording) - record/replay HTTP traffic
-- [syrupy-project/syrupy](https://github.com/syrupy-project/syrupy) - snapshot testing plugin for pytest
+No workflow, directory layout, portfolio shape, marker, or tool is a substitute
+for connecting claims, failure modes, evidence, uncertainty, and decisions.
