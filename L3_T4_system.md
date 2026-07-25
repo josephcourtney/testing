@@ -1,112 +1,245 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- System, smoke, end-to-end, and acceptance testing are treated as nearly interchangeable even though they describe different dimensions.
-- A small smoke selection cannot establish all stakeholder acceptance conditions or system risks.
-
-Proposed fixes:
-- Keep system as structural scope, smoke as selection purpose, and acceptance as stakeholder-facing purpose.
-- State which assembled artifact, environment, user/operator boundary, and critical journeys are exercised.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# L3-T4 — System / Smoke Test: Design, Writing, Evaluation
+# L3-T4 — System Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Validate **end-to-end, user-facing behavior** by treating the application as a **black box**. “Smoke” is the **small, critical-path subset** used for fast gating.
+Validate the **assembled product** through a supported user- or operator-visible
+boundary, such as an installed CLI, public API, browser interface, packaged
+application, deployed service, or complete processing workflow.
+
+System is a structural scope. It is not synonymous with acceptance,
+end-to-end, regression, or smoke testing:
+
+* **end-to-end** describes a complete representative workflow within the
+  relevant product boundary,
+* **smoke** describes a small critical-capability selection,
+* **acceptance** describes why evidence matters to a stakeholder,
+* **regression** describes protection of established behavior or a learned
+  failure mode.
+
+A system test may carry any of those purposes when appropriate.
 
 ## 2. Applicability
 
-Use when you need confidence that:
+Use system scope when confidence depends on:
 
-* the system boots and runs in a realistic configuration,
-* critical workflows function across real wiring,
-* major regressions are caught at the user boundary.
+* startup, shutdown, wiring, packaging, or deployment of the assembled product,
+* critical behavior through the same public entrypoint used by a user or
+  operator,
+* collaboration across several internal components or services,
+* source-tree versus installed-artifact differences,
+* configuration or routing that only exists in the assembled system,
+* a cross-service failure that lower-scope evidence cannot represent,
+* user-visible output, artifacts, state, or error handling.
 
-Do not use system tests to replace unit/component coverage; they are slower, more brittle, and less localizing.
+Do not use system tests to:
 
-### 2.1 When not to use this test type
+* exhaustively repeat every unit, component, or integration case,
+* claim stakeholder acceptance without explicit acceptance conditions,
+* replace dedicated contract, performance, security, accessibility, usability,
+  or operational evidence,
+* hide a poorly controlled environment behind repeated retries.
 
-Avoid system tests when:
+### 2.1 When not to use system scope
 
-* the behavior can be validated at unit/component scope with better localization (prefer **L3-T1/L3-T2**),
-* the risk is boundary semantics rather than full wiring (prefer **L3-T3** and/or **L3-T7**),
-* a snapshot would be used as a substitute for semantic assertions (prefer targeted assertions; use **L3-T9** sparingly).
+Prefer a lower scope when:
 
-## 3. Design rules
+* the failure mode is local and a smaller boundary improves localization,
+* the risk is one real dependency's semantics rather than complete wiring,
+* the intended oracle is a contract or schema independent of the assembled
+  product,
+* the system harness adds cost or nondeterminism without adding relevant
+  semantics.
 
-### 3.1 Keep scope minimal and critical
+## 3. Define the system boundary
 
-* Prefer a **small set of high-value flows**:
+Record:
 
-  * startup/shutdown
-  * one “happy path” per top-tier user journey
-  * one critical error-handling journey (if high risk)
-  * cross-service flows whose failures only appear in the assembled distributed system
-* Avoid comprehensive scenario matrices; push detail down to unit/component/integration.
+* the assembled artifact or deployment under test,
+* revision, package, image, executable, or distribution identity,
+* user- or operator-visible entrypoint,
+* services, dependencies, and controlled substitutes inside the test boundary,
+* supported configuration and environment,
+* real and simulated external systems,
+* critical workflow and expected result,
+* semantics or environments deliberately excluded.
 
-Classify these tests as system scope and, when appropriate, as slow-running.
-Do not treat system scope itself as evidence of stakeholder acceptance.
+End-to-end is relative to this declared product and decision boundary. A system
+test may use controlled external dependencies when they preserve the semantics
+needed by the claim.
 
-### 3.2 Black-box assertions only
+## 4. Design rules
 
-Assert:
+### 4.1 Select high-value workflows
 
-* externally visible outputs (HTTP responses, CLI output, produced files, UI render results)
-* stable contract-level properties (status codes, key fields, artifacts created)
+Prefer a curated set of workflows such as:
+
+* startup and shutdown,
+* installation or first-run behavior,
+* one representative happy path per top-tier user journey,
+* critical rejection and recovery paths,
+* cross-service flows whose failures appear only in the assembled system,
+* configuration and upgrade paths that change public behavior,
+* production-like diagnostic or operator workflows.
+
+Avoid comprehensive scenario matrices at system scope when detail can be tested
+more cheaply and clearly at unit, component, integration, contract, or
+property-based scope.
+
+### 4.2 Black-box assertions
+
+Assert externally visible behavior, including:
+
+* exit status, HTTP status, or public result,
+* stable output fields and error categories,
+* files, records, events, or reports produced,
+* externally visible state transitions,
+* user-visible rejection and recovery behavior,
+* startup readiness and shutdown completion,
+* correlation identifiers or operational signals when observability is a
+  declared purpose.
 
 Avoid:
 
-* internal call graphs
-* incidental logs unless logs are declared part of the contract (that’s observability testing)
+* private state and internal call graphs,
+* incidental logs unless operationally contractual,
+* exact volatile UI or serialization details without need,
+* broad snapshots used in place of semantic assertions.
 
-### 3.3 Determinism and isolation
+### 4.3 Installed-artifact fidelity
 
-* Use controlled environments (ephemeral ports, temp dirs, isolated containers).
-* Avoid arbitrary sleeps; use readiness probes, polling with timeouts, or explicit hooks.
+When packaging is part of the claim:
 
-## 4. Writing procedure
+1. build the exact artifact intended for release,
+2. inspect required metadata and included files,
+3. install it in a clean environment outside the source checkout,
+4. clear source-tree import paths and undeclared development dependencies,
+5. invoke public interfaces as an independent consumer,
+6. retain artifact digest, runtime, platform, and dependency identity.
 
-1. **Select a critical flow** and define its pass/fail criteria.
-2. **Bring up the app** as a black box (process/container).
-3. **Drive inputs** as a user would (HTTP client, CLI invocation).
-4. **Assert outcomes** at the boundary.
-5. If the test is a **smoke test**, minimize setup and assertions to what’s necessary for a fast, reliable gate.
+Source-tree system tests cannot establish that entry points, package metadata,
+included data, dependency declarations, or isolated installation are correct.
 
-## 5. Evaluating an existing system/smoke test
+### 4.4 Determinism and isolation
 
-A good system/smoke test:
+Use:
 
-* covers a top critical path with minimal steps,
-* fails with actionable signals (clear boundary symptom + context),
-* is stable across environments (no port collisions, timing flake, hidden state).
+* ephemeral ports and directories,
+* isolated accounts, schemas, queues, or containers,
+* deterministic or explicitly versioned data,
+* readiness probes rather than startup sleeps,
+* bounded polling, subprocess timeouts, and explicit stop conditions,
+* cleanup that runs after failure,
+* captured logs, traces, screenshots, or artifacts needed for diagnosis.
+
+Distinguish product failure from dependency, environment, configuration, and
+harness failure.
+
+### 4.5 Environment and compatibility
+
+Record the platform, runtime, artifact, configuration, data, service versions,
+and important external conditions. Exercise representative support cells
+selected from actual commitments and risk; do not imply compatibility beyond
+the observed combinations.
+
+## 5. Smoke selection
+
+A smoke selection is a small, fast, highly reliable subset of critical
+capabilities used to decide whether a build, deployment, or environment is
+suitable for further testing or use.
+
+A smoke test should:
+
+* use system scope only when it actually exercises the assembled system,
+* cover the minimum critical capability needed by the gate,
+* have short bounded setup and execution,
+* fail with actionable boundary context,
+* not be treated as complete acceptance or regression evidence.
+
+Smoke may also describe a small selection at another structural scope. The
+purpose does not determine the boundary.
+
+## 6. Writing procedure
+
+1. State the system claim, failure mode, and decision.
+2. Identify the exact assembled artifact and environment.
+3. Select a critical workflow and define observable pass/fail criteria.
+4. Provision dependencies and data with controlled isolation.
+5. Bring up the product through its supported startup or installation path.
+6. Drive inputs through the user or operator entrypoint.
+7. Assert outcomes at the public boundary.
+8. Capture diagnostics and artifacts needed to reproduce failure.
+9. Shut down and clean up with bounded waits.
+10. If the test belongs to a smoke selection, minimize it to the critical signal
+    without implying broader coverage.
+11. Record excluded support cells, real dependencies, and residual uncertainty.
+
+## 7. Evaluating an existing system test
+
+A good system test:
+
+* exercises the assembled product through a supported public boundary,
+* identifies the artifact and environment,
+* covers a material workflow or assembled failure mode,
+* uses stable semantic assertions,
+* is isolated and bounded,
+* fails with actionable user- or operator-visible context,
+* does not duplicate lower-scope detail without adding assembled semantics,
+* states whether it is smoke, acceptance, regression, contract, compatibility,
+  or another purpose.
 
 Red flags:
 
-* broad end-to-end suites duplicating lower-level checks (slow and brittle)
-* heavy reliance on sleeps or fixed timing
-* assertions on volatile UI/serialized details without need (consider targeted assertions or selective snapshots)
+* broad suites duplicating lower-level scenario matrices,
+* source-tree execution presented as proof that the built artifact works,
+* arbitrary sleeps, port collisions, hidden state, or unbounded processes,
+* repeated retries that hide nondeterminism,
+* volatile snapshots or exact prose assertions without a contract,
+* system scope treated as automatic acceptance evidence,
+* a smoke check used to claim complete release confidence,
+* environment and dependency identity omitted,
+* a black-box test that reaches into private internals for its oracle.
 
-## 6. Evaluating the system/smoke suite
+## 8. Evaluating the system suite
 
 Check:
 
-* **Smoke set size**: small enough to run frequently.
-* **Flow selection**: aligned to business-critical journeys.
-* **Runtime and flake rate**: if flaky/slow, reduce scope, improve harnessing, or push to nightly.
-* **Redundancy**: ensure system tests are not doing the job of unit/component.
+* **Flow selection** — alignment with critical user and operator journeys.
+* **Assembled semantics** — evidence that cannot be obtained more credibly at a
+  lower scope.
+* **Smoke set** — small enough for its intended cadence and clearly distinguished
+  from the broader suite.
+* **Artifact fidelity** — exact installed, packaged, or deployed artifact where
+  relevant.
+* **Environment and support coverage** — representative configurations and
+  declared compatibility cells.
+* **Runtime and flake rate** — diagnose harness and environment causes rather
+  than merely moving tests later.
+* **Isolation and cleanup** — ports, processes, accounts, data, services, and
+  temporary resources.
+* **Diagnostics** — retained boundary symptoms, logs, traces, screenshots, and
+  reproduction context.
+* **Redundancy** — logic and boundary cases remain at the clearest credible
+  scope.
 
-Outputs:
+## 9. Scope adjustment guidance
 
-* curated smoke list
-* list of system tests to split (move logic checks down a level)
-* harness improvements (readiness, isolation, deterministic data)
+* Downscope local logic checks to **unit (L3-T1)** or **component (L3-T2)**.
+* Downscope a single real dependency's semantics to **integration (L3-T3)**.
+* Retain system scope when assembled wiring, packaging, deployment, or a complete
+  public workflow is essential to the claim.
+* Add **acceptance (L3-T12)** when stakeholder conditions determine completion.
+* Add **contract (L3-T7)** for published interface obligations.
+* Add **operational evidence (L3-T15)** for deployment, readiness, monitoring,
+  degradation, rollback, or recovery claims.
 
-### 7. Scope adjustment guidance (downscope / upscope)
+## 10. Outputs
 
-* If system tests are duplicating logic checks, push those checks down to **unit/component/integration**.
-* If system tests are flaky due to environment complexity, reduce scope to a smaller smoke set and move heavier scenarios to scheduled runs with a stronger harness.
-
+* assembled-artifact and system-boundary definition,
+* critical user/operator workflow inventory,
+* curated smoke selection,
+* artifact, environment, configuration, data, and dependency identity,
+* system tests to split, downscope, remove, or strengthen,
+* harness improvements for readiness, isolation, cleanup, and diagnostics,
+* support and compatibility gaps,
+* required acceptance, contract, non-functional, usability, accessibility, or
+  operational follow-up.
