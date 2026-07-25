@@ -1,162 +1,100 @@
-# TESTING-GUIDANCE-REVIEW: document-level annotation
+# Illustrative Python testing configuration.
 #
-# Problems identified:
-# - This configuration is useful but may be read as the repository's universal pytest, coverage, warning, and marker policy.
-# - Tool versions, warning filters, coverage collection, and marker declarations must match the adopting project's package and evidence commands.
-#
-# Proposed fixes:
-# - Label the file as an illustrative project configuration.
-# - Require adopters to replace package names, validate filters, separate partial from complete coverage runs, and define any numeric gate through an explicit metric specification.
-#
-# Review rule: preserve the original configuration. Apply any proposed fix only after explicit review.
-# testing-relevant parts of my typical pyproject.toml
-
-# testing-relevant parts of my typical pyproject.toml
+# Replace package names, tool versions, warning filters, paths, and marker
+# declarations. Keep partial and complete evidence commands separate. Define
+# numeric gates through L3-T11 rather than copying thresholds blindly.
 
 [dependency-groups]
-  dev = [
-    "coverage>=7.14.1",
-    "diff-cover>=10.3.0",
-    "freezegun>=1.5.5",
-    "hypothesis>=6.155.3",
-    "import-linter>=2.11",
-    "mutmut>=3.6.0",
-    "pip-audit>=2.10.1",
-    "pytest>=9.1.0",
-    "pytest-xdist>=3.8.0",
-    "pytest-testmon>=2.2.0",
-    "pytest-json-report>=1.5.0",
-    "pytest-asyncio>=1.4.0",
-    "pytest-cov>=7.1.0",
-    "pytest-randomly>=4.1.0",
-    "pytest-socket>=0.8.0",
-    "radon>=5.1.0",
-    "ruff>=0.15.17",
-    "rust-just>=1.52.0",
-    "ty>=0.0.49",
-    "vulture>=2.16",
-    "wily>=1.25.0",
-    "msgpack>=1.2.1",
-  ]
+dev = [
+  "hypothesis>=6",
+  "pip-audit>=2",
+  "pytest>=9",
+  "pytest-asyncio>=1",
+  "pytest-cov>=7",
+  "pytest-randomly>=4",
+  "pytest-socket>=0.8",
+  "pytest-xdist>=3",
+  "ruff>=0.15",
+]
 
-[tool.ruff]
-  extend         = "./ruff.default.toml"
-  target-version = "py313"
-
-  [tool.ruff.lint]
-    ignore = [
-      "PLC1901", # `x == ""` can be simplified to `not x` as an empty string is falsey
-      "DOC201",  # `return` is not documented in docstring
-      "DOC402",  # `yield` is not documented in docstring
-      "DOC501",  # Raised exception missing from docstring
-      "RUF001",  # String contains ambiguous {symbol}. Did you mean {standard symbol}?
-      "RUF002",  # Docstring contains ambiguous {symbol}. Did you mean {standard symbol}?
-      "RUF003",  # Comment contains ambiguous {symbol}. Did you mean {standard symbol}?
-      "N802",    # invalid-function-name: Function name should be lowercase
-
-    ]
-    [tool.ruff.lint.extend-per-file-ignores]
-      "tests/**/*.py" = [
-        "ANN001", # Missing type annotation for function argument
-        "E402",   # Module level import not at top of file
-      ]
-      "tests/fixtures/wheel_target/**/*.py" = [
-        "INP001", # This directory is an independent package fixture with its own source root.
-      ]
-
-# ==================================== typecheck ====================================
-[tool.ty.src]
-  include = ["scripts", "src", "tests"]
-
-# =================================== test ===================================
 [tool.pytest.ini_options]
-  minversion = "9.0"
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "-ra",
+  "--disable-socket",
+]
+xfail_strict = true
 
-  testpaths = [
-    "tests",
-  ]
+filterwarnings = [
+  "error::DeprecationWarning:package_name\\.",
+]
 
-  addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "-ra",
-    "--cov-branch",
-    "--cov=package_name",
-    "--cov-report=",
-    "--cov-context=test",
-    "--disable-socket",
-  ]
+markers = [
+  # Primary structural scope
+  "unit: Small local boundary with highly localizing failures.",
+  "component: Coherent subsystem through a supported interface.",
+  "integration: Evidence depends on real semantics across a boundary.",
+  "system: Assembled product through a user- or operator-visible boundary.",
 
-  xfail_strict = true
+  # Purpose
+  "acceptance: Stakeholder-visible acceptance condition.",
+  "regression: Protects established behavior or a learned failure mode.",
+  "sanity: Narrow plausibility check before broader evaluation.",
+  "contract: Producer-consumer or compatibility obligation.",
+  "smoke: Small critical-capability selection.",
+  "compatibility: Supported version, platform, artifact, or consumer behavior.",
+  "security: Threat-relevant behavior or control.",
+  "privacy: Privacy obligation.",
+  "performance: Performance or capacity claim.",
+  "data_quality: Data integrity, freshness, or distribution claim.",
+  "observability: Operator signal or diagnostic claim.",
+  "accessibility: Accessibility obligation.",
+  "usability: User task or comprehension claim.",
+  "resilience: Degraded-operation claim.",
+  "recovery: Rollback, restart, restoration, or failover claim.",
 
-  log_cli = false
-  log_cli_level = "INFO"
-  log_cli_format = "%%(asctime)s [%%(levelname)s] %%(name)s - %%(message)s"
-  log_cli_date_format = "%%Y-%%m-%%d %%H:%%M:%%S"
-  filterwarnings = [
-    "error::DeprecationWarning:package_name\\.",
-    "ignore::DeprecationWarning:pkg_resources",
-    "ignore::DeprecationWarning:distutils",
-    "ignore::UserWarning:hypothesis",
-    "ignore:A test tried to use socket.socket\\.:UserWarning:pytest_socket",
-  ]
+  # Technique
+  "property_based: Generated invariant testing.",
+  "stateful: Generated state-machine testing.",
+  "model_based: Testing against an explicit model.",
+  "differential: Comparison between implementations or versions.",
+  "metamorphic: Relation across transformed inputs or outputs.",
+  "fuzz: Malformed, adversarial, random, or coverage-guided inputs.",
+  "snapshot: Canonical stored-artifact comparison.",
+  "fault_injection: Controlled failure introduction.",
+  "chaos: Hypothesis-driven fault experiment.",
 
-  markers = [
-    # Structural levels
-    "unit: Fast, isolated tests of individual functions/classes. No real I/O.",
-    "component: Tests of a subsystem via public APIs; may use local fakes or lightweight real deps.",
-    "integration: Tests involving real external dependencies (DB, HTTP APIs, queues).",
-    "system: End-to-end tests treating the app as a black box.",
-    "contract: Tests of API or schema contracts.",
+  # Resource and execution
+  "filesystem: Uses real filesystem semantics.",
+  "process: Crosses a process boundary.",
+  "db: Uses a database engine.",
+  "network: Uses a network boundary.",
+  "clock: Depends on clock semantics.",
+  "configuration: Exercises configuration-dependent behavior.",
+  "environment: Depends on a declared environment.",
+  "hardware: Depends on specific hardware.",
+  "slow: Excluded from the fastest workflow.",
+  "destructive: Mutates an isolated resource.",
+  "quarantined: Not trusted as gating evidence.",
+]
 
-    # Purpose markers
-    "acceptance: Requirement-driven system tests tied to user stories or acceptance criteria.",
-    "regression: Guards against previously reported bugs.",
-    "sanity: Narrow checks verifying specific bugfixes or features.",
-    "smoke: Fast, critical-path tests for quick feedback.",
-    "performance: Performance or performance-regression tests.",
-    "performance_regression: Tests comparing runtime metrics to stored baselines.",
-    "security: Security-focused tests.",
-    "fuzz: Fuzzing-style tests feeding malformed/randomized inputs.",
-    "chaos: Chaos/resilience tests injecting faults or disruptions.",
-    "privacy: Privacy-impact tests ensuring correct PII/data handling.",
-    "data_quality: Tests of data integrity or freshness.",
-    "drift: Model/data drift detection tests (PSI, KS, etc.).",
-    "usability: Automated usability tests (accessibility, i18n).",
-    "synthetic_monitoring: Synthetic production probes.",
-
-    # Technique / infra markers
-    "snapshot: Snapshot-based tests.",
-    "property_based: Property-based tests (e.g. Hypothesis).",
-    "mutation: Mutation-testing related.",
-    "observability: Tests asserting on logs, metrics, or traces.",
-    "requirement(id): Links a test to a critical responsibility in testing-requirements.json.",
-
-    # Operational/meta
-    "slow: Known slow tests.",
-    "flaky: Known flaky tests under triage.",
-    "experimental: Experimental tests or tooling not yet mandatory.",
-
-    # Domain-specific
-    "db: Tests that exercise database behaviour or schema.",
-    "api: API-centric tests (HTTP/RPC).",
-    "ml: ML-related tests.",
-    "ui: UI-layer tests (web, CLI).",
-  ]
-
-  asyncio_mode = "auto"
-
-# =================================== test:coverage ===================================
 [tool.coverage.run]
-  source   = ["package_name"]
-  branch   = true
-  parallel = true
+source = ["package_name"]
+branch = true
+parallel = true
 
-# =================================== test:mutation ===================================
-[tool.mutmut]
-  source_paths = [
-  ]
-  pytest_add_cli_args = ["-o", "addopts="]
-  pytest_add_cli_args_test_selection = [
-  ]
-  also_copy = ["src", "scripts", "schemas", "uv.lock"]
+[tool.coverage.report]
+show_missing = false
+skip_covered = true
+
+# Collect canonical coverage only in a named complete-evidence command, for
+# example:
+#
+#   pytest -m "not quarantined" \
+#     --cov=package_name --cov-branch \
+#     --cov-report=term-missing --cov-report=xml
+#
+# Partial developer runs should use --no-cov or separate output paths.
