@@ -1,115 +1,191 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+# L2-P2 — Feature Development Testing Phase
 
-Problems identified:
-- The development profile prescribes a test inventory more directly than it connects evidence to changed responsibilities and failure modes.
-- Workflow conventions such as TDD risk being interpreted as quality requirements rather than selectable development methods.
+## Procedure L2-P2: Feature Development / Alpha Testing Phase
 
-Proposed fixes:
-- Describe default confidence goals for changed behavior, interfaces, and known acceptance conditions.
-- Select scopes and techniques from risk and architecture; keep TDD and test-after workflows as justified team conventions.
+## 1. Profile role
 
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
+This is a lifecycle confidence profile. It describes default expectations for
+rapid development while interfaces and implementation are still changing. It
+does not make a fixed inventory of test types universally mandatory.
 
-### Procedure L2-P2: Feature Development Testing Phase
+Apply `L1.md` first. Select scopes, purposes, techniques, and environments from
+the changed claims, failure modes, architecture, and decision. An already
+material integration, security, privacy, accessibility, performance, data, or
+operational risk is not deferred because the project is in development.
 
-#### 1. Phase intent
+## 2. Phase intent
 
 **Goal:**
-Establish correctness of newly introduced or modified behavior while enabling rapid iteration.
+Establish correctness of newly introduced or modified behavior while enabling
+rapid iteration.
 
 **Primary risks addressed:**
-Incorrect core logic, poor isolation, tests that impede refactoring.
+Incorrect core logic, misunderstood acceptance conditions, incomplete behavior,
+poorly controlled effects, fragile interfaces, and tests that impede useful
+refactoring.
 
-**Deferred risks:**
-Full integration coverage, system-level behavior, non-functional properties unless risk dictates otherwise.
+**Risks commonly deferred only when not yet material:**
+Broad compatibility matrices, complete production-operational evidence,
+production-scale load, and exhaustive system scenarios.
 
-(See *automated_testing.md* for definitions of test levels and purposes.)
+Terminology is defined by `glossary.md`; conceptual workflows such as TDD and
+test-after development are selectable conventions described in
+`automated_testing.md`.
 
 ---
 
-#### 2. Applicability
+## 3. Applicability
 
-This phase applies when:
+This profile applies when:
 
 * implementing new features or workflows,
 * modifying core business logic,
-* performing significant refactors prior to stabilization.
+* performing significant refactors before stabilization,
+* evolving interfaces that are not yet broadly committed,
+* converting prototype findings into durable behavior.
 
-This phase assumes interfaces are still evolving; contract tests written here may be provisional.
+Interfaces may still be provisional. Contract evidence written here should
+state whether it represents an experimental agreement or a supported
+commitment.
 
 ---
 
-#### 3. Required test classes
+## 4. Assessment inputs
 
-##### Mandatory
+Record:
 
-* **Unit tests** for all core logic and invariants.
-* **Component tests** for non-trivial subsystems.
+* changed responsibilities and invariants,
+* known acceptance conditions,
+* affected public or internal interfaces,
+* collaborators and external-effect boundaries,
+* configuration and environment variants,
+* failure modes likely to be introduced by the change,
+* which evidence must remain fast enough for the editing and merge loops.
 
-##### Conditional
+## 5. Default evidence expectations
 
-* **Regression tests** for non-trivial bug fixes.
+These are profile defaults to evaluate, not categories to create without a real
+claim or boundary.
 
-##### Advisory
+### Strong defaults
 
-* Contract, integration, observability, or snapshot tests where interfaces stabilize early or risk is elevated.
+* **Local behavioral evidence** for all materially changed core logic and
+  invariants, commonly at unit scope.
+* **Component evidence** for non-trivial subsystem collaboration through a
+  supported interface.
+* **Acceptance evidence** for known product or stakeholder conditions.
+* **Regression evidence** for non-trivial bug fixes or learned failure modes.
+* **Strict static and test configuration** where silent misconfiguration could
+  invalidate development feedback.
 
-(Definitions and boundaries per *automated_testing.md*.)
+### Conditional evidence
 
-#### 4. Explicit non-requirements
+Use when the change or architecture makes the corresponding failure mode
+material:
 
-Not required by default in this phase:
+* contract evidence for evolving or independently consumed interfaces,
+* integration evidence for real SQL, protocol, framework, process, service, or
+  platform semantics,
+* system evidence for installed artifacts or assembled behavior,
+* property-based, stateful, differential, or metamorphic evidence for broad or
+  sequential domains,
+* observability evidence for diagnostics relied upon during development or
+  operation,
+* snapshots for large stable reviewable outputs,
+* security, privacy, data-quality, accessibility, usability, performance,
+  resilience, or recovery evidence.
 
-* System / end-to-end tests
-* Performance, security, chaos testing
+### Workflow conventions
 
-#### 5. Compliance criteria
+A team may use TDD, acceptance-test-driven development, test-after development,
+or exploratory prototyping. The chosen workflow should improve learning and
+feedback; it is not itself evidence that the result is correct.
 
-The phase is compliant if:
+### Conditional decision rule
 
-1. All new or changed responsibilities have executable tests.
-2. Tests assert observable behavior and localize failures.
-3. Code structure supports isolation and dependency injection.
-4. No unacknowledged high-risk gaps remain.
+When expected evidence is omitted, record:
 
-#### 5.1 Conditional decision rule (risk acceptance)
-
-When a conditional or advisory test class is omitted, the omission must be explicitly recorded with:
-
-* the risk and failure mode being accepted,
-* rationale for omission (cost, phase appropriateness, mitigations),
+* the claim and failure mode affected,
+* why omission is acceptable for the current decision,
+* available mitigation or substitute evidence,
 * owner,
-* revisit trigger (typically L2-P3 or before release).
+* revisit trigger, often interface stabilization, external use, L2-P3, or
+  release.
 
-#### 6. Assessment
+---
 
-1. Identify changed responsibilities.
-2. Verify required test classes exist.
-3. For each **mandatory** test class, apply the corresponding **L3 procedure** in full and record deviations.
-4. For conditional/advisory test classes selected, apply the corresponding **L3 procedure** in full and record deviations.
-4. Record outcome: pass / conditional pass / fail.
+## 6. Explicit default non-requirements
 
-#### 7. Forward rules
+This profile does not by itself require:
 
-* Tests written here persist as regression assets.
-* Documented gaps must be revisited in later phases.
-* Short-term testing shortcuts must be explicit.
+* a broad end-to-end suite,
+* production-scale performance testing,
+* chaos or disaster-recovery exercises,
+* complete compatibility matrices,
+* a universal coverage or mutation target,
+* TDD or any particular mocking style.
 
-#### 8. Delegation
+Each may nevertheless be required by L1 when it addresses a material risk.
 
-Invoke as needed:
+---
 
-* **L3-T1:** Unit Test (Pure Logic)
-* **L3-T2:** Component Test
-* **L3-T5:** Regression / Sanity
-* **L3-T6:** Property-Based Testing
+## 7. Procedure
 
-Also consider (risk-driven):
+1. Identify changed responsibilities, claims, and acceptance conditions.
+2. Identify affected boundaries, configurations, users, data, and operational
+   behavior.
+3. Choose the least costly scopes that preserve the relevant semantics.
+4. Add nominal, boundary, invalid, and critical failure cases.
+5. Add generated or model-based evidence where selected examples undersample
+   the domain.
+6. Exercise real boundaries when substitutes cannot establish the claim.
+7. Keep rapid-feedback evidence deterministic and diagnostically useful.
+8. Verify that tests fail when the intended behavior is removed or plausibly
+   broken.
+9. Record excluded semantics and the higher-scope or later-cadence evidence that
+   covers them.
+10. Reassess after material refactoring or interface change.
 
-* **L3-T7:** Contract Test
-* **L3-T9:** Snapshot Test
-* **L3-T10:** Health and Metrics (suite-level)
+## 8. Compliance criteria
 
+The profile is satisfied when:
 
+1. All materially changed responsibilities have credible evidence.
+2. Known acceptance conditions are executable or otherwise demonstrable.
+3. Tests assert observable behavior and localize failures at a useful level.
+4. External effects and variability are controlled without removing relevant
+   semantics.
+5. Interface commitments and provisional assumptions are distinguishable.
+6. No unacknowledged high-risk gap remains.
+7. Complete and partial evidence cannot be confused.
+
+## 9. Assessment
+
+1. Review the L1 claim and failure-mode map.
+2. Map each changed responsibility to evidence.
+3. Apply every relevant L3 procedure and record deviations.
+4. Review rapid-loop runtime, determinism, and diagnostics.
+5. Identify evidence that must be added or strengthened before stabilization.
+6. Record outcome: pass, conditional pass, fail, exploratory finding, or risk
+   acceptance.
+
+## 10. Forward rules
+
+* Durable tests written here persist as regression assets only while their
+  obligation remains relevant.
+* Provisional contracts must be confirmed, revised, or retired as interfaces
+  stabilize.
+* Documented gaps must be revisited when their trigger occurs.
+* Short-term testing shortcuts must be explicit and time-bounded.
+* Production-derived defects or user findings should update both the evidence
+  portfolio and the risk model.
+
+## 11. Outputs
+
+* changed-responsibility and invariant map,
+* acceptance-condition map,
+* evidence by scope, purpose, and technique,
+* provisional and supported interface commitments,
+* rapid-feedback and merge-gate commands,
+* known gaps, owners, and revisit triggers,
+* profile outcome and rationale.
