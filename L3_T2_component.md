@@ -1,136 +1,81 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- The component definition depends heavily on examples of lightweight infrastructure rather than a precise supported subsystem boundary.
-- The distinction between a sociable unit, component, and integration test can be ambiguous.
-
-Proposed fixes:
-- Define the component by a coherent supported interface and state which dependencies remain inside or outside the boundary.
-- Classify tests by the semantics actually executed, not solely by process count or the use of SQLite, temporary files, or fakes.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-
-# L3-T2 — Component Test: Design, Writing, Evaluation
+# L3-T2 — Component Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Validate a **coherent subsystem** (module/package/component) through its **public API**, exercising real collaboration among units while controlling dependencies outside the component boundary.
+Provide evidence about a coherent subsystem through a supported interface while preserving the collaboration that gives the component its behavior.
 
 ## 2. Applicability
 
-Use when:
+Use component scope when:
 
-* multiple units must work together to deliver a behavior
-* correctness depends on interactions (e.g., orchestration, internal adapters)
-* you want confidence beyond unit tests without full integration/system cost
+* several units collaborate to deliver a supported behavior,
+* the subsystem boundary is meaningful to callers,
+* outside dependencies can be controlled without removing the semantics at risk,
+* unit tests alone do not establish orchestration or subsystem behavior.
 
-Do not use component tests as a substitute for:
+Use integration scope when evidential value depends on real external semantics. Use system scope when the claim concerns the assembled product through a user or operator boundary.
 
-* contract tests at external boundaries
-* integration tests with real external systems when boundary behavior is the risk
+## 3. Define the boundary
 
-### 2.1 When not to use this test type
+Record:
 
-Avoid component tests when the risk is primarily:
+* supported entrypoints,
+* responsibilities and invariants inside the component,
+* dependencies and resources inside the boundary,
+* dependencies outside the boundary,
+* external semantics deliberately excluded.
 
-* contract drift for published interfaces (prefer **L3-T7**),
-* real infra semantics (prefer **L3-T3**),
-* full user journey correctness (prefer **L3-T4**).
+Classify by semantics actually executed, not merely by process count or use of SQLite, temporary files, or fakes.
 
-## 3. Design rules
+## 4. Collaborator strategy
 
-### 3.1 Define the component boundary
+Code inside the component should normally collaborate through its real implementation.
 
-* Identify the “inside”: modules/classes you are validating together.
-* Identify the “outside”: DB, HTTP services, filesystem, clock, message bus, env/config.
+Replace an internal collaborator only when control, determinism, or fault injection is necessary and the replacement does not remove the semantics the component evidence is intended to establish.
 
-Code inside the component boundary should normally collaborate through its real
-implementation. Replace an internal collaborator only when control or fault
-injection is necessary and the replacement does not remove the semantics the
-component test is intended to exercise.
+Dependencies outside the component may be replaced, simulated, recorded, or provided through lightweight real implementations.
 
-Dependencies outside the component boundary may be replaced, simulated, or
-provided through lightweight real implementations.
+Temporary files and local databases are appropriate when they belong to the declared boundary and cleanup is deterministic. When production SQL dialect, isolation, extensions, or migration behavior matters, add integration evidence using the actual engine.
 
-### 3.2 Prefer in-process fakes
+## 5. Assertions
 
 Prefer:
 
-* in-memory repositories, fake clients, stub servers in-process
-* lightweight real deps only when they are stable and low-friction (e.g., SQLite for a persistence adapter)
+* supported API outputs,
+* boundary-visible state changes,
+* emitted domain events,
+* caller-visible errors,
+* stable subsystem invariants.
 
-Temporary resources such as temporary directories or SQLite databases in
-temporary files are appropriate when they remain inside the declared component
-boundary and preserve deterministic cleanup.
+Avoid internal call graphs, private state, and exact logs unless interaction or observability is itself contractual.
 
-Avoid:
+## 6. Writing procedure
 
-* extensive mocking frameworks that reproduce the component’s internal structure
+1. State the claim and failure mode.
+2. Define inside and outside boundaries.
+3. Select real or controlled collaborators.
+4. Exercise representative nominal, boundary, and failure workflows.
+5. Assert boundary-visible outcomes.
+6. Deliberately break a relevant behavior to validate the oracle.
+7. Record excluded semantics needing contract, integration, or system evidence.
 
-### 3.3 Assertions
+## 7. Evaluation
 
-Assert:
+Good component evidence:
 
-* public API outputs and side effects observable at the boundary (returned objects, persisted records in a fake store, emitted events captured in-memory)
-* error handling behaviors that the caller can observe
+* uses supported interfaces,
+* preserves meaningful internal collaboration,
+* justifies any internal replacement,
+* is deterministic and diagnosable,
+* adds confidence beyond unit tests,
+* remains sensitive to the intended failure mode.
 
-Avoid:
+Red flags include god fixtures, internal mock graphs, unrealistic fakes treated as integration proof, and component suites that duplicate every unit case or drift into an unharnessed system suite.
 
-* verifying internal method call graphs
-* asserting implementation-specific logging unless logs are declared part of the contract (that’s observability testing)
+## 8. Outputs
 
-## 4. Writing procedure
-
-1. **Pick a public API entrypoint** for the component.
-2. **Set up external dependencies** as fakes/in-memory implementations.
-3. **Execute a representative workflow**:
-
-   * happy path
-   * key edge path(s)
-   * critical error path(s)
-4. **Assert externally visible outcomes**:
-
-   * returned values
-   * state changes in fakes
-   * events collected in-memory
-5. **Only after the interface stabilizes**, consider snapshot tests for large serialized outputs (optional; keep targeted assertions preferred).
-
-## 5. Evaluating an existing component test
-
-A component test is **good** if:
-
-* It uses only public APIs of the component.
-* It mocks/fakes only *outside* dependencies.
-* It is stable and deterministic.
-* It provides confidence that unit tests alone cannot.
-
-Red flags:
-
-* component tests that look like unit tests (too narrow) or system tests (too broad)
-* fragile fixtures (“god fixtures”)
-* tests that pass while allowing incorrect behavior because fakes are unrealistic (fix fake fidelity or add integration/contract coverage)
-
-## 6. Evaluating the component test suite
-
-Check:
-
-* **Boundary coverage**: key component entrypoints and workflows are covered.
-* **Duplication**: not re-testing every unit path (leave that to unit tests).
-* **Execution time**: should remain comfortable in PR pipelines (avoid “mini system suite” drift).
-* **Confidence gaps**: where real boundary semantics matter, queue those for integration/contract tests.
-
-Outputs:
-
-* map of component workflows → existing tests
-* list of missing workflows / boundary behaviors
-* list of tests to downgrade to unit or upgrade to integration/system
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a component test is narrow and tests a single pure function, downscope to **unit (L3-T1)**.
-* If correctness depends on real DB/HTTP/broker semantics, upscope to **integration (L3-T3)**.
-* If the failure only manifests end-to-end in realistic wiring, upscope to **system/smoke (L3-T4)**.
-
+* component boundary and responsibility map,
+* workflow and failure-mode coverage,
+* collaborator-fidelity limitations,
+* missing contract, integration, or system evidence,
+* candidates for scope adjustment.
