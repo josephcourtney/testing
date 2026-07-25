@@ -1,117 +1,226 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- Regression is at risk of being treated as a separate structural level rather than the reason a test exists.
-- The procedure should distinguish incident-derived regressions, characterization tests, and broad regression suites.
-
-Proposed fixes:
-- Define regression as a purpose composable with any appropriate scope and technique.
-- Require the protected behavior or failure mode to be recorded and remove obsolete regressions when the obligation no longer exists.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# L3-T5 — Regression / Sanity Test: Design, Writing, Evaluation
+# L3-T5 — Regression Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Prevent recurrence of a **previously observed defect** (regression), or confirm a **specific fix/feature** works as intended (sanity). These tests exist to “lock in” a learned failure mode.
+Protect previously established behavior and prevent reintroduction of a learned
+failure mode.
 
-## 2. Applicability
+Regression is a **purpose**, not a structural scope. A regression test may be
+unit-, component-, integration-, or system-scoped and may use example-based,
+property-based, contract, snapshot, differential, or other techniques.
 
-Use when:
+A regression obligation may arise from:
 
-* a bug is fixed (especially one that escaped to later phases or production),
-* a failure mode is subtle or likely to recur,
-* a change has high blast radius and warrants a targeted guardrail.
+* a reported or escaped defect,
+* an incident or near miss,
+* a compatibility break,
+* a previously ambiguous behavior that has now been specified,
+* characterization of legacy behavior that must remain stable,
+* a performance, data, accessibility, usability, security, or operational
+  degradation that must not recur.
 
-A regression test can be unit/component/integration/system in scope; the key attribute is **purpose**.
+## 2. Regression, characterization, and sanity
 
-### 2.1 When not to use this test type
+These related purposes should remain distinct:
 
-Avoid adding regression tests that:
+* **Regression testing** protects established desirable behavior or a learned
+  failure mode over time.
+* **Characterization testing** records current behavior before change; it does
+  not automatically endorse that behavior.
+* **Sanity testing** is a narrow plausibility check that a specific change, fix,
+  or capability behaves as expected before broader evaluation proceeds.
 
-* merely duplicate existing coverage without encoding a distinct prior failure mode,
-* require broad end-to-end harness when the defect can be localized to a lower scope,
-* are so brittle/noisy that they will be ignored in practice (fix harness or choose a different scope).
+A sanity check may later become a durable regression test when the protected
+obligation and failure mechanism are made explicit.
 
-## 3. Design rules
+## 3. Applicability
 
-### 3.1 Reproduce the bug minimally
+Use regression evidence when:
 
-* Construct the smallest input/state that triggers the prior failure.
-* Prefer the **lowest scope** that can reproduce it:
+* a non-trivial bug is fixed,
+* a failure mode is subtle, high-impact, or likely to recur,
+* an incident revealed a missing obligation or weak oracle,
+* a public behavior, contract, data property, or workflow must remain stable,
+* a refactor or replacement must preserve established semantics,
+* a high-blast-radius change warrants a focused guardrail,
+* a historical defect class should remain visible in the suite.
 
-  * unit if the bug is pure logic,
-  * component if orchestration is required,
-  * integration if real boundary semantics caused it,
-  * system only if it genuinely manifests only end-to-end.
+Do not add regression tests that:
 
-### 3.2 Assert the previous wrong outcome cannot occur
+* merely duplicate existing evidence without a distinct protected obligation,
+* reproduce only implementation details of the fix,
+* require a broad harness when a smaller scope preserves the failure mechanism,
+* are so noisy, flaky, or opaque that future failures will be ignored,
+* freeze behavior that is obsolete, accidental, or no longer supported.
+
+## 4. Define the protected obligation
+
+Record:
+
+* what behavior must remain true,
+* the trigger or conditions under which it matters,
+* the previous wrong outcome or failure mode,
+* affected users, consumers, operators, data, or systems,
+* root cause as currently understood,
+* the scope and semantics required to reproduce it,
+* issue, incident, support case, or compatibility context where useful,
+* conditions under which the regression test may be revised or removed.
+
+A short test name, docstring, issue reference, or nearby comment may carry this
+context. Avoid comments that merely narrate implementation mechanics.
+
+## 5. Design rules
+
+### 5.1 Preserve the failure mechanism
+
+Prefer the least costly scope that still reproduces the material mechanism:
+
+* **unit** when the defect is local logic or an invariant,
+* **component** when subsystem collaboration is required,
+* **integration** when real boundary semantics caused the failure,
+* **system** when only assembled wiring, packaging, deployment, or a public
+  workflow can reproduce it.
+
+Do not downscope so aggressively that the test reproduces only the symptom while
+omitting the boundary or environment that made the defect possible.
+
+### 5.2 Minimize the reproduction
+
+Reduce inputs, state, timing, action sequence, configuration, and environment to
+the smallest case that preserves the failure. For generated or stateful
+failures, retain the minimized counterexample or action trace.
+
+A minimal reproduction should remain understandable without erasing the real
+semantics behind the defect.
+
+### 5.3 Choose a durable oracle
 
 Assert:
 
-* correct output/state, or
-* absence of the failure (exception, corrupt record, incorrect response), or
-* a specific invariant now holds.
+* the correct output or state,
+* absence of the prior corrupt, unsafe, or invalid outcome,
+* a specified exception or rejection,
+* a contract or compatibility obligation,
+* an invariant that the prior defect violated,
+* user-visible or operator-visible recovery,
+* a practically meaningful non-functional property when that was the failure.
 
 Avoid:
 
-* asserting incidental internals “because that’s where it broke”
-* overly broad end-to-end tests if the issue can be localized
+* incidental internal call sequences,
+* private state selected only because it changed during the fix,
+* exact unstable output that is not part of the obligation,
+* assertions that pass while the original failure can recur in another form.
 
-### 3.3 Tie test to incident context
+### 5.4 Validate the regression
 
-Regression tests should encode:
+Where practical, verify that the test:
 
-* what broke,
-* the minimal reproduction,
-* the expected behavior now.
+* fails on the pre-fix implementation or an equivalent deliberate fault,
+* passes after the fix,
+* continues to pass through behavior-preserving refactors,
+* distinguishes the intended defect from unrelated harness failure.
 
-This can be done via test names, docstrings, or a short comment referencing an issue/incident ID.
+### 5.5 Add complementary evidence when needed
 
-## 4. Writing procedure
+A focused regression does not replace broader evidence for the underlying class
+of risk. Consider:
 
-1. Identify: **trigger**, **symptom**, **root cause** (as known).
-2. Choose the **lowest feasible scope** that reproduces the symptom.
-3. Add test that:
+* property or model tests for a broad input or state space,
+* contract tests for producer-consumer drift,
+* integration tests for real dependency behavior,
+* system tests for assembled workflows,
+* monitoring or operational checks for conditions best observed after
+  deployment,
+* usability, accessibility, security, performance, or data-quality evidence when
+  the defect arose in those areas.
 
-   * fails on the pre-fix code,
-   * passes on the fix,
-   * remains stable under refactors that preserve behavior.
-4. If the bug involved boundary semantics, consider also adding/strengthening a contract or integration test.
+## 6. Writing procedure
 
-## 5. Evaluating an existing regression/sanity test
+1. Identify the trigger, symptom, impact, and root cause as known.
+2. State the durable behavior or failure mode being protected.
+3. Reproduce the defect on the pre-fix code or with a deliberate equivalent
+   fault when practical.
+4. Minimize the input, state, sequence, and environment without removing the
+   failure mechanism.
+5. Select the structural scope and technique independently.
+6. Assert a stable externally meaningful obligation.
+7. Add issue or incident context where it improves future interpretation.
+8. Pair the focused test with contract, integration, generative, system,
+   non-functional, or operational evidence when the broader risk warrants it.
+9. Record removal or review conditions when the obligation is temporary.
+10. Verify evidence freshness and artifact/environment identity when the
+    regression depends on a particular platform, dependency, or deployment.
+
+## 7. Evaluating an existing regression test
 
 A good regression test:
 
-* would fail if the bug reappears in any plausible form,
-* is minimal and stable,
-* localizes failure quickly.
+* would fail if the learned failure mode plausibly returned,
+* states or reveals the protected obligation,
+* preserves the relevant failure mechanism,
+* is minimal enough to diagnose,
+* is stable under behavior-preserving refactoring,
+* uses an appropriate structural scope,
+* is deterministic or makes unavoidable uncertainty explicit,
+* remains relevant to a supported behavior, contract, or risk.
 
 Red flags:
 
-* reproductions that require large fixtures or long sequences when a smaller trigger exists
-* tests that overfit to the fix’s implementation details
-* tests that are flaky (often indicates timing/concurrency issues that need a better harness)
+* large fixtures or action sequences when a smaller reproduction exists,
+* tests overfit to implementation details of one fix,
+* a unit test used for a defect caused by real integration semantics,
+* a system test used for local logic that could be localized,
+* no record of what behavior is being protected,
+* duplicate regressions for the same failure mode without additional sensitivity,
+* permanent retention of obsolete characterization behavior,
+* flaky timing or concurrency reproductions without a controlled harness,
+* a test that passes even when the original defect is deliberately restored.
 
-## 6. Evaluating the regression suite
+## 8. Evaluating the regression portfolio
 
 Check:
 
-* coverage of high-severity incidents and historically frequent defect classes
-* redundancy (multiple tests for the same failure mode without added value)
-* whether regressions are placed at the right scope (too many at system level is a common smell)
+* **Incident coverage** — high-severity incidents, escaped defects, and repeated
+  defect classes.
+* **Failure-class coverage** — focused examples supplemented by broader
+  properties or contracts where useful.
+* **Scope fit** — defects live at the scope that preserves their mechanism and
+  localizes failure.
+* **Redundancy** — overlapping tests add distinct sensitivity or are merged.
+* **Obsolescence** — unsupported behavior, retired compatibility obligations, and
+  superseded implementation details are removed or revised.
+* **Diagnostics** — failures identify the protected obligation and relevant
+  context.
+* **Cost and cadence** — important regressions run early enough to affect the
+  corresponding decision.
+* **Operational feedback** — incidents, support reports, monitoring, and user
+  findings feed the portfolio.
 
-Outputs:
+## 9. Scope adjustment and maintenance
 
-* list of missing regressions for notable incidents
-* candidates to downscope (system→integration→component→unit)
-* candidates to remove/merge
+* Downscope when a smaller boundary preserves the original failure mechanism and
+  improves diagnostics.
+* Upscope when real dependency, artifact, platform, or assembled behavior was
+  essential to the failure.
+* Add **contract (L3-T7)** and **integration (L3-T3)** evidence for boundary or
+  compatibility defects.
+* Add **system (L3-T4)** evidence for packaging, deployment, wiring, and complete
+  workflow defects.
+* Add **generative evidence (L3-T6)** when the incident is one member of a broad
+  input or sequence class.
+* Add **operational evidence (L3-T15)** when recurrence must also be detected or
+  mitigated in a deployed environment.
+* Remove or revise a regression when its obligation is intentionally retired,
+  but retain the decision context where historical understanding matters.
 
-### 7. Scope adjustment guidance (downscope / upscope)
+## 10. Outputs
 
-* Prefer the lowest scope that can reproduce the prior symptom.
-* If root cause was a contract drift or boundary mismatch, add or strengthen **contract (L3-T7)** and/or **integration (L3-T3)** alongside the regression.
-
+* protected behavior and failure-mode inventory,
+* issue, incident, or compatibility links,
+* minimized reproductions and generated counterexamples,
+* regressions missing for important learned failures,
+* tests to downscope, upscope, merge, rewrite, or remove,
+* broader contract, generative, integration, system, non-functional, or
+  operational follow-up,
+* review and retirement conditions for temporary obligations.
