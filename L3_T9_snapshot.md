@@ -18,7 +18,10 @@ Review rule: preserve the original document text. Apply any proposed fix only af
 
 Capture and compare a **serialized representation** of an output (e.g., JSON, HTML, rendered text, structured objects) to detect unintended changes when outputs are **large but structurally stable**. Snapshotting is a convenience technique, not a primary correctness strategy.
 
-Snapshot tests should be the last resort when clearer semantic assertions are impractical.
+Use snapshot testing when a canonical diff is a more comprehensible and
+economical oracle than an extensive set of individual assertions. Snapshot
+evidence must remain reviewable and must not obscure critical semantic
+obligations.
 
 ## 2. Applicability
 

@@ -47,10 +47,13 @@ Avoid component tests when the risk is primarily:
 * Identify the “inside”: modules/classes you are validating together.
 * Identify the “outside”: DB, HTTP services, filesystem, clock, message bus, env/config.
 
-Component tests:
+Code inside the component boundary should normally collaborate through its real
+implementation. Replace an internal collaborator only when control or fault
+injection is necessary and the replacement does not remove the semantics the
+component test is intended to exercise.
 
-* must not mock *inside* the boundary
-* may fake/mock *outside* dependencies only
+Dependencies outside the component boundary may be replaced, simulated, or
+provided through lightweight real implementations.
 
 ### 3.2 Prefer in-process fakes
 
