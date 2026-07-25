@@ -1,119 +1,76 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
-
-Problems identified:
-- Snapshot tests can approve large accidental changes and may obscure the actual behavioral oracle.
-- The procedure needs stronger canonicalization, semantic review, ownership, and update rules.
-
-Proposed fixes:
-- Require stable canonical representations and precise assertions for critical semantics alongside snapshots.
-- Treat snapshot updates as behavior changes requiring review rather than routine regeneration.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# L3-T9 — Snapshot Test: Design, Writing, Evaluation
+# L3-T9 — Snapshot and Golden Testing: Design, Writing, Evaluation
 
 ## 1. Purpose
 
-Capture and compare a **serialized representation** of an output (e.g., JSON, HTML, rendered text, structured objects) to detect unintended changes when outputs are **large but structurally stable**. Snapshotting is a convenience technique, not a primary correctness strategy.
+Compare a canonicalized output or artifact with a reviewed stored baseline when a semantic diff is a more comprehensible and economical oracle than extensive individual assertions.
 
-Use snapshot testing when a canonical diff is a more comprehensible and
-economical oracle than an extensive set of individual assertions. Snapshot
-evidence must remain reviewable and must not obscure critical semantic
-obligations.
+Snapshotting is a convenience technique, not a structural scope or a substitute for understanding expected behavior.
 
 ## 2. Applicability
 
 Use when:
 
-* the output is too large/verbose for hand-written assertions,
-* the output shape is stable and reviewable,
-* diffs are meaningful and actionable (not noisy).
+* output is large but structurally stable,
+* a reviewer can realistically interpret the diff,
+* stored representation is part of the useful oracle,
+* targeted assertions alone would be less clear or maintainable.
 
-Avoid when:
+Avoid when output is highly volatile, reviewers cannot validate changes, or a small set of direct assertions expresses the contract more clearly.
 
-* targeted behavioral assertions are feasible and clearer,
-* output contains high-churn or environment-dependent data (timestamps, UUIDs, ordering),
-* snapshots would mask what behavior is actually intended.
+## 3. Canonical representation
 
-### 2.1 When not to use this test type
+Snapshot the minimal meaningful view:
 
-Avoid snapshot tests when:
+* normalize irrelevant ordering,
+* redact or replace nondeterministic identifiers, timestamps, and paths,
+* normalize formatting and platform variation,
+* prefer explicit presentation or interchange models over private structures,
+* keep artifacts readable and diff-friendly.
 
-* reviewers cannot realistically validate diffs (snapshots too large or too frequent),
-* snapshots include unstable fields (timestamps/UUIDs/order) without canonicalization,
-* snapshots are being used instead of a small set of semantic assertions.
+## 4. Semantic obligations
 
-## 3. Design rules
+Add targeted assertions for critical semantics that could be obscured by a large diff, such as schema version, required fields, safety properties, or compatibility obligations.
 
-### 3.1 Snapshot only stable, meaningful views
+A broad snapshot must not replace practical direct assertions.
 
-* Snapshot **the minimal stable view** of the output:
+## 5. Update policy
 
-  * normalized ordering
-  * redacted nondeterministic fields
-  * canonical formatting
-* Prefer snapshotting an **explicit “presentation model”** rather than raw internal structures.
+Updating a snapshot means accepting a behavior change.
 
-### 3.2 Treat snapshots as reviewed artifacts
+Snapshot changes must:
 
-* Snapshots should be readable and diff-friendly.
-* Changes to snapshots should be reviewed like code changes (because they redefine expected behavior).
+* be intentional,
+* be reviewed like code,
+* explain relevant semantic changes,
+* avoid unconditional bulk regeneration,
+* preserve ownership and provenance where consequential.
 
-### 3.3 Do not substitute for intent
+## 6. Writing procedure
 
-* When the behavior can be expressed via a small number of assertions, do that instead.
-* If you keep snapshots, add at least a few **targeted assertions** for the most critical semantic properties.
+1. State the claim and why a snapshot is the appropriate oracle.
+2. Define canonicalization.
+3. Produce the minimal stable artifact.
+4. Add critical semantic assertions.
+5. Verify that a relevant change produces an interpretable failure.
+6. Define review and update workflow.
+7. Record platform or environment limitations.
 
-## 4. Writing procedure
+## 7. Evaluation
 
-1. Identify output(s) that are large but stable (responses, generated files, render trees).
-2. Define a **canonicalization step**:
+Good snapshot evidence:
 
-   * stable sorting
-   * redaction of volatile fields
-   * normalization of whitespace/formatting
-3. Produce the snapshot from the canonical form.
-4. Add targeted assertions for key semantics (e.g., required fields exist, critical values match).
-5. Establish a workflow for updating snapshots:
+* produces small, interpretable diffs,
+* compares canonical public or supported representations,
+* complements semantic assertions,
+* changes only for meaningful behavior,
+* remains reviewable at its actual update frequency.
 
-   * update only when behavior change is intended,
-   * review diffs for unintended broadenings/narrowings.
+Red flags include snapshot churn, unreadable artifacts, hidden volatile fields, private implementation dumps, and approvals performed without semantic review.
 
-## 5. Evaluating an existing snapshot test
+## 8. Outputs
 
-A snapshot test is good if:
-
-* diffs are small, interpretable, and tied to intended changes,
-* it snapshots a canonical representation (not raw, noisy output),
-* it complements (does not replace) semantic assertions,
-* it fails only on meaningful behavioral/interface changes.
-
-Red flags:
-
-* frequent churn with no semantic relevance (ordering/timestamps/unrelated fields)
-* snapshots used as a “one-test-to-cover-everything” escape hatch
-* very large snapshots that reviewers cannot realistically validate
-* snapshots coupled to internal implementation details rather than public interface
-
-## 6. Evaluating the snapshot suite
-
-Check:
-
-* **Necessity**: are snapshots used only where they materially reduce test friction?
-* **Noise**: are snapshot diffs actionable or routinely ignored?
-* **Coverage balance**: are critical behaviors still covered by non-snapshot assertions?
-* **Maintenance**: snapshot updates are infrequent and intentional (not routine busywork).
-
-Outputs:
-
-* list of snapshots to replace with targeted assertions
-* canonicalization improvements (redactions, ordering, formatting)
-* pruning plan for snapshots that add more churn than confidence
-
-### 7. Scope adjustment guidance (downscope / upscope)
-
-* If a snapshot is stable but semantically unclear, replace with targeted assertions (often **unit/component** scope).
-* If snapshot instability is due to boundary drift, consider adding **contract (L3-T7)** coverage and reducing snapshot breadth.
-
+* snapshot inventory and ownership,
+* canonicalization rules,
+* semantic assertions paired with each artifact,
+* snapshots to narrow, replace, or remove,
+* update and review policy.
