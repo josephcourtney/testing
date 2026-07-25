@@ -1,126 +1,50 @@
----
-aliases:
-  - L2-P1
-linter-yaml-title-alias: L2-P1
-tags:
-title: L2-P1
----
+# L2-P1 — Prototype Confidence Profile
 
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+## 1. Intent
 
-Problems identified:
-- The prototype profile can be read as permitting weak evidence solely because the project is early-stage.
-- The result vocabulary and escalation conditions are less consistent than in later lifecycle procedures.
+Reduce important uncertainty with minimal ceremony while preserving controls required by already-material risk.
 
-Proposed fixes:
-- State that prototype work should minimize ceremony while still addressing any already-material security, data, safety, or external-impact risk.
-- Use the same pass, conditional pass, fail, and exploratory-finding vocabulary as the other profiles.
+Prototype status does not defer security, privacy, safety, data, accessibility, external-impact, or irreversible-operation risks that already matter.
 
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
+## 2. Default confidence posture
 
+Prefer fast learning and explicit uncertainty over broad durable automation.
 
-# L2-P1 — Exploratory / Prototype Testing Phase
-## Procedure L2-P1: Exploratory / Prototype Testing Phase
+Typical evidence includes:
 
+* exploratory charters and experiments,
+* example or property checks for critical assumptions,
+* simulations and measurements,
+* stakeholder demonstrations,
+* usability or accessibility evaluation when interaction is central,
+* security or data controls when sensitive assets are involved.
 
-## 1. Phase intent
+No particular structural scope is mandatory by phase alone.
 
-**Goal:**
-Reduce uncertainty and validate feasibility with minimal friction.
+## 3. Governance defaults
 
-**Primary risks addressed:**
-Building the wrong thing; misunderstanding domain constraints.
+A prototype may use lightweight records, advisory checks, and short-lived artifacts. It must still record:
 
-**Deferred risks:**
-Long-term correctness, regression protection, non-functional properties.
+* the decision and critical assumptions,
+* material failure modes and consequences,
+* evidence collected,
+* important untested conditions,
+* owner and revisit trigger for deferred validation.
 
-(Definitions and test taxonomy per *automated_testing.md*.)
+Disposable code and evidence must be identified as such.
 
----
+## 4. Escalation
 
-## 2. Applicability
+Increase fidelity, enforcement, or breadth immediately when:
 
-Applies when:
+* external users or sensitive data are involved,
+* a prototype can affect production or irreversible resources,
+* a result will support a consequential decision,
+* a dependency or platform assumption is uncertain,
+* the cost of a false conclusion is material.
 
-* exploring new ideas or architectures,
-* validating assumptions,
-* building throwaway or experimental code.
+## 5. Outcome
 
----
+Use pass, conditional pass, fail, exploratory finding, or risk acceptance as defined by `Overview.md` and `glossary.md`.
 
-## 3. Required test classes
-
-### Mandatory
-
-* None.
-
-### Advisory
-
-* **Unit tests** for critical logic or surprising behavior.
-* **Property-based tests** for core invariants or transformations.
-* **Spike or exploratory tests** used as executable experiments.
-
-### Conditional decision rule (risk acceptance)
-
-If advisory tests are omitted for a critical assumption, the omission must be recorded as a risk with:
-
-* description of the assumption,
-* intended validation method (test, measurement, manual check),
-* owner,
-* revisit trigger (typically promotion to L2-P2).
-
----
-
-## 4. Explicit non-requirements
-
-Not required:
-
-* Coverage targets
-* Component, integration, or system tests
-* Regression guarantees
-* CI enforcement
-
----
-
-## 5. Compliance criteria
-
-This phase is compliant if:
-
-1. Key assumptions are explicitly tested or otherwise validated.
-2. Tests (if written) are clearly marked as experimental.
-3. No prototype artifacts are misrepresented as production-ready.
-
----
-
-## 6. Assessment
-
-1. Identify assumptions and unknowns.
-2. Verify that major risks have been explored.
-3. Record outcomes and learning.
-
----
-
-## 7. Forward rules
-
-* Tests may be discarded or promoted in later phases.
-* Any prototype code promoted forward must be re-evaluated under L2-P2.
-
----
-
-## 8. Delegation
-
-Optional:
-
-* **L3-T1:** Unit Test (Pure Logic)
-* **L3-T6:** Property-Based Testing
-
-If either of the above is chosen, apply the corresponding L3 procedure in full and record deviations.
-
----
-
-## 9. Exit
-
-Return findings (not pass/fail) to L1.
-
+Prototype status alone is never sufficient rationale for accepting a material unsupported claim.
