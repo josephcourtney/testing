@@ -14,11 +14,11 @@ A project must connect:
 
 No test type, metric, lifecycle stage, portfolio shape, or tool is a substitute for this connection.
 
-This document defines project-wide policy for selecting, designing, executing, interpreting, and recording testing evidence. Detailed procedures for individual test scopes, purposes, and techniques belong in the corresponding L1, L2, and L3 documents.
+This document defines project-wide policy for selecting, designing, executing, interpreting, and recording testing evidence. Detailed procedures belong in the corresponding L1, L2, and L3 documents.
 
 ### 1.1 Terminology and implementation guidance
 
-`glossary.md` is the canonical terminology reference for this policy and the L1, L2, and L3 procedures. If a glossary definition conflicts with a normative requirement, this policy or the applicable procedure controls.
+`glossary.md` is the canonical terminology reference. If a glossary definition conflicts with a normative requirement, this policy or the applicable L1, L2, or L3 procedure controls.
 
 `automated_testing.md` is non-normative conceptual reference material.
 
@@ -34,7 +34,7 @@ A testing strategy must:
 
 * identify material product, technical, operational, security, privacy, data, accessibility, and usability risks,
 * identify critical responsibilities, invariants, boundaries, contracts, and user journeys,
-* select evidence that is sensitive to the relevant failure modes,
+* select evidence sensitive to the relevant failure modes,
 * keep feedback timely enough that the evidence is actually used,
 * make failures reproducible and diagnosable,
 * distinguish measured facts from assumptions, inference, and risk acceptance,
@@ -66,66 +66,23 @@ Examples include:
 
 How could the claim be false?
 
-Consider:
-
-* incorrect logic,
-* omitted cases,
-* invalid state transitions,
-* boundary mismatches,
-* configuration drift,
-* dependency behavior,
-* concurrency and race conditions,
-* resource exhaustion,
-* hostile or malformed input,
-* human misunderstanding,
-* inaccessible interaction,
-* packaging or deployment failure,
-* rollback or recovery failure.
+Consider incorrect logic, omitted cases, invalid state transitions, boundary mismatches, configuration drift, dependency behavior, concurrency, resource exhaustion, hostile input, human misunderstanding, inaccessible interaction, packaging failure, and incomplete recovery.
 
 ### 3.3 Evidence
 
 What observation would detect the failure with useful sensitivity?
 
-Evidence may include:
-
-* automated tests,
-* static analysis,
-* formal methods,
-* code or design review,
-* exploratory sessions,
-* usability or accessibility studies,
-* simulations,
-* audits,
-* measurements,
-* production observations,
-* incident and defect history.
+Evidence may include automated tests, static analysis, formal methods, review, exploratory sessions, usability or accessibility studies, simulations, audits, measurements, production observations, and incident history.
 
 ### 3.4 Confidence and decision
 
-State the decision the evidence supports, such as:
-
-* exploration,
-* merge,
-* beta use,
-* production release,
-* deployment,
-* continued operation,
-* risk acceptance.
+State the decision the evidence supports, such as exploration, merge, beta use, production release, deployment, continued operation, or risk acceptance.
 
 Evidence sufficient for one decision may be insufficient for another.
 
 ### 3.5 Residual uncertainty
 
-Record important limitations, including:
-
-* untested conditions,
-* unrealistic or unverified doubles,
-* missing environments,
-* insufficient sample sizes,
-* non-comparable measurements,
-* assumptions about users, data, hardware, or dependencies,
-* risks accepted rather than eliminated.
-
+Record important limitations, including untested conditions, unrealistic doubles, missing environments, insufficient samples, non-comparable measurements, unsupported users, and risks accepted rather than eliminated.
 
 ## 4. Classification model
 
@@ -135,92 +92,34 @@ Test labels describe independent dimensions. Projects must not force structural 
 
 When scope markers are used, an automated functional test should identify one primary structural scope:
 
-* **unit** â€” a small chosen boundary with highly localizing failures,
-* **component** â€” a coherent subsystem exercised through a supported interface,
-* **integration** â€” behavior that depends on real semantics across a system or infrastructure boundary,
-* **system** â€” the assembled product exercised through a user- or operator-visible boundary.
+* **unit** — a small chosen boundary with highly localizing failures,
+* **component** — a coherent subsystem exercised through a supported interface,
+* **integration** — behavior whose evidential value depends on real semantics across a boundary,
+* **system** — the assembled product exercised through a user- or operator-visible boundary.
 
-The primary scope is the boundary whose semantics determine how the evidence should be interpreted. Additional scope or boundary labels may be recorded when a test intentionally spans multiple boundaries.
+The primary scope is the boundary whose semantics determine how the evidence should be interpreted. Additional resource and boundary labels may be recorded.
 
-Scope describes the executed boundary, not the test's purpose. The size of a unit is a project convention; it need not be a single function or class.
+Scope describes the executed boundary, not the test's purpose. A unit need not be a single function or class.
 
 ### 4.2 Resource and boundary use
 
-Declare material resources or boundaries when they affect isolation, cost, fidelity, or interpretation:
-
-* filesystem,
-* process,
-* database,
-* network,
-* broker,
-* clock or scheduler,
-* random source,
-* external service,
-* hardware,
-* operating system or platform,
-* configuration or environment,
-* production-derived data,
-* production environment.
+Declare material resources or boundaries when they affect isolation, cost, fidelity, or interpretation, including filesystems, processes, databases, networks, brokers, clocks, random sources, external services, hardware, platforms, configuration, production-derived data, and production environments.
 
 ### 4.3 Purpose
 
-Purposes may be combined with any suitable structural scope:
-
-* acceptance,
-* regression,
-* contract,
-* smoke,
-* compatibility,
-* security,
-* privacy,
-* performance,
-* data quality,
-* observability,
-* accessibility,
-* usability,
-* resilience,
-* recovery.
+Purposes may be combined with any suitable structural scope, including acceptance, regression, characterization, sanity, contract, smoke, compatibility, migration, rollback, security, privacy, performance, data quality, observability, accessibility, usability, resilience, recovery, and operational readiness.
 
 For example, a contract test may be component-, integration-, or system-scoped. Regression describes why a test exists, not how much of the system it executes.
 
 ### 4.4 Technique
 
-Techniques include:
+Techniques include example-based, property-based, state-machine, model-based, differential, metamorphic, fuzz, mutation, snapshot, fault-injection, chaos, simulation, formal-verification, static-analysis, and exploratory techniques.
 
-* example-based testing,
-* property-based and generative testing,
-* state-machine or model-based testing,
-* differential testing,
-* metamorphic testing,
-* fuzzing,
-* mutation testing,
-* snapshot or golden testing,
-* fault injection,
-* chaos testing,
-* simulation,
-* formal verification,
-* exploratory testing.
-
-Techniques must be selected according to the failure modes they can reveal.
+Select techniques according to the failure modes they can reveal.
 
 ### 4.5 Execution and cadence
 
-Projects may classify evidence by cost, environment, or scheduling, such as:
-
-* per-edit,
-* local development,
-* pre-commit,
-* pre-merge,
-* scheduled,
-* release,
-* pre-deployment,
-* post-deployment,
-* continuous production,
-* fast,
-* slow,
-* destructive,
-* isolated,
-* quarantined.
+Projects may classify evidence by execution properties or scheduling, such as per-edit, pre-commit, pre-merge, scheduled, release, post-deployment, continuous, fast, slow, destructive, hermetic, isolated, or quarantined.
 
 Cadence must be selected according to evidence value, cost, and required feedback latency. No test type or check is universally required at every cadence.
 
@@ -230,16 +129,16 @@ Evidence must be selected from risk and architecture rather than from a universa
 
 Examples:
 
-* Pure transformation risk often favors example and property tests at unit or component scope.
+* Pure transformation risk often favors example and property evidence at unit or component scope.
 * SQL, transaction, serialization, authentication, retry, and protocol risks require evidence against real semantics.
 * Published interfaces require explicit compatibility obligations and provider or consumer verification where applicable.
-* Packaging and deployment claims require exercising the built artifact outside the source checkout.
+* Packaging claims require exercising the built artifact outside the source checkout.
 * User-journey claims require acceptance or system evidence.
-* Ambiguous requirements require exploratory or collaborative evaluation, not only automated checks.
+* Ambiguous requirements require exploratory or collaborative evaluation.
 * Performance, security, privacy, accessibility, usability, data quality, and operability require dedicated evidence whenever failure would be material.
 * Recovery claims require evidence for restart, rollback, failover, restoration, degraded operation, and observability where applicable.
 
-A lifecycle profile may increase required confidence, enforcement, environmental fidelity, or breadth. It must not defer an already-material risk merely because a named phase has not been reached.
+A lifecycle profile may increase required confidence, enforcement, environmental fidelity, breadth, or recordkeeping. It must not defer an already-material risk merely because a named phase has not been reached.
 
 A project must not rely on one scope, technique, metric, or portfolio shape as a substitute for risk-appropriate evidence.
 
@@ -249,69 +148,51 @@ Tests should:
 
 * assert observable behavior, invariants, state transitions, or explicit contracts,
 * fail for a reason connected to the risk they address,
-* use the smallest scope that preserves the relevant semantics,
-* provide enough diagnostic context to distinguish product failure from harness failure,
+* use the least costly scope that preserves the relevant semantics,
+* provide enough context to distinguish product, dependency, environment, and harness failure,
 * identify relevant input, environment, resource, and boundary conditions,
 * avoid incidental assertions that do not increase failure sensitivity.
 
-Tests must not be optimized solely for low scope. Moving a test downward is beneficial only if it preserves sensitivity to the targeted failure mode.
+Tests must not be optimized solely for low scope. Moving a test downward is beneficial only when it preserves sensitivity to the targeted failure mode.
 
 ### 6.1 Isolation and realism
 
-Isolation and realism must be balanced according to the claim and risk being tested.
+Isolation and realism must be balanced according to the claim and risk.
 
-Tests should:
-
-* retain real collaborators when they are cheap, deterministic, and part of the chosen boundary,
-* replace collaborators when control, speed, determinism, or fault injection is the purpose,
-* use controlled substitutes when they improve evidence without removing the semantics under examination,
-* pair consequential doubles with contract, integration, or compatibility evidence,
-* use real dependencies or representative environments when substitutes cannot provide valid evidence.
+Tests should retain real collaborators when they are cheap, deterministic, and part of the chosen boundary; replace collaborators when control or fault injection is needed; pair consequential doubles with contract, integration, or compatibility evidence; and use representative real environments when substitutes cannot provide valid evidence.
 
 A fake, mock, simulator, emulator, stub, or recorded response must not be treated as proof of behavior that depends on the real system it replaces.
 
 ### 6.2 Assertions and diagnostics
 
-Assertions should target stable, externally meaningful behavior.
+Assertions should target stable, externally meaningful behavior. Avoid private state, incidental call sequences, unstable formatting, non-contractual log text, and implementation-specific ordering unless those details are the explicit subject of the test.
 
-Avoid assertions on:
-
-* private state,
-* incidental call sequences,
-* unstable formatting,
-* non-contractual log text,
-* implementation-specific ordering,
-
-unless those details are the explicit subject of the test.
-
-Failures must provide enough context to identify the violated claim, relevant inputs, environment, and exercised boundary.
+Failures must identify the violated claim, relevant inputs, environment, and exercised boundary.
 
 ### 6.3 Configuration and environment
 
 Behavior that varies across supported configuration, environment, platform, feature flags, deployment modes, hardware, or compatibility versions must have representative evidence.
 
-The selected combinations should be justified by support commitments, usage, architecture, and risk. Exhaustive matrices are not required unless the combinations are themselves contractual.
+Selected combinations should be justified by support commitments, usage, architecture, and risk. Exhaustive matrices are required only when the combinations are themselves contractual.
 
 ## 7. Development and organization conventions
 
 The following are selectable conventions, not universal requirements:
 
-* test-driven development,
-* test-after development,
-* acceptance-test-driven development,
+* test-driven, test-after, acceptance-test-driven, or exploratory development,
 * solitary or sociable unit testing,
-* Arrangeâ€“Actâ€“Assert or another readable structure,
-* source-mirroring or behavior-oriented test directories,
-* mocks, fakes, simulators, containers, or shared test environments,
+* Arrange–Act–Assert, Given–When–Then, or another readable structure,
+* source-mirroring, scope-oriented, feature-oriented, or colocated directories,
+* mocks, fakes, simulators, containers, or shared environments,
 * a pyramid, trophy, honeycomb, or another portfolio shape.
 
-A project may standardize any of these when doing so improves collaboration. The standard must state its purpose and must not be treated as proof of test quality.
+A project may standardize a convention when doing so improves collaboration. The standard must state its purpose and must not be treated as proof of test quality.
 
 ## 8. Tooling and execution integrity
 
-Projects should provide named commands for common workflows and should use strict configuration where silent misconfiguration would invalidate evidence.
+Projects should provide named commands for common workflows and use strict configuration where silent misconfiguration would invalidate evidence.
 
-A testing workflow must distinguish:
+A workflow must distinguish:
 
 * complete from selected runs,
 * fresh from stale evidence,
@@ -319,120 +200,81 @@ A testing workflow must distinguish:
 * comparable from non-comparable environments,
 * deterministic failures from suspected flakes,
 * measurements from release gates,
-* product failures from harness or infrastructure failures.
+* product failures from dependency, harness, or infrastructure failures.
 
 Retries must not silently convert nondeterminism into success.
 
-Quarantine must be:
+Quarantine must be explicit, owned, time-bounded, and excluded from claims it cannot support.
 
-* explicit,
-* owned,
-* time-bounded,
-* excluded from claims it cannot support.
-
-Static, security, and supply-chain checks must be selected according to language, dependencies, threat model, and support policy. Required checks may include:
-
-* formatting and linting,
-* type checking,
-* dependency and vulnerability analysis,
-* secret scanning,
-* license or policy checks,
-* configuration validation,
-* artifact integrity or provenance checks.
-
-Each required check must have:
-
-* a documented cadence,
-* a defined failure policy,
-* an owner,
-* a triage and waiver process.
+Static, security, and supply-chain checks must be selected according to language, dependencies, threat model, and support policy. Every required check must have a documented cadence, failure policy, owner, and triage and waiver process.
 
 ## 9. Measurement policy
 
 No repository-wide numeric target is universal.
 
-Coverage, mutation score, flake rate, runtime, defect escape, performance, capacity, resource use, data drift, snapshot churn, maintenance burden, and similar metrics may be used only after the project defines:
+Before a metric is used as a target or gate, define the decision, claim, population, denominator, collection method, environment, baseline or window, uncertainty, threshold rationale, response, owner, and review trigger.
 
-* the decision the metric informs,
-* the population and denominator,
-* the collection method and environment,
-* the comparison window or baseline,
-* uncertainty and known sources of bias,
-* the threshold rationale,
-* the action taken when the threshold is crossed,
-* the owner.
-
-Coverage is evidence of execution, not correctness.
-
-Mutation score is meaningful only for the declared mutant operators, exclusions, and code cohort.
-
-Flake rates require enough comparable observations to support the claimed precision.
-
-Performance gates require controlled comparisons, an explicit baseline, and a practically meaningful effect size.
+Coverage is evidence of execution, not correctness. Mutation score is meaningful only for the declared cohort, operators, exclusions, and outcome treatment. Flake observations require a defined unit and sufficient comparable history. Performance gates require controlled comparisons and practically meaningful effect sizes.
 
 Improving a metric must not be pursued through tests or assertions that add no meaningful defect-detection value.
 
-Use the applicable health-and-metrics procedure for metric design, validation, and interpretation.
+Use **L3-T10** for suite-health assessment and **L3-T11** for metric design, validation, and interpretation.
 
 ## 10. Lifecycle profiles
 
 Lifecycle profiles in `L2_*.md` establish default confidence and governance expectations:
 
-* **prototype** â€” reduce important uncertainty without unnecessary ceremony,
-* **development** â€” make changed responsibilities and known acceptance conditions executable,
-* **stabilization** â€” validate critical boundaries, compatibility, user journeys, and suite health,
-* **production** â€” require release evidence, operational readiness, and explicit residual risk,
-* **maintenance** â€” protect learned behavior, reassess changed risks, and use operational evidence.
+* **prototype (L2-P1)** — reduce important uncertainty without unnecessary ceremony,
+* **development / alpha (L2-P2)** — make changed responsibilities and known acceptance conditions executable,
+* **stabilization / beta (L2-P3)** — validate critical boundaries, compatibility, user journeys, and suite health,
+* **production (L2-P4)** — require release evidence, operational readiness, and explicit residual risk,
+* **maintenance (L2-P5)** — protect learned behavior, reassess changed risks, and use operational evidence.
 
 Risk overrides these defaults in both directions.
-
-A prototype handling sensitive data may require strong security controls. A mature local utility with no external integrations does not need fictitious integration tests.
 
 ## 11. Exceptions and waivers
 
 A policy exception or waiver must record:
 
 * the requirement being waived,
-* the reason it is not currently appropriate or feasible,
+* why it is not currently appropriate or feasible,
 * the affected claim, scope, and risk,
 * compensating evidence or controls,
 * the owner,
 * the expiry date or revisit trigger,
 * the conditions for removal.
 
-Temporary disabling of tests, static analysis, security checks, or required evidence must have a tracked follow-up and must not become an undocumented permanent state.
-
-Blocking findings must not be suppressed without documented review.
+Temporary disabling of evidence must have tracked follow-up. Blocking findings must not be suppressed without documented review.
 
 ## 12. Prohibited practices
 
 Tests and testing workflows must not:
 
-* rely on arbitrary sleeps when explicit synchronization, readiness checks, bounded polling, hooks, or events are available,
+* rely on arbitrary sleeps when explicit synchronization or bounded polling is available,
 * depend on hidden execution order or undocumented shared mutable state,
 * use unbounded waits,
-* access production data or mutate production resources unless explicitly designed, authorized, and controlled for that environment,
+* access or mutate production resources without explicit authorization and controls,
 * silently ignore failures,
-* allow retries to conceal nondeterministic behavior,
-* leave known flaky tests untriaged indefinitely,
+* allow retries to conceal nondeterminism,
+* leave known flakes untriaged indefinitely,
 * represent selected, partial, stale, or non-comparable evidence as complete,
-* chase coverage or other numeric targets with trivial assertions,
+* chase numeric targets with trivial assertions,
 * use broad snapshots as a substitute for practical semantic assertions,
-* assert unstable implementation details without a documented reason,
+* assert unstable implementation details without reason,
 * treat doubles as proof of real integration semantics,
-* casually suppress secret-scanner, vulnerability, static-analysis, or test failures,
-* disable required evidence without a documented waiver and follow-up.
+* casually suppress test, static-analysis, vulnerability, or secret-scanner failures,
+* disable required evidence without a documented waiver.
 
-Where a prohibition cannot be followed, the exception process in Section 11 applies.
+Where a prohibition cannot be followed, Section 11 applies.
 
 ## 13. Required records
 
 For material decisions, retain enough information to reconstruct:
 
 * the change, release, deployment, or operating scope,
-* relevant risks and claims,
+* relevant claims and risks,
 * selected evidence and why it is appropriate,
-* commands, configurations, versions, and environment identity,
+* commands, configurations, versions, artifacts, and environment identity,
 * results and measurement conditions,
 * unresolved gaps and residual uncertainty,
 * waivers and compensating controls,
@@ -442,17 +284,22 @@ The record may be lightweight for low-risk work and more formal for high-impact,
 
 ## 14. Detailed procedures
 
-Detailed design, writing, execution, and evaluation guidance belongs in the applicable L1, L2, and L3 procedures, including procedures for:
+The L3 procedures are:
 
-* unit testing,
-* component testing,
-* integration testing,
-* system testing,
-* regression testing,
-* property-based and generative testing,
-* contract testing,
-* non-functional and operational evidence,
-* snapshot testing,
-* suite health and metric design.
+* **L3-T1** — unit testing,
+* **L3-T2** — component testing,
+* **L3-T3** — integration testing,
+* **L3-T4** — system testing,
+* **L3-T5** — regression testing,
+* **L3-T6** — generative, property, model, and differential testing,
+* **L3-T7** — contract and compatibility testing,
+* **L3-T8** — non-functional testing,
+* **L3-T9** — snapshot and golden testing,
+* **L3-T10** — test-suite health,
+* **L3-T11** — metric design and validation,
+* **L3-T12** — acceptance testing,
+* **L3-T13** — exploratory testing,
+* **L3-T14** — usability and accessibility testing,
+* **L3-T15** — operational, resilience, and recovery testing.
 
 This policy controls when a procedure conflicts with a project convention or non-normative implementation guide.
