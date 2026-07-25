@@ -1,138 +1,80 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+# Example Local Testing Guide
 
-Problems identified:
-- This project-specific harness can be mistaken for universal policy because commands, markers, cadence, and thresholds are stated prescriptively.
-- The marker expression `unit or component or contract and not slow` is ambiguous to readers without explicit Boolean grouping.
+This file is an illustrative project-specific implementation of the general policy. Its commands, markers, directories, and gates are not repository-wide requirements.
 
-Proposed fixes:
-- Label the entire document as a local implementation of the general guidance.
-- Use one structural scope plus independently composable purpose, technique, and resource markers.
-- Add explicit parentheses to compound marker expressions and document which commands produce complete versus partial evidence.
-
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
-
-# Local Testing Guide
-
-This page describes the implemented local workflow for the broader policy in
-`notes/TESTING.md` and the procedures in `notes/testing/README.md`. `just help`
-is the authoritative command reference.
+For normative policy see `../Overview.md`; for Python guidance see `../python_testing.md`. The adopting project's command runner remains authoritative for its implemented workflow.
 
 ## Command map
 
 | Command | Purpose |
 | --- | --- |
-| `just test` | Run the unfiltered full suite with coverage and refresh canonical test artifacts. |
-| `just test --fast` | Run every test except those marked `slow`. |
-| `just test --marker "unit and not slow"` | Run a pytest marker expression without remembering raw pytest syntax. |
-| `just test --durations 25` | Run the suite and report the 25 slowest setup, call, or teardown phases. |
-| `just test --dev [selection]` | Use testmon and conditional xdist for an editing loop; coverage is disabled. |
-| `just test tests/path.py::test_name` | Run a path or node-id selection. |
-| `just test --failing` | Re-run pytest's last-failed selection. |
-| `just check` | Run the hard local regression gate. |
-| `just measure` | Refresh full-suite evidence and print detailed metrics and uncovered lines. |
-| `just summary` | Read fresh standard artifacts and report coverage, runtime, scope counts, flaky quarantines, and other tracked quality signals. |
-| `just test-wheel` | Build and inspect the distributions, then test the exact wheel outside the checkout. |
-| `just health` | Record a comparable full-suite health run in ignored local history. |
-| `just performance` | Measure the fixed local performance cases and apply the calibrated gate when available. |
-| `just compatibility` | Export evidence for the current OS and Python matrix cell. |
-| `just compatibility-check <directory>` | Validate and aggregate portable compatibility evidence. |
-| `just mutation` | Run the maintained high-risk mutation cohort and enforce the mutation quality gate. |
-| `just release-check <directory>` | Produce a complete release decision from all local and imported evidence. |
+| `just test-dev [selection]` | Fast partial editing loop without canonical coverage. |
+| `just test-fast` | Broad trusted selection excluding slow, destructive, and quarantined tests. |
+| `just test-all` | Complete trusted selection; quarantined tests are excluded. |
+| `just test-quarantined` | Diagnostic execution of quarantined tests. |
+| `just check` | Formatting, linting, type checking, security checks, and required trusted tests. |
+| `just test-wheel` | Build and test the exact wheel outside the checkout. |
+| `just health` | Record comparable full-suite health evidence. |
+| `just performance` | Collect performance evidence under a declared environment and workload. |
+| `just release-check` | Validate fresh, complete, comparable release evidence. |
 
-`--quiet`, `--logs`, and `--debug` are mutually exclusive output modes. Options
-may be combined, for example:
+Partial selections must not overwrite canonical evidence artifacts.
 
-```bash
-just test --marker "contract or system" --durations 10 --logs
+## Classification
+
+Every automated functional test has one primary structural marker:
+
+* `unit`
+* `component`
+* `integration`
+* `system`
+
+Purpose markers compose independently, including `contract`, `acceptance`, `regression`, `smoke`, `compatibility`, and `security`.
+
+Technique and resource markers also compose independently, including `property_based`, `snapshot`, `filesystem`, `process`, `db`, `network`, `slow`, and `quarantined`.
+
+Example:
+
+```python
+@pytest.mark.component
+@pytest.mark.contract
+def test_export_document_matches_supported_schema(component):
+    validate(component.export())
 ```
 
-## Scope markers
+`component` identifies scope; `contract` identifies purpose.
 
-Every collected test must have exactly one structural marker: `unit`,
-`component`, `integration`, `system`, or `contract`. Collection fails with all
-violating node IDs when a marker is missing or multiple structural markers are
-present. Cross-cutting markers such as `property_based`, `snapshot`, `smoke`,
-`regression`, and `slow` may be added independently.
+## Directory layout
 
-Test modules are organized under scope-aligned `tests/unit`, `tests/component`,
-`tests/property`, `tests/contract`, and `tests/system` directories:
+One possible layout is:
 
-| Directory | Structural marker | Current role |
-| --- | --- | --- |
-| `tests/unit` | `unit` | Pure normalization, audit policy, rendering, configuration, and model behavior. |
-| `tests/property` | `unit` plus `property_based` | Bounded generated checks for deterministic codec and normalization invariants. |
-| `tests/component` | `component` | Typer acquisition, target loading, declaration enrichment, and in-process CLI workflows. |
-| `tests/contract` | `contract` | Public Python exports and versioned snapshot/declaration document contracts. |
-| `tests/system` | `system` | Fast development-console smoke and regression workflows treating `package_name` as a black box. |
+```text
+tests/
+  unit/
+  component/
+  integration/
+  system/
+  support/
+  data/
+```
 
-Add `tests/integration` only when the product gains a genuine external
-integration boundary. Module-level markers remain the enforced source of truth
-for collected cases.
+Technique-specific tests remain under their actual structural scope. A feature-oriented layout is equally valid.
 
-## Isolation and process boundaries
+## Isolation and boundaries
 
-Network sockets are disabled by default through `pytest-socket`. A test that
-genuinely exercises a real network boundary must use an appropriate structural
-scope, opt in narrowly with `socket_enabled`, and own the isolation and cleanup
-of its external resource.
+Network access is disabled by default. Tests opt in only when real network semantics are part of the claim and the resource has bounded timeouts, isolation, and cleanup.
 
-Component CLI tests invoke the Typer application in process and assert exit
-codes plus captured stdout/stderr. Source-tree system tests invoke the current
-development console with direct argument vectors, bounded timeouts, and
-captured output. `just test-wheel` separately builds the package, installs the
-exact reported wheel and an unrelated target distribution into a temporary
-environment, changes outside the checkout, clears repository import paths, and
-exercises the installed CLI plus an independent public-API consumer. Loader
-component tests retain the product's subprocess boundary because process
-isolation is part of that component's contract.
+Use temporary paths for ephemeral filesystem evidence. Use the real production database engine when SQL dialect, transaction, migration, or extension semantics matter; otherwise a local implementation may remain within component scope.
 
-Use `tmp_path` for ephemeral configuration, generated documentation, and
-snapshot artifacts. These small real files make path resolution and artifact
-portability clearer than a mocked filesystem.
+System tests invoke the assembled or installed artifact through supported public entrypoints. Source-tree tests do not establish packaging correctness.
 
-The current product has no concurrent runtime workflow under test, so the suite
-does not carry speculative thread or async coordination fixtures. If concurrency
-is introduced, tests must assert causality with events, barriers, or queues;
-deadline every wait; propagate background exceptions; and avoid raw sleeps.
-Introduce shared helpers only with the first concrete consumer.
+## Quarantine
 
-## Test artifacts
+Quarantined tests:
 
-Only an unfiltered `just test` run refreshes `.coverage` and the canonical
-full-suite pytest outcome artifact used by quality gates. Marker expressions,
-path selections, `--fast`, `--failing`, and `--dev` are partial runs; their
-reports and coverage data are written under `.cache/quality/` so they cannot
-overwrite authoritative full-suite evidence.
+* run separately,
+* do not contribute to gates or claims,
+* have an owner and tracked remediation,
+* expire or are revisited on a defined trigger.
 
-The version-4 evidence document records the repository and environment
-fingerprint, per-test outcomes and durations, structural scopes, requirement
-IDs, artifact digests, and the final decision. Full comparable runs are copied
-to ignored `.cache/test-history/` storage; partial runs cannot contaminate that
-history. `just summary` reports requirement coverage, slow tests, trends,
-quarantines, compatibility cells, and release-evidence freshness.
-
-Compatibility reports are portable. Run `just compatibility` in each required
-environment, copy the resulting report directory to the release host, and pass
-the aggregate directory to `just compatibility-check` or `just release-check`.
-Reports with a different revision, lock hash, platform cell, invalid schema, or
-artifact digest are rejected.
-
-Performance remains measurement-first. The harness warms up twice and records
-seven samples for each fixed case. A baseline is calibrated only after ten
-comparable clean runs with coefficient of variation at most 10%. Thereafter a
-release regression requires both a median above 115% of baseline and an
-absolute increase above 100 ms. Unlike environment fingerprints are never
-combined.
-
-The maintained mutation cohort currently covers target parsing/resolution and
-Typer default/type normalization. It must retain at least an 80% score and zero
-`no_tests` mutants. Expanding the cohort is tracked separately so the gate
-describes the code it actually mutates.
-
-Routine evidence and defect records remain ignored local state. Portable
-compatibility reports are the supported evidence-transfer boundary for the
-current release workflow. Committed waivers must name their scope, owner,
-reason, mitigation, and expiry or revisit trigger; expired or unowned waivers
-fail the release decision.
+Retries may collect diagnostics but do not convert an intermittent failure into a trusted pass.
