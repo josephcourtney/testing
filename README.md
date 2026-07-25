@@ -1,24 +1,22 @@
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+# Testing Guidance
 
-Problems identified:
-- The repository does not define which documents are normative, explanatory, procedural, or project-specific.
-- The phrase 'part encyclopedia, part specification, part best practices' makes conflicts between documents difficult to resolve.
+This repository defines a risk-driven framework for selecting, producing, and evaluating software-testing evidence.
 
-Proposed fixes:
-- Add a document hierarchy and precedence rule without changing the existing documents' substantive content.
-- Label examples and local harness material as project-specific rather than universal policy.
+## Document hierarchy
 
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
+1. **`Overview.md` — normative policy.** Defines repository-wide requirements and precedence.
+2. **`glossary.md` — canonical terminology.** Defines terms used by the policy and procedures.
+3. **`L1.md` — assessment and routing procedure.** Starts from a decision, claims, failure modes, and residual uncertainty.
+4. **`L2_*.md` — lifecycle confidence profiles.** Adjust confidence, fidelity, cadence, and governance expectations without deciding which material risks apply.
+5. **`L3_*.md` — evidence procedures.** Define how to design, collect, evaluate, and record particular forms of evidence.
+6. **`automated_testing.md` — non-normative conceptual reference.**
+7. **`python_testing.md` — non-normative Python and pytest implementation guidance.**
+8. **`examples/` — project-specific or illustrative implementations and assessments.**
 
-# Testing
+When documents conflict, `Overview.md` controls, followed by the applicable L1, L2, or L3 procedure. The glossary controls terminology unless a normative document explicitly defines a narrower requirement.
 
-These files are part encyclopedia, part specification, part best practices based on my current thinking.
+## Using the repository
 
-Do not take this as gospel.
+Begin with `Overview.md`, then apply `L1.md` to the decision at hand. Use the relevant lifecycle profile and only those L3 procedures needed by the identified claims, risks, and boundaries.
 
-If you think I am wrong, feel free to tell me.
-
-
-My testing harness varies project-to-project but often the relevant portions of my configuration are similar to what is in `example_pyproject.toml`.
+Projects should copy or adapt implementation examples rather than treating commands, markers, thresholds, directory layouts, or tool choices as universal requirements.
