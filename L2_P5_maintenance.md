@@ -1,120 +1,42 @@
----
-aliases:
-  - L2-P5
-linter-yaml-title-alias: L2-P5
-tags:
-title: L2-P5
----
+# L2-P5 — Maintenance Confidence Profile
 
-<!--
-TESTING-GUIDANCE-REVIEW: document-level annotation
+## 1. Intent
 
-Problems identified:
-- The maintenance profile does not fully emphasize change-impact analysis, incident-derived tests, contract revalidation, or decay of operational evidence.
-- A fixed regression inventory may miss newly introduced risks while preserving obsolete checks.
+Safely evolve a live system using changed claims, incident history, production observations, and decaying operational evidence.
 
-Proposed fixes:
-- Start from the changed claims, affected boundaries, incidents, dependency updates, and observed production behavior.
-- Retire stale evidence and add focused regression, contract, migration, recovery, or monitoring evidence as risks evolve.
+## 2. Change-impact assessment
 
-Review rule: preserve the original document text. Apply any proposed fix only after explicit review.
--->
+For every maintenance change, identify:
 
+* changed responsibilities and user-visible behavior,
+* affected boundaries, consumers, artifacts, data, and migrations,
+* dependency, platform, configuration, or infrastructure changes,
+* related incidents, defects, support findings, and telemetry,
+* operational evidence that may have become stale,
+* obsolete tests or controls whose underlying obligation no longer exists.
 
-# L2-P5 — Maintenance and Change Testing Phase
+## 3. Default confidence posture
 
-## 1. Phase intent
+Use:
 
-**Goal:**
-Safely evolve a live system while preventing regressions.
+* focused regression evidence for learned failure modes,
+* localizing evidence for changed logic,
+* contract and compatibility revalidation when interfaces or versions change,
+* integration or system evidence when real boundaries or assembled behavior change,
+* migration, rollback, recovery, and monitoring evidence when operational state changes,
+* exploratory work for surprising or poorly understood behavior,
+* suite-health review when runtime, flake, maintenance burden, or fidelity changes.
 
-**Primary risks addressed:**
-Silent breakage, cumulative technical debt, erosion of test quality.
+Regression tests should not accumulate indefinitely without ownership or continued relevance.
 
----
+## 4. Governance defaults
 
-## 2. Applicability
+* Every change links to the claims and risks it affects.
+* Incident-derived evidence records the trigger, symptom, and protected obligation.
+* Quarantines, waivers, and temporary controls remain time-bounded.
+* Operational and compatibility evidence is repeated when its validity decays.
+* Stale, redundant, or misleading evidence is removed or revised.
 
-Applies when:
+## 5. Outcome
 
-* fixing bugs in production code,
-* making incremental improvements,
-* upgrading dependencies or infrastructure.
-
----
-
-## 3. Required test classes
-
-### Mandatory
-
-* **Regression tests** for all non-trivial bug fixes.
-* **Unit/component tests** for changed logic.
-* **Smoke tests** to ensure core functionality remains intact.
-
-### Conditional
-
-* **Integration tests** if boundaries are affected.
-* **Contract tests** if interfaces change.
-
-### Conditional decision rule (risk acceptance)
-
-If integration/contract coverage is omitted despite boundary/interface impact, record:
-
-* the impacted boundary/interface,
-* why omission is acceptable (e.g., canary rollout, feature flag, monitoring),
-* owner,
-* time-bounded remediation plan.
-
----
-
-## 4. Explicit non-requirements
-
-Not required by default:
-
-* Full re-validation of unchanged functionality.
-* Broad exploratory testing unrelated to the change.
-
----
-
-## 5. Compliance criteria
-
-The phase is compliant if:
-
-1. Each change has tests that would fail without it.
-2. Existing tests remain stable and meaningful.
-3. No new flakiness or undue slowdown is introduced.
-
----
-
-## 6. Assessment
-
-1. Identify scope and impact of change.
-2. Verify targeted regression coverage.
-3. Apply L3 procedures for each mandatory test class and record deviations.
-4. Review suite health before and after change via **L3-T10**.
-5. Record outcome.
-
----
-
-## 7. Forward rules
-
-* Regression tests accumulate as long-term assets.
-* Test debt or brittleness must be addressed incrementally.
-
----
-
-## 8. Delegation
-
-Invoke as needed:
-
-* **L3-T1:** Unit Test
-* **L3-T2:** Component Test
-* **L3-T5:** Regression / Sanity Test
-* **L3-T4:** Smoke Test
-* **L3-T10:** Health and Metrics
-
----
-
-## 9. Exit
-
-Return assessment result to L1.
+Pass requires evidence appropriate to the actual impact of the change. Conditional pass and risk acceptance require explicit unsupported claims, mitigation, owner, and revisit trigger.
