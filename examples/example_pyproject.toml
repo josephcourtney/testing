@@ -29,7 +29,7 @@ addopts = [
 xfail_strict = true
 
 filterwarnings = [
-  "error::DeprecationWarning:package_name\\.",
+  'error::DeprecationWarning:package_name\.',
 ]
 
 markers = [
