@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "required": [
+    {
+      "os": "Darwin",
+      "python": "3.11"
+    },
+    {
+      "os": "Linux",
+      "python": "3.11"
+    }
+  ]
+}

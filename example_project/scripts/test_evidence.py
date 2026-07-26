@@ -1,223 +1,209 @@
 #!/usr/bin/env python
-"""Validate, export, aggregate, and summarize local test evidence."""
+"""Validate, summarize, export, and aggregate version-5 test evidence."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import shutil
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import cast
+from typing import Any
 
-type JsonValue = None | bool | int | float | str | list[JsonValue] | dict[str, JsonValue]
-type JsonObject = dict[str, JsonValue]
+JsonObject = dict[str, Any]
 
 
 def read_object(path: Path) -> JsonObject:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError(f"{path} must contain a JSON object")
-    return cast(JsonObject, value)
+    return value
+
+
+def validate_gate_evidence(path: Path) -> JsonObject:
+    value = read_object(path)
+    if value.get("version") != 5:
+        raise ValueError(f"{path} is not version-5 evidence and cannot satisfy a gate")
+    if value.get("full_suite") is not True or value.get("decision") != "pass":
+        raise ValueError(f"{path} is not passing complete trusted evidence")
+    pytest = value.get("pytest")
+    selection = value.get("selection")
+    tests = value.get("tests")
+    requirements = value.get("requirement_coverage")
+    if not isinstance(pytest, dict) or pytest.get("exit_code") != 0:
+        raise ValueError(f"{path} does not record a successful pytest run")
+    if not isinstance(selection, dict) or selection.get("expression") != "not quarantined":
+        raise ValueError(f"{path} does not record the trusted selection")
+    if not isinstance(tests, list) or not tests:
+        raise ValueError(f"{path} has no test records")
+    for test in tests:
+        if not isinstance(test, dict) or test.get("outcome") != "passed":
+            raise ValueError(f"{path} contains a non-passing trusted test")
+        if test.get("quarantined") is True:
+            raise ValueError(f"{path} contains quarantined evidence")
+        if test.get("scope") not in {"unit", "component", "integration", "system"}:
+            raise ValueError(f"{path} contains an invalid structural scope")
+    if not isinstance(requirements, dict) or any(
+        not isinstance(item, dict) or item.get("complete") is not True
+        for item in requirements.values()
+    ):
+        raise ValueError(f"{path} has incomplete requirement coverage")
+    return value
+
+
+def environment_key(evidence: JsonObject) -> tuple[str, ...]:
+    environment = evidence.get("environment")
+    if not isinstance(environment, dict):
+        raise ValueError("evidence is missing environment identity")
+    names = (
+        "revision",
+        "worktree_sha256",
+        "python",
+        "os",
+        "architecture",
+        "lock_sha256",
+        "pyproject_sha256",
+        "requirements_sha256",
+        "quarantine_sha256",
+    )
+    return tuple(str(environment.get(name, "missing")) for name in names)
+
+
+def comparable_runs(history: Path, current: JsonObject) -> list[JsonObject]:
+    key = environment_key(current)
+    runs: list[JsonObject] = []
+    for path in sorted(
+        history.glob("*.json"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    ):
+        try:
+            candidate = read_object(path)
+            if candidate.get("version") != 5 or candidate.get("full_suite") is not True:
+                continue
+            if environment_key(candidate) == key:
+                runs.append(candidate)
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+    return runs[:20]
+
+
+def flake_observation(runs: list[JsonObject]) -> tuple[list[str], int, float]:
+    outcomes: dict[str, set[str]] = defaultdict(set)
+    for run in runs:
+        tests = run.get("tests", [])
+        if not isinstance(tests, list):
+            continue
+        for test in tests:
+            if isinstance(test, dict) and isinstance(test.get("nodeid"), str):
+                outcomes[test["nodeid"]].add(str(test.get("outcome", "unknown")))
+    flaky = sorted(
+        nodeid
+        for nodeid, values in outcomes.items()
+        if "passed" in values and any(value != "passed" for value in values)
+    )
+    population = len(outcomes)
+    rate = len(flaky) / population * 100 if population else 0.0
+    return flaky, population, rate
+
+
+def health(evidence_path: Path, history: Path) -> int:
+    current = read_object(evidence_path)
+    if current.get("version") != 5 or current.get("full_suite") is not True:
+        raise ValueError("health requires version-5 complete evidence")
+    runs = comparable_runs(history, current)
+    flaky, population, rate = flake_observation(runs)
+    print(f"Comparable complete runs: {len(runs)}/20")
+    print(f"Observed test cases: {population}")
+    print(f"Cases with passing and failing outcomes: {len(flaky)} ({rate:.2f}%)")
+    for nodeid in flaky:
+        print(f"flake: {nodeid}", file=sys.stderr)
+    return 1 if flaky else 0
 
 
 def digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def validate_evidence(path: Path, *, require_full: bool = True) -> JsonObject:
-    value = read_object(path)
-    if value.get("version") != 4:
-        raise ValueError(f"{path} is not version 4 test evidence")
-    if require_full and value.get("full_suite") is not True:
-        raise ValueError(f"{path} is partial test evidence")
-    run_id = value.get("run_id")
-    if not isinstance(run_id, str) or len(run_id) != 64:
-        raise ValueError(f"{path} has an invalid run_id")
-    environment = value.get("environment")
-    tests = value.get("tests")
-    requirements = value.get("requirement_coverage")
-    if not isinstance(environment, dict) or not isinstance(tests, list) or not isinstance(requirements, dict):
-        raise ValueError(f"{path} is missing required evidence fields")
-    if value.get("decision") != "pass":
-        raise ValueError(f"{path} does not contain passing evidence")
-    return value
-
-
-def environment_key(evidence: JsonObject) -> tuple[str, ...]:
-    environment = cast(JsonObject, evidence["environment"])
-    return tuple(
-        str(environment.get(name, "unknown"))
-        for name in ("revision", "lock_sha256", "os", "python", "architecture", "hostname")
-    )
-
-
-def comparable_runs(history: Path, current: JsonObject) -> list[JsonObject]:
-    key = environment_key(current)
-    runs: list[JsonObject] = []
-    for path in sorted(history.glob("*.json"), key=lambda item: item.stat().st_mtime, reverse=True):
-        try:
-            candidate = validate_evidence(path)
-        except (OSError, ValueError, json.JSONDecodeError):
-            continue
-        if environment_key(candidate) == key:
-            runs.append(candidate)
-    return runs[:20]
-
-
-def health(evidence_path: Path, history: Path) -> int:
-    current = validate_evidence(evidence_path)
-    runs = comparable_runs(history, current)
-    outcomes: dict[str, set[str]] = defaultdict(set)
-    durations: dict[str, list[float]] = defaultdict(list)
-    for run in runs:
-        for raw_test in cast(list[JsonValue], run["tests"]):
-            if not isinstance(raw_test, dict):
-                continue
-            nodeid = raw_test.get("nodeid")
-            outcome = raw_test.get("outcome")
-            phases = raw_test.get("durations")
-            if isinstance(nodeid, str) and isinstance(outcome, str):
-                outcomes[nodeid].add(outcome)
-            if isinstance(nodeid, str) and isinstance(phases, dict):
-                values = [value for value in phases.values() if isinstance(value, (int, float))]
-                durations[nodeid].append(float(sum(values)))
-    flaky = sorted(nodeid for nodeid, values in outcomes.items() if len(values) > 1)
-    observations = sum(len(values) for values in outcomes.values())
-    flake_rate = (len(flaky) / observations * 100) if observations else 0.0
-    slowest = sorted(
-        ((max(values), nodeid) for nodeid, values in durations.items()), reverse=True
-    )[:10]
-    print(f"Comparable full runs: {len(runs)}/20")
-    print(f"Observed flaky tests: {len(flaky)} ({flake_rate:.2f}%)")
-    print("Slowest tests:")
-    for duration, nodeid in slowest:
-        print(f"  {duration:.3f}s  {nodeid}")
-    if flaky:
-        for nodeid in flaky:
-            print(f"flake: {nodeid}", file=sys.stderr)
-    return 1 if flake_rate >= 1.0 else 0
-
-
 def compatibility(evidence_path: Path, destination: Path) -> Path:
-    evidence = validate_evidence(evidence_path)
-    environment = cast(JsonObject, evidence["environment"])
+    evidence = validate_gate_evidence(evidence_path)
+    environment = evidence["environment"]
     python_minor = ".".join(str(environment["python"]).split(".")[:2])
-    cell: JsonObject = {
+    cell = {
         "version": 1,
-        "kind": "package_name-compatibility-evidence",
+        "kind": "testing-reference-compatibility-evidence",
         "os": environment["os"],
         "python": python_minor,
         "architecture": environment["architecture"],
         "revision": environment["revision"],
+        "worktree_sha256": environment["worktree_sha256"],
         "lock_sha256": environment["lock_sha256"],
+        "pyproject_sha256": environment["pyproject_sha256"],
+        "requirements_sha256": environment["requirements_sha256"],
+        "quarantine_sha256": environment["quarantine_sha256"],
         "test_run_id": evidence["run_id"],
         "test_evidence_sha256": digest(evidence_path),
         "decision": "pass",
     }
     destination.mkdir(parents=True, exist_ok=True)
-    name = f"{cell['os']}-py{python_minor}-{cell['architecture']}.json"
-    output = destination / name
+    output = destination / f"{cell['os']}-py{python_minor}-{cell['architecture']}.json"
     output.write_text(json.dumps(cell, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(output)
     return output
 
 
-def compatibility_check(directory: Path, matrix_path: Path, evidence_path: Path) -> int:
-    current = validate_evidence(evidence_path)
-    environment = cast(JsonObject, current["environment"])
+def compatibility_check(
+    directory: Path,
+    matrix_path: Path,
+    evidence_path: Path,
+) -> int:
+    current = validate_gate_evidence(evidence_path)
+    environment = current["environment"]
     matrix = read_object(matrix_path)
     required = matrix.get("required")
     if not isinstance(required, list):
-        raise ValueError("compatibility matrix required must be an array")
-    found: dict[tuple[str, str], JsonObject] = {}
+        raise ValueError("compatibility matrix requires an array named required")
+    found: set[tuple[str, str]] = set()
     errors: list[str] = []
     for path in sorted(directory.glob("*.json")):
         cell = read_object(path)
-        if cell.get("kind") != "package_name-compatibility-evidence" or cell.get("decision") != "pass":
+        if cell.get("kind") != "testing-reference-compatibility-evidence":
             continue
-        if cell.get("revision") != environment["revision"] or cell.get("lock_sha256") != environment["lock_sha256"]:
-            errors.append(f"stale compatibility evidence: {path}")
+        if (
+            cell.get("decision") != "pass"
+            or cell.get("revision") != environment["revision"]
+            or cell.get("worktree_sha256") != environment["worktree_sha256"]
+            or cell.get("lock_sha256") != environment["lock_sha256"]
+            or cell.get("pyproject_sha256") != environment["pyproject_sha256"]
+            or cell.get("requirements_sha256") != environment["requirements_sha256"]
+            or cell.get("quarantine_sha256") != environment["quarantine_sha256"]
+        ):
+            errors.append(f"invalid or stale compatibility evidence: {path}")
             continue
-        os_name, python = cell.get("os"), cell.get("python")
-        if isinstance(os_name, str) and isinstance(python, str):
-            found[os_name, python] = cell
-    missing: list[str] = []
-    for raw in required:
-        if not isinstance(raw, dict) or not isinstance(raw.get("os"), str) or not isinstance(raw.get("python"), str):
-            raise ValueError("compatibility matrix cells require os and python strings")
-        key = cast(str, raw["os"]), cast(str, raw["python"])
-        if key not in found:
-            missing.append(f"{key[0]} Python {key[1]}")
-    for message in (*errors, *(f"missing compatibility evidence: {cell}" for cell in missing)):
-        print(message, file=sys.stderr)
-    print(f"Compatibility cells: {len(found)}/{len(required)} required")
-    return 1 if errors or missing else 0
-
-
-def export_evidence(evidence_path: Path, destination: Path) -> None:
-    evidence = validate_evidence(evidence_path)
-    destination.mkdir(parents=True, exist_ok=True)
-    output = destination / evidence_path.name
-    shutil.copyfile(evidence_path, output)
-    manifest = {
-        "version": 1,
-        "files": {output.name: digest(output)},
-        "revision": cast(JsonObject, evidence["environment"])["revision"],
-        "lock_sha256": cast(JsonObject, evidence["environment"])["lock_sha256"],
+        found.add((str(cell.get("os")), str(cell.get("python"))))
+    expected = {
+        (str(item.get("os")), str(item.get("python")))
+        for item in required
+        if isinstance(item, dict)
     }
-    (destination / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    missing = sorted(expected - found)
+    for item in missing:
+        errors.append(f"missing compatibility evidence: {item[0]} Python {item[1]}")
+    for error in errors:
+        print(error, file=sys.stderr)
+    print(f"Compatibility cells: {len(found & expected)}/{len(expected)} required")
+    return 1 if errors else 0
 
 
-def import_evidence(bundle: Path, destination: Path) -> None:
-    manifest = read_object(bundle / "manifest.json")
-    files = manifest.get("files")
-    if not isinstance(files, dict):
-        raise ValueError("evidence bundle manifest files must be an object")
-    destination.mkdir(parents=True, exist_ok=True)
-    for name, expected in files.items():
-        if not isinstance(name, str) or not isinstance(expected, str) or Path(name).name != name:
-            raise ValueError("evidence bundle contains an invalid file entry")
-        source = bundle / name
-        validate_evidence(source)
-        if digest(source) != expected:
-            raise ValueError(f"evidence digest mismatch: {name}")
-        shutil.copyfile(source, destination / name)
-
-
-def record_defect(
-    ledger: Path,
-    *,
-    defect_id: str,
-    affected_version: str,
-    context: str,
-    fix_revision: str,
-    regression_test: str,
-) -> None:
-    if any(not value.strip() for value in (defect_id, affected_version, context, fix_revision, regression_test)):
-        raise ValueError("defect fields must be nonempty")
-    data: JsonObject = {"version": 1, "defects": []}
-    if ledger.exists():
-        data = read_object(ledger)
-    defects = data.get("defects")
-    if not isinstance(defects, list):
-        raise ValueError("defect ledger defects must be an array")
-    if any(isinstance(item, dict) and item.get("id") == defect_id for item in defects):
-        raise ValueError(f"duplicate defect id: {defect_id}")
-    defects.append({
-        "id": defect_id,
-        "affected_version": affected_version,
-        "context": context,
-        "fix_revision": fix_revision,
-        "regression_test": regression_test,
-    })
-    defects.sort(key=lambda item: str(item.get("id")) if isinstance(item, dict) else "")
-    ledger.parent.mkdir(parents=True, exist_ok=True)
-    ledger.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+def describe(path: Path) -> int:
+    value = read_object(path)
+    print(f"version: {value.get('version', 'unknown')}")
+    print(f"decision: {value.get('decision', 'unknown')}")
+    print(f"full_suite: {value.get('full_suite', 'unknown')}")
+    if value.get("version") != 5:
+        print("legacy evidence is diagnostic only and cannot satisfy a gate")
+    return 0
 
 
 def parser() -> argparse.ArgumentParser:
@@ -226,26 +212,15 @@ def parser() -> argparse.ArgumentParser:
     health_parser = commands.add_parser("health")
     health_parser.add_argument("evidence", type=Path)
     health_parser.add_argument("history", type=Path)
-    compat = commands.add_parser("compatibility")
-    compat.add_argument("evidence", type=Path)
-    compat.add_argument("destination", type=Path)
+    export = commands.add_parser("compatibility")
+    export.add_argument("evidence", type=Path)
+    export.add_argument("destination", type=Path)
     check = commands.add_parser("compatibility-check")
     check.add_argument("directory", type=Path)
     check.add_argument("matrix", type=Path)
     check.add_argument("evidence", type=Path)
-    export = commands.add_parser("export")
-    export.add_argument("evidence", type=Path)
-    export.add_argument("destination", type=Path)
-    import_parser = commands.add_parser("import")
-    import_parser.add_argument("bundle", type=Path)
-    import_parser.add_argument("destination", type=Path)
-    defect = commands.add_parser("record-defect")
-    defect.add_argument("ledger", type=Path)
-    defect.add_argument("--id", required=True)
-    defect.add_argument("--affected-version", required=True)
-    defect.add_argument("--context", required=True)
-    defect.add_argument("--fix-revision", required=True)
-    defect.add_argument("--regression-test", required=True)
+    show = commands.add_parser("describe")
+    show.add_argument("evidence", type=Path)
     return root
 
 
@@ -256,25 +231,15 @@ def main(argv: list[str] | None = None) -> int:
             return health(args.evidence, args.history)
         if args.command == "compatibility":
             compatibility(args.evidence, args.destination)
-        elif args.command == "compatibility-check":
+            return 0
+        if args.command == "compatibility-check":
             return compatibility_check(args.directory, args.matrix, args.evidence)
-        elif args.command == "export":
-            export_evidence(args.evidence, args.destination)
-        elif args.command == "import":
-            import_evidence(args.bundle, args.destination)
-        elif args.command == "record-defect":
-            record_defect(
-                args.ledger,
-                defect_id=args.id,
-                affected_version=args.affected_version,
-                context=args.context,
-                fix_revision=args.fix_revision,
-                regression_test=args.regression_test,
-            )
+        if args.command == "describe":
+            return describe(args.evidence)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         print(f"test evidence error: {error}", file=sys.stderr)
         return 2
-    return 0
+    return 2
 
 
 if __name__ == "__main__":

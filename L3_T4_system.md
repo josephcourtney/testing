@@ -241,5 +241,5 @@ Check:
 * system tests to split, downscope, remove, or strengthen,
 * harness improvements for readiness, isolation, cleanup, and diagnostics,
 * support and compatibility gaps,
-* required acceptance, contract, non-functional, usability, accessibility, or
+* required acceptance, contract, quality-attribute, usability, accessibility, or
   operational follow-up.

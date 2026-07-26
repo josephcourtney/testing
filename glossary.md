@@ -83,6 +83,21 @@ A result intended to reduce uncertainty rather than make a pass/fail decision. I
 
 ## 2. Classification dimensions
 
+### Automated behavior test
+
+An executable check that runs a subject, observes behavior through a defined
+boundary, and evaluates it with an oracle. This is the repository's precise
+term when contrasting executable behavior evidence with static analysis,
+review, or human evaluation.
+
+### Functional and non-functional
+
+Common informal umbrellas for behavior or capabilities ("functional") and
+qualities such as performance, security, privacy, or operability
+("non-functional"). They are not structural scopes in this repository.
+Prefer the specific claim or purpose because the boundary is often ambiguous:
+security and observability, for example, also require concrete behavior.
+
 ### Structural scope
 
 The chosen execution boundary whose behavior the test exercises. Structural scope is independent of purpose and technique.
@@ -501,7 +516,8 @@ A workflow that establishes concrete stakeholder-facing examples or conditions b
 
 ### Behavior-driven development
 
-A collaboration and specification style that describes behavior using domain-oriented examples, often expressed as Givenâ€“Whenâ€“Then scenarios.
+A collaboration and specification style that describes behavior using
+domain-oriented examples, often expressed as Given–When–Then scenarios.
 
 ### Test-after development
 
@@ -581,10 +597,12 @@ A boundary associated with a defined action. A threshold requires technical or p
 
 A binned measure of distribution difference between a reference and comparison population. Its meaning depends on binning, sample size, reference selection, and operational context.
 
-### Kolmogorovâ€“Smirnov statistic
+### Kolmogorov–Smirnov statistic
 
 The maximum difference between two empirical cumulative distributions. Interpretation depends on sample size, independence, multiple comparisons, and the decision being made.
 
-Population stability index and the Kolmogorovâ€“Smirnov statistic are included as examples of statistical comparison measures used in data-quality and drift analysis; they are not universal defaults.
+Population stability index and the Kolmogorov–Smirnov statistic are included as
+examples of statistical comparison measures used in data-quality and drift
+analysis; they are not universal defaults.
 
 See `L3_T11_metrics.md` before treating any measurement as a gate.

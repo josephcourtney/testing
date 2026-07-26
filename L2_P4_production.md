@@ -1,12 +1,4 @@
----
-aliases:
-  - L2-P4
-linter-yaml-title-alias: L2-P4
-tags: []
-title: L2-P4
----
-
-# L2-P4 — Release and Hardening Testing Phase
+# L2-P4 — Release and Hardening Confidence Profile
 
 ## 1. Profile role
 
@@ -19,7 +11,7 @@ security, privacy, data, accessibility, usability, performance, compatibility,
 deployment, observability, and recovery claims are material, and record other
 categories as not applicable with rationale.
 
-## 2. Phase intent
+## 2. Profile intent
 
 **Goal:**
 Ensure correctness, reliability, safety, compatibility, and operability for the
@@ -106,7 +98,7 @@ associated claim is material.
 
 ### Evidence integrity and enforcement
 
-* L3-T10 suite-health assessment.
+* L3-T10 portfolio-health assessment.
 * L3-T11 validation of every numeric release gate.
 * Fresh artifact, revision, environment, data, dependency, and configuration
   identity.
@@ -156,7 +148,7 @@ Not-applicable decisions must be explicit for material readiness categories.
    observability as applicable.
 6. Exercise deployment, migration, rollback, restoration, degradation, and
    recovery controls where material.
-7. Assess suite health and validate quantitative gates.
+7. Assess portfolio health and validate quantitative gates.
 8. Confirm gate enforcement, evidence freshness, comparability, and artifact
    identity.
 9. Review open defects, waivers, accepted risks, operational mitigations, stop
@@ -188,14 +180,13 @@ The profile is satisfied when:
 
 ## 10. Outputs
 
+Retain the common L1 record plus these profile-specific details:
+
 * release claim and evidence matrix,
 * applicable/not-applicable readiness table,
-* artifact, environment, compatibility, and dependency identity,
 * security, privacy, performance, data, accessibility, and usability findings,
 * deployment, monitoring, rollback, restoration, and recovery evidence,
-* suite-health and metric-validation results,
-* blockers, waivers, mitigations, owners, and expiry dates,
-* release decision and rationale.
+* portfolio-health and metric-validation results.
 
 ## 11. Forward rules
 

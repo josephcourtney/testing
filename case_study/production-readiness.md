@@ -1,13 +1,15 @@
 # Production Testing Readiness
 
-This is a project-specific production-readiness assessment. It applies L1,
+This is a dated project-specific production-readiness case study. It applies L1,
 L2-P4, and the relevant L3 procedures without treating the checklist or numeric
 values as universal policy.
 
 Each readiness area is classified as applicable, not applicable with rationale,
 satisfied, conditional, waived, unresolved, or blocking. Concrete thresholds
 and measured values are retained because they are part of this example
-project's evidence.
+project's evidence. The assessed source project and its release harness are not
+included here; commands and measurements below document that historical
+decision and do not describe the runnable `example_project/`.
 
 ## Decision scope
 

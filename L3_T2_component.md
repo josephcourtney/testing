@@ -205,4 +205,4 @@ Check:
 * fake and lightweight-dependency fidelity assumptions,
 * missing workflows or error behavior,
 * tests to downscope, upscope, split, remove, or supplement,
-* required contract, integration, system, or non-functional follow-up.
+* required contract, integration, system, or quality-attribute follow-up.

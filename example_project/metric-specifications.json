@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "metrics": {
+    "statement-coverage": {
+      "decision": "reference-project regression gate",
+      "claim": "the trusted selection continues to execute the currently reviewed source cohort",
+      "population": "src/testing_reference Python statements",
+      "denominator": "instrumented statements reported by coverage.py",
+      "method": "pytest-cov under the complete trusted selection",
+      "threshold": null,
+      "response": "inspect missing responsibilities; do not infer correctness from the percentage",
+      "owner": "reference-project maintainer",
+      "review_trigger": "source cohort, test selection, coverage tool, or decision changes"
+    },
+    "flake-observation": {
+      "decision": "whether trusted evidence requires investigation before use",
+      "claim": "a test has not produced both passing and failing outcomes under comparable conditions",
+      "population": "test cases observed in up to 20 comparable complete trusted runs",
+      "denominator": "distinct test cases with at least one comparable observation",
+      "method": "count cases whose observed outcome set contains both passed and failed",
+      "threshold": 0,
+      "response": "fail health assessment and investigate; quarantine requires a separate owned record",
+      "owner": "reference-project maintainer",
+      "review_trigger": "evidence schema, comparability key, or outcome classification changes"
+    },
+    "cli-latency": {
+      "decision": "whether the packaged command retains an interactive response time",
+      "claim": "a small assembled command invocation completes within the reviewed reference-project budget",
+      "population": "seven measured subprocess invocations after two warmups",
+      "denominator": "one source-environment CLI invocation with three short values",
+      "method": "median monotonic wall-clock duration on the current environment",
+      "threshold": 0.5,
+      "response": "inspect environment comparability and profile the command before changing the budget",
+      "owner": "reference-project maintainer",
+      "review_trigger": "command workload, execution environment, timer, or user expectation changes"
+    }
+  }
+}

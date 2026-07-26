@@ -25,9 +25,11 @@ become universal policy.
    common practices, terminology, alternatives, and tradeoffs.
 7. **`python_testing.md` — non-normative Python and pytest guidance.** Shows one
    coherent implementation of the general framework.
-8. **`examples/` — project-specific or illustrative material.** Contains concrete
-   commands, marker sets, thresholds, assessments, and configuration that must
-   be adapted rather than copied blindly.
+8. **`example_project/` — runnable reference implementation.** Demonstrates the
+   classification, evidence-integrity, artifact, metric, and release contracts.
+9. **`case_study/` — dated historical assessment.** Preserves concrete findings
+   from a separate project without presenting them as current or reproducible
+   from the reference implementation.
 
 When documents conflict, `Overview.md` controls, followed by the applicable L1,
 L2, or L3 procedure. The glossary controls terminology unless a normative
@@ -39,8 +41,7 @@ Begin with `Overview.md`, then apply `L1.md` to the decision at hand. Use the
 relevant lifecycle profile and only those L3 procedures needed by the identified
 claims, risks, and boundaries.
 
-My testing harness varies from project to project, but portions of the
-configuration are often similar to `examples/example_pyproject.toml`. The
-example remains intentionally concrete so that it is useful; its package names,
-tool versions, markers, warning filters, commands, and thresholds are not
-repository-wide requirements.
+Use `example_project/local-testing.md` to run the reference implementation. Its
+package names, tools, marker inventory, support matrix, and numeric latency
+budget are deliberately project-specific. `case_study/` is background evidence,
+not another source of policy.

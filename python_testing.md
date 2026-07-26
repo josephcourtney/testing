@@ -1,964 +1,416 @@
-# Python and pytest Testing Guide
+# Python and pytest Implementation Guidance
 
-This document is non-normative implementation guidance for Python projects. It shows one coherent way to apply `Overview.md`, the L1/L2/L3 procedures, and `glossary.md` using pytest and common Python tooling.
+> This is a non-normative implementation guide. `Overview.md` defines policy,
+> `glossary.md` defines terms, and L1/L2/L3 own assessment and evidence
+> procedures. This document contains only Python- and pytest-specific patterns.
 
-Projects should adapt the examples to their risks, architecture, supported Python versions, packaging model, and operating environment. The examples are defaults to evaluate, not universal requirements.
+The runnable realization is in `example_project/`. It is intentionally more
+specific than this guide: its `pyproject.toml` is the canonical marker inventory
+for that project, its `justfile` is the command truth, and its JSON files own
+project thresholds and support cells.
 
-## 1. Classification in pytest
+## 1. Encode independent dimensions
 
-Use markers to encode independent dimensions rather than one overloaded hierarchy.
+Pytest markers are well suited to orthogonal classification. Give each
+automated behavior test exactly one structural marker:
 
-A practical scheme is:
+```toml
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+xfail_strict = true
+markers = [
+  "unit: Small local structural scope.",
+  "component: Coherent subsystem structural scope.",
+  "integration: Real boundary semantics structural scope.",
+  "system: Assembled product structural scope.",
+  "regression: Protects established behavior or a learned failure mode.",
+  "contract: Producer-consumer or compatibility purpose.",
+  "smoke: Small critical-capability selection.",
+  "property_based: Generated invariant technique.",
+  "fuzz: Generated or mutated adversarial-input technique.",
+  "filesystem: Uses real filesystem semantics.",
+  "process: Crosses a process boundary.",
+  "slow: Excluded from a rapid selection.",
+  "quarantined: Excluded from trusted evidence under an owned record.",
+  "requirement(id): Links evidence to a declared responsibility.",
+]
+```
 
-* one primary structural scope marker: `unit`, `component`, `integration`, or `system`,
-* zero or more purpose markers: `acceptance`, `regression`, `contract`, `smoke`, `compatibility`, `security`, `privacy`, `performance`, `data_quality`, `observability`, `accessibility`, `usability`, `resilience`, `recovery`, `operational_readiness`,
-* zero or more technique markers: `property_based`, `stateful`, `model_based`, `differential`, `metamorphic`, `fuzz`, `snapshot`, `fault_injection`, `chaos`,
-* zero or more resource/execution markers: `filesystem`, `process`, `db`, `network`, `clock`, `random`, `configuration`, `environment`, `hardware`, `slow`, `destructive`, `quarantined`.
+Do not add `contract`, `regression`, `smoke`, or `property_based` to the
+structural set. They describe purpose or technique.
 
-Example:
+Enforce the structural rule during collection and report every violation
+together:
 
 ```python
 import pytest
 
+SCOPES = ("unit", "component", "integration", "system")
 
-@pytest.mark.component
-@pytest.mark.contract
-def test_exported_document_matches_supported_schema(document):
-    validate_document(document)
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    violations = []
+    for item in items:
+        found = [name for name in SCOPES if item.get_closest_marker(name)]
+        if len(found) != 1:
+            violations.append(f"{item.nodeid}: expected one scope, found {found}")
+            continue
+        item.user_properties.append(("structural_scope", found[0]))
+    if violations:
+        raise pytest.UsageError("\n".join(violations))
 ```
 
-Here `component` states the execution boundary; `contract` states why the test exists.
+`item.user_properties` provides a tool-neutral path into JUnit or JSON reports.
+Record purposes, techniques, requirement IDs, resource labels, and quarantine
+status there when downstream evidence needs them.
 
-A system-level compatibility test can use the same purpose:
+## 2. Keep configuration strict and portable
 
-```python
-import pytest
-
-
-@pytest.mark.system
-@pytest.mark.contract
-@pytest.mark.compatibility
-def test_installed_cli_emits_supported_document(installed_cli):
-    result = installed_cli("inspect", "example-package")
-    validate_document(result.json)
-```
-
-### Suggested marker declarations
+Useful defaults include strict markers, strict configuration, strict xfail, and
+a repository-owned warning policy:
 
 ```toml
 [tool.pytest.ini_options]
-  markers = [
-    "unit: Small local execution boundary with highly localizing failures.",
-    "component: Coherent subsystem through a supported interface.",
-    "integration: Real semantics across an external or infrastructure boundary.",
-    "system: Assembled product through a user- or operator-visible boundary.",
-
-    "acceptance: Stakeholder or product acceptance condition.",
-    "regression: Protects learned behavior or a previous failure mode.",
-    "contract: Producer-consumer or compatibility obligation.",
-    "smoke: Small critical-capability selection.",
-    "compatibility: Supported-version, platform, artifact, or consumer behavior.",
-    "security: Threat-relevant behavior or control.",
-    "privacy: Data minimization, retention, disclosure, access, or other privacy obligation.",
-    "performance: Latency, throughput, scalability, or resource measurement.",
-    "data_quality: Data integrity, freshness, or distribution claim.",
-    "observability: Logs, metrics, traces, health, or diagnostic behavior.",
-    "accessibility: Accessibility or assistive-technology obligation.",
-    "usability: User task completion, comprehension, error, or recovery behavior.",
-    "resilience: Degraded-operation or fault-handling claim.",
-    "recovery: Rollback, restart, restoration, or failover claim.",
-    "operational_readiness: Deployment, monitoring, diagnosis, runbook, or operator-action claim.",
-
-    "property_based: Generated invariant testing.",
-    "stateful: Generated state-machine testing.",
-    "model_based: Testing against an explicit behavioral or state model.",
-    "differential: Comparison between implementations, versions, or modes.",
-    "metamorphic: Relations across transformed inputs or outputs.",
-    "fuzz: Random, adversarial, or coverage-guided input exploration.",
-    "snapshot: Canonical stored-output comparison.",
-    "fault_injection: Deliberately introduced dependency or runtime failure.",
-    "chaos: Hypothesis-driven fault experiment with controlled blast radius and recovery checks.",
-
-    "filesystem: Uses real filesystem semantics.",
-    "process: Crosses a process boundary.",
-    "db: Uses a database engine.",
-    "network: Uses a network boundary.",
-    "clock: Depends on controlled or real clock semantics.",
-    "random: Depends on a declared random source or generated input stream.",
-    "configuration: Exercises configuration-dependent behavior.",
-    "environment: Depends on a declared runtime or deployment environment.",
-    "hardware: Depends on specific hardware behavior.",
-    "slow: Excluded from the fastest developer loop.",
-    "destructive: Mutates or destroys an isolated resource.",
-    "quarantined: Not trusted as gating evidence; remediation must be tracked.",
-  ]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+xfail_strict = true
+filterwarnings = [
+  "error",
+  "ignore:known upstream warning:DeprecationWarning:upstream_package",
+]
 ```
 
-Projects may enforce one primary structural marker during collection. Purpose, technique, and resource markers should remain independently composable.
+Each warning exception should name the emitting package, owner, rationale, and
+review trigger. Avoid global warning suppression.
 
-This list is illustrative rather than exhaustive. Declare only markers that support actual selections, reporting, ownership, or evidence interpretation. Projects may add other glossary-defined purposes, techniques, resources, or execution classes when those distinctions are operationally useful.
-
-## 2. Baseline pytest configuration
-
-A strict baseline catches misspelled markers, invalid configuration, and unexpectedly passing `xfail` cases.
-
-```toml
-[tool.pytest.ini_options]
-  minversion = "8.0"
-  testpaths = ["tests"]
-  python_files = ["test_*.py"]
-
-  addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "-ra",
-  ]
-  xfail_strict = true
-```
-
-Add coverage to workflows that are intended to produce complete coverage evidence rather than to every partial developer run:
-
-```toml
-[tool.coverage.run]
-  source = ["your_package_name"]
-  branch = true
-  parallel = true
-
-  [tool.coverage.report]
-    show_missing = false
-    skip_covered = true
-```
-
-A project can use `pytest-cov` in its complete evidence command:
-
-```bash
-pytest --cov=your_package_name --cov-branch --cov-report=term-missing --cov-report=xml
-```
-
-Do not let a selected test run overwrite the canonical coverage artifact used by a release or quality gate.
-
-### Warnings
-
-Warnings from the project under test are often useful as errors, while known third-party warnings may require narrow temporary filters:
-
-```toml
-[tool.pytest.ini_options]
-  filterwarnings = [
-    "error::DeprecationWarning:your_package_name\\.",
-    "ignore::DeprecationWarning:some_known_third_party",
-  ]
-```
-
-Filters should be specific, justified, and removed when the underlying issue is resolved.
-
-## 3. Directory organization
-
-Directory layout is a navigation convention, not the full meaning of a test. Two common layouts are valid.
-
-### Scope-oriented layout
+Prefer a `src/` layout so tests do not accidentally import a package only
+because the repository root is on `sys.path`:
 
 ```text
+pyproject.toml
+src/
+  package_name/
 tests/
   unit/
   component/
   integration/
   system/
-  support/
-  data/
 ```
 
-Technique-specific tests normally remain under their structural scope, for example `tests/unit/test_normalization_properties.py` or `tests/component/test_parser_state_machine.py`.
+A feature-oriented layout is equally valid when it improves ownership. Scope
+comes from the exercised boundary, not the directory name; markers remain the
+machine-readable contract.
 
-### Feature-oriented layout
+## 3. Make named commands preserve evidence status
 
-```text
-tests/
-  accounts/
-    test_domain.py
-    test_api_contract.py
-    test_checkout_flow.py
-  reporting/
-  support/
-  data/
+Use one wrapper to construct selections and normalize outcomes. A trusted run
+should always use the declared full expression, commonly:
+
+```console
+pytest -m "not quarantined"
 ```
 
-Markers remain the source of classification when directories mix purposes or techniques. A project may also colocate tests with implementation where its tooling and team practices support that arrangement.
+Partial workflows must write different report and coverage paths:
 
-## 4. Named commands and evidence integrity
-
-Provide stable commands so developers and CI do not need to remember complex selections.
-
-Typical commands include:
-
-* `test-dev` — narrow, fast editing loop; may use test-impact selection and omit coverage,
-* `test-fast` — broad deterministic selection excluding declared expensive tests,
-* `test-all` — complete declared test selection,
-* `check` — formatting, linting, type checking, security checks, and required tests,
-* `test-installed` — build and test the actual wheel or distribution outside the checkout,
-* `test-integration` — provision and exercise real external dependencies,
-* `test-system` — assembled-product workflows,
-* `test-performance` — controlled performance measurements,
-* `test-mutation` — declared mutation cohort,
-* `release-check` — validate all required fresh and comparable evidence.
-
-Example `justfile` fragments:
-
-```just
-test-dev *args:
-    uv run pytest -m "not slow and not destructive and not quarantined" --no-cov {{args}}
-
-test-fast:
-    uv run pytest -m "not slow and not destructive and not quarantined"
-
-test-all:
-    uv run pytest -m "not quarantined"
-
-test-quarantined:
-    uv run pytest -m quarantined
-
-check:
-    uv run ruff format --check .
-    uv run ruff check .
-    uv run basedpyright
-    uv run pytest -m "not quarantined"
+```console
+pytest -m "not quarantined and not slow"
+pytest -m "not quarantined and (unit or component)"
+pytest -m "quarantined"
 ```
 
-The exact names and selections are project conventions. The important properties are that complete and partial runs are distinguishable and that stale or incompatible artifacts cannot silently satisfy a gate. Here `test-all` means the complete trusted selection; quarantined tests run separately for diagnosis and do not contribute to gating evidence.
+Quote marker expressions and use parentheses explicitly; shell parsing and
+pytest's boolean precedence otherwise make intent hard to review.
 
-### Marker-expression parentheses
+A normalized gate artifact should derive its decision from, rather than merely
+copy, all relevant facts:
 
-Use explicit parentheses around Boolean marker groups. Keep selections by structural scope distinct from selections by purpose:
+* process exit status;
+* selected test outcomes;
+* exact full or partial selection;
+* quarantine exclusion and membership;
+* required scope and responsibility coverage;
+* subject revision, configuration digests, environment, and artifact identity.
 
-```bash
-pytest -m "(unit or component) and not slow"
-pytest -m "contract and not slow"
-```
+Downstream health, compatibility, or release code should validate those
+invariants again. Selected evidence must not overwrite complete evidence.
+`example_project/scripts/pytest_outcomes.py` demonstrates a version-5 contract;
+legacy version-4 artifacts are diagnostic only.
 
-The first command selects structural scopes. The second selects a purpose independently and may include contract evidence at any structural scope.
+## 4. Write tests around behavior
 
-Do not rely on readers remembering operator precedence in expressions such as:
-
-```bash
-pytest -m "unit or component and not slow"
-```
-
-## 5. Test design and naming
-
-Tests should describe observable behavior, conditions, and outcomes.
-
-Prefer:
+Use names that state observable behavior:
 
 ```python
-def test_parse_header_rejects_missing_identifier(): ...
-```
-
-over:
-
-```python
-def test_parser_case_3(): ...
-```
-
-Arrange–Act–Assert is a useful default when it improves readability:
-
-```python
-import pytest
-
-
 @pytest.mark.unit
-def test_calculate_price_applies_discount():
-    base_price = 100
-
-    result = calculate_price(base=base_price, discount_percent=10)
-
-    assert result == 90
+def test_normalize_key_collapses_whitespace() -> None:
+    assert normalize_key("  A\tvalue ") == "a value"
 ```
 
-Given-When-Then, table-driven tests, helper assertions, or domain-specific test languages may be clearer for other cases.
-
-A test may contain several assertions when they express one conceptual behavior. Splitting every assertion into a separate test is not inherently better.
-
-## 6. Unit tests
-
-Choose a small boundary that provides useful localization. A unit need not be a single function or class.
-
-Good unit-test subjects include:
-
-* calculations and transformations,
-* parsers and formatters,
-* local state transitions,
-* validation and decision logic,
-* invariants and error rules.
-
-Unit tests should avoid uncontrolled network, database, process, clock, randomness, or persistent-state dependencies. Small real collaborators and ephemeral files are acceptable when they are part of the chosen local boundary and improve clarity.
-
-### Pure example
+Parameterization is useful when the cases share one decision and oracle:
 
 ```python
-import pytest
-
-from your_package_name.normalize import normalize_whitespace
-
-@pytest.mark.unit
-def test_normalize_whitespace_idempotent():
-    original = "  Foo   bar \n baz  "
-    once = normalize_whitespace(original)
-    twice = normalize_whitespace(once)
-    assert once == twice
-
-@pytest.mark.unit
-def test_normalize_whitespace_strips_edges():
-    assert normalize_whitespace("  a  ") == "a"
-```
-
-### Sociable unit example
-
-```python
-from decimal import Decimal
-
-import pytest
-
-
-@pytest.mark.unit
-def test_invoice_total_uses_domain_tax_policy():
-    invoice = Invoice(lines=[LineItem(price=100)])
-    tax_policy = StandardTaxPolicy(rate=Decimal("0.06"))
-
-    assert invoice.total(tax_policy) == Decimal("106.00")
-```
-
-Both collaborators remain real because they are inexpensive, deterministic, and within the chosen unit boundary.
-
-### Solitary unit example
-
-```python
-import pytest
-
-
-@pytest.mark.unit
-def test_notification_service_reports_rejected_delivery():
-    gateway = StubGateway(result=DeliveryResult.rejected("blocked"))
-    service = NotificationService(gateway=gateway)
-
-    result = service.send(message)
-
-    assert result == SendResult.failed("blocked")
-```
-
-The gateway is replaced because external delivery is outside the boundary and controlled failure is the purpose.
-
-## 7. Component tests
-
-Component tests exercise a coherent subsystem through supported interfaces. Internal collaborators generally remain real.
-
-```python
-import pytest
-
-
-@pytest.mark.component
-@pytest.mark.db
-@pytest.mark.filesystem
-def test_store_persists_and_loads_entities(tmp_path):
-    store = SqliteStore(tmp_path / "store.sqlite")
-
-    store.save_user(User(id=1, name="Alice"))
-
-    assert store.get_user(1) == User(id=1, name="Alice")
-```
-
-Using a temporary SQLite database is appropriate when the component contract includes persistence behavior but the risk does not depend on the production database engine. If SQL dialect, transaction isolation, extensions, migrations, or production indexing matter, add integration evidence using the actual engine.
-
-## 8. Integration tests
-
-Use integration scope when the claim depends on real semantics across an external boundary.
-
-```python
-import pytest
-
-
-@pytest.mark.integration
-@pytest.mark.db
-@pytest.mark.slow
-def test_repository_transaction_rolls_back_on_conflict(postgres_repository):
-    with pytest.raises(VersionConflict):
-        postgres_repository.apply_conflicting_updates()
-
-    assert postgres_repository.current_state() == EXPECTED_ORIGINAL_STATE
-```
-
-Integration resources should be:
-
-* isolated from production,
-* provisioned or reset predictably,
-* identified in the evidence,
-* bounded by timeouts,
-* cleaned up even after failure,
-* representative of the semantics being claimed.
-
-Containers are useful when they supply the real implementation cheaply, but containerization alone does not make a test integration-scoped. The evidential question is whether real boundary semantics matter.
-
-## 9. System and installed-artifact tests
-
-System tests exercise the assembled product through a supported user or operator boundary.
-
-```python
-import subprocess
-
-import pytest
-
-
-@pytest.mark.system
-@pytest.mark.process
-@pytest.mark.filesystem
-@pytest.mark.smoke
-def test_cli_can_generate_report(tmp_path):
-    completed = subprocess.run(
-        ["your-cli", "report", "--output", str(tmp_path / "report.json")],
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=20,
-    )
-
-    assert completed.returncode == 0, completed.stderr
-    assert (tmp_path / "report.json").exists()
-```
-
-For packaged tools, test the exact wheel or distribution intended for release:
-
-1. build the artifact,
-2. inspect expected files and metadata,
-3. install it into a clean environment outside the source checkout,
-4. clear source-tree import paths,
-5. invoke public interfaces as an independent consumer,
-6. retain artifact identity and environment details with the result.
-
-Source-tree tests cannot establish that packaging metadata, entry points, included data, or isolated installation are correct.
-
-## 10. Configuration and environment testing
-
-Behavior controlled by configuration, environment variables, feature flags, locale, timezone, or runtime profiles needs evidence at a scope appropriate to the risk.
-
-Prefer configuration objects that can be constructed explicitly:
-
-```python
-import pytest
-
-
 @pytest.mark.unit
 @pytest.mark.parametrize(
-    ("environment", "expected_cache"),
-    [("development", True), ("production", False)],
+    ("raw", "expected"),
+    [("", ""), (" A ", "a"), ("two\twords", "two words")],
 )
-def test_cache_default_depends_on_environment(environment, expected_cache):
-    settings = Settings.from_mapping({"APP_ENV": environment})
-
-    assert settings.cache_enabled is expected_cache
+def test_normalize_key(raw: str, expected: str) -> None:
+    assert normalize_key(raw) == expected
 ```
 
-When import-time environment behavior is itself the contract, isolate module loading carefully:
+Split cases when they require different setup, failure diagnosis, or
+requirements. Do not hide the behavior behind a large fixture or helper.
+
+Test exceptions with the narrowest meaningful contract:
 
 ```python
-import pytest
-
-
-@pytest.mark.component
-@pytest.mark.process
-def test_invalid_production_configuration_fails_at_startup(run_module):
-    result = run_module(
-        "your_package_name",
-        env={"APP_ENV": "production", "DATABASE_URL": ""},
-    )
-
-    assert result.returncode != 0
-    assert "DATABASE_URL is required" in result.stderr
+with pytest.raises(ValueError, match="non-whitespace"):
+    registry.add(" ")
 ```
 
-Reloading modules inside one process can leak state between tests. A subprocess is often clearer for import-time configuration and startup claims.
+Avoid asserting every implementation call. Interaction assertions are useful
+when the interaction itself is the contract: transaction order, idempotency
+keys, audit emission, or a required protocol sequence.
 
-## 11. Fixtures and test data
+## 5. Fixtures and state
 
-Prefer the simplest representation that keeps the behavior legible.
-
-* Inline small scalar values and compact dictionaries.
-* Use factories or builders for complex domain objects.
-* Store large static payloads under `tests/data/` when file identity matters.
-* Generate data when broad variation is useful.
-* Keep fixtures focused and composable.
-* Avoid fixtures that hide the behavior under test behind extensive implicit setup.
-
-Example factory:
+Prefer function-scoped fixtures. Broader scopes save setup cost but increase
+state coupling and make failures harder to reproduce:
 
 ```python
-import pytest
-
-
 @pytest.fixture
-def user_factory():
-    def make_user(
-        *,
-        user_id: int = 1,
-        name: str = "Alice",
-        email: str = "alice@example.com",
-    ) -> User:
-        return User(id=user_id, name=name, email=email)
-
-    return make_user
+def registry() -> Registry:
+    return Registry()
 ```
 
-Use session-scoped expensive fixtures only when isolation and reset semantics are explicit. Shared mutable fixtures are a common source of order dependence.
-
-## 12. Filesystem testing
-
-Use `tmp_path` when real path, encoding, permission, atomic-write, rename, or serialization behavior matters.
+Factories keep variation visible:
 
 ```python
-import pytest
-
-
-@pytest.mark.unit
-@pytest.mark.filesystem
-def test_configuration_round_trips(tmp_path):
-    path = tmp_path / "config.toml"
-    original = Config(enabled=True)
-
-    original.write(path)
-
-    assert Config.read(path) == original
+@pytest.fixture
+def make_user():
+    def factory(*, role: str = "reader", active: bool = True) -> User:
+        return User(role=role, active=active)
+    return factory
 ```
 
-This can still be a unit test when the file is local to the chosen boundary, ephemeral, and deterministic. Do not define unit scope solely as â€œno filesystem.â€
+Use pytest's controlled resources:
 
-Use pyfakefs or an explicit filesystem abstraction when control over faults or large virtual structures matters. Pair the double with real-filesystem evidence when platform semantics are consequential.
+* `tmp_path` for real ephemeral filesystem behavior;
+* `monkeypatch` for environment, attributes, and process-local configuration;
+* `capsys` or `capfd` for stream behavior;
+* `caplog` for structured logging assertions;
+* `pytester` for testing pytest plugins and collection behavior.
 
-## 13. Time, randomness, and concurrency
+A test using `tmp_path` may still be unit-scoped when the filesystem is inside
+the chosen local boundary and platform semantics are not the claim. Mark
+resource use separately.
 
-### Time
+## 6. Doubles and patching
 
-Inject a clock or use framework-supported time control when business behavior depends on time. Use real monotonic time only when the test is specifically evaluating timing or scheduling semantics.
-
-Avoid raw sleeps as synchronization:
+Patch where the subject looks up a name, not where the object was originally
+defined:
 
 ```python
-# Fragile
-worker.start()
-time.sleep(0.5)
-assert worker.finished
+def test_client_reports_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fail(*args, **kwargs):
+        raise TimeoutError
+
+    monkeypatch.setattr("package.client.transport.send", fail)
+    assert Client().fetch().status == "unavailable"
 ```
 
-Prefer an event, barrier, queue, callback, or bounded polling condition:
+Prefer small fakes when stateful behavior matters. Use autospecced mocks when an
+interface mismatch should fail immediately:
 
 ```python
-worker.start()
-assert finished.wait(timeout=2), "worker did not finish"
+from unittest.mock import create_autospec
+
+transport = create_autospec(Transport, instance=True)
 ```
 
-### Randomness
+Pair doubles with real-boundary evidence whenever framework, SQL, protocol,
+serialization, packaging, or operating-system behavior supports the claim.
 
-Seeded pseudorandomness is reproducible only when the generator, seed, version, and generation process are stable. Record failing generated examples and use shrinking where available.
+## 7. Processes, CLIs, and built artifacts
 
-Do not make a deterministic test depend on the ambient global random generator.
-
-### Threads and async tasks
-
-Tests involving concurrency should:
-
-* assert causality rather than elapsed time,
-* deadline every wait,
-* propagate background exceptions,
-* clean up tasks and threads,
-* avoid dependence on scheduler luck,
-* repeat or systematically explore schedules when race risk is material.
-
-For asyncio, use framework-supported async fixtures and ensure pending tasks are detected at teardown.
-
-## 14. Property-based and generative testing
-
-Property-based testing is not limited to pure functions.
-
-### Invariant example
+Use `subprocess.run` with explicit input, captured output, timeout, environment,
+and return-code assertions:
 
 ```python
-import hypothesis.strategies as st
-import pytest
-from hypothesis import given
+result = subprocess.run(
+    [sys.executable, "-m", "package.cli", "inspect", str(path)],
+    capture_output=True,
+    check=False,
+    text=True,
+    timeout=10,
+)
+assert result.returncode == 0
+assert json.loads(result.stdout)["status"] == "ok"
+```
+
+For packaging claims:
+
+1. build the sdist and wheel once;
+2. retain their names and digests;
+3. install the wheel into an isolated environment;
+4. run imports, entry points, metadata, and critical workflows outside the
+   source tree with `PYTHONPATH` removed;
+5. publish exactly the tested artifact.
+
+Do not rebuild between artifact verification and publication.
+
+## 8. Time, randomness, and concurrency
+
+Inject clocks rather than waiting:
+
+```python
+class FixedClock:
+    def now(self) -> datetime:
+        return datetime(2030, 1, 1, tzinfo=UTC)
+```
+
+Pass a local `random.Random(seed)` or framework-managed generator instead of
+changing process-global randomness. Retain failing seeds and minimized
+counterexamples.
+
+For threads and async tasks, synchronize on events, queues, barriers, or
+observable state. A timeout should bound a test, not serve as its primary
+coordination mechanism. Use framework-specific helpers such as AnyIO's pytest
+plugin where they preserve the relevant scheduler semantics.
+
+## 9. Generative techniques
+
+Hypothesis can encode invariants and shrink failures:
+
+```python
+from hypothesis import given, strategies as st
 
 
-@given(st.text())
 @pytest.mark.unit
 @pytest.mark.property_based
-def test_normalize_id_is_idempotent(value):
-    assert normalize_id(normalize_id(value)) == normalize_id(value)
+@given(st.text())
+def test_normalization_is_idempotent(value: str) -> None:
+    once = normalize_key(value)
+    assert normalize_key(once) == once
 ```
 
-### Stateful example
+State machines work well for stores, caches, protocols, and workflows. A
+reference model should be simpler and independent from the subject.
+
+Fuzz runners such as Atheris or external native fuzzers need a stable entry
+point, seed corpus, resource bounds, crash artifact retention, minimization, and
+reproduction instructions. Route design and evaluation through
+`L3_T6_generative_and_fuzz.md`.
+
+## 10. Contracts, snapshots, and schemas
+
+Schema validation establishes structure, not full compatibility:
 
 ```python
-import hypothesis.strategies as st
-from hypothesis.stateful import RuleBasedStateMachine, invariant, rule
-
-
-class StackMachine(RuleBasedStateMachine):
-    def __init__(self):
-        super().__init__()
-        self.stack = Stack()
-        self.model = []
-
-    @rule(value=st.integers())
-    def push(self, value):
-        self.stack.push(value)
-        self.model.append(value)
-
-    @rule()
-    def pop_when_present(self):
-        if self.model:
-            assert self.stack.pop() == self.model.pop()
-
-    @invariant()
-    def sizes_match(self):
-        assert len(self.stack) == len(self.model)
+jsonschema.validate(instance=payload, schema=EVENT_SCHEMA)
 ```
 
-Useful properties include idempotence, round-trip behavior, bounds, conservation, monotonicity, equivalence, order independence, model agreement, and valid state transitions.
+Provider verification should run against the provider revision or artifact that
+will actually be released. Record consumer/provider versions and interaction
+identity.
 
-Constrain generators to the intended domain and runtime budget. A property that simply restates the implementation is not an independent oracle.
+For snapshots:
 
-## 15. Differential and metamorphic testing
+* canonicalize irrelevant timestamps, paths, ordering, or generated IDs;
+* keep semantic fields under ordinary assertions when they deserve focused
+  diagnostics;
+* review diffs as behavior changes, not formatting chores;
+* retain provenance for generated golden files.
 
-Differential testing is useful during refactoring, migration, parser replacement, optimization, or cross-platform support:
+Use `L3_T7_contract.md` and `L3_T9_snapshot.md` for the procedure; the choice of
+pytest plugin does not change the evidence contract.
 
-```python
-import pytest
-from hypothesis import given
+## 11. Integration resources
 
+Prefer fixtures that explicitly provision, verify readiness, reset, and clean
+up real resources. Container startup alone is not readiness. Test the adverse
+semantics that motivate integration scope: transaction rollback, encoding,
+timeout, protocol error, migration, restart, or permission behavior.
 
-@given(valid_documents())
-@pytest.mark.component
-@pytest.mark.differential
-def test_new_parser_matches_reference(document):
-    assert new_parser(document) == reference_parser(document)
-```
+Record image or service versions and configuration. Parallel tests need unique
+namespaces or isolated instances. If teardown fails, report that as a harness
+failure rather than silently accepting leaked state.
 
-Metamorphic testing is useful when exact expected outputs are unavailable:
+## 12. Performance and quantitative gates
 
-```python
-import pytest
-from hypothesis import given
+Python tools such as `pytest-benchmark`, `pyperf`, `coverage.py`, mutation
+runners, and profiling libraries collect observations; they do not supply a
+portable decision threshold.
 
+Keep the complete L3-T11 metric specification in a versioned project artifact.
+For performance, include workload, environment, warmup, sample method,
+statistic, natural variation, and both practically meaningful absolute and
+relative effects. For coverage and mutation, preserve code cohort, test
+selection, exclusions, operators, and denominator treatment.
 
-@given(valid_rows())
-@pytest.mark.unit
-@pytest.mark.metamorphic
-def test_order_independent_aggregation(rows):
-    assert aggregate(rows) == aggregate(list(reversed(rows)))
-```
+Never combine partial coverage data with a complete-run artifact unless the
+aggregation contract explicitly proves equivalence.
 
-Disagreement identifies a question; it does not automatically identify which implementation is correct. Minimize the example and consult the intended contract.
+## 13. Static, security, and supply-chain tools
 
-## 16. Contract and compatibility testing
+Common Python choices include:
 
-Contract tests should identify the producer, consumer, obligations, allowed change, and version rules.
+| Concern | Example tools |
+| --- | --- |
+| format and lint | Ruff, Black |
+| types | mypy, pyright, ty |
+| security rules | Bandit, Semgrep |
+| dependencies | pip-audit, osv-scanner |
+| secrets | TruffleHog, Gitleaks |
+| builds | `python -m build`, `uv build`, Twine checks |
+| provenance | hashes, signatures, attestations, SBOM tools |
 
-### Schema check
+Pin or otherwise identify decision-critical tool versions and configuration.
+Treat tool errors, unsupported inputs, stale advisory data, and incomplete scans
+as invalid evidence rather than clean results.
 
-```python
-import pytest
+## 14. Acceptance, accessibility, and operations
 
+Pytest can encode automated portions of acceptance, accessibility, and
+operational claims, but the corresponding L3 procedure controls the overall
+evidence:
 
-@pytest.mark.component
-@pytest.mark.contract
-def test_response_conforms_to_schema(api_component):
-    response = api_component.get_user(1)
+* `L3_T12_acceptance.md` for stakeholder conditions;
+* `L3_T14_usability_accessibility.md` for automated checks plus human and
+  assistive-technology evidence;
+* `L3_T15_operational_resilience.md` for deployment, monitoring, backup,
+  restore, rollback, degradation, and recovery.
 
-    UserResponse.model_validate(response)
-```
+A command that completes is not proof that restored data is usable, a rollback
+preserves compatibility, or operators can diagnose the failure.
 
-### Behavioral contract
+## 15. Quarantine, reruns, and harness tests
 
-```python
-import pytest
+An owned quarantine record should contain node ID, rationale, affected claim,
+owner, expiry, and remediation link. The trusted marker expression excludes
+quarantined tests; a separate command runs them diagnostically.
 
+Rerun plugins may collect observations but must not turn fail-then-pass into a
+clean complete run. Store raw attempts if flake analysis depends on them.
 
-@pytest.mark.component
-@pytest.mark.contract
-def test_unknown_user_has_stable_error_semantics(api_component):
-    response = api_component.get_user(999)
+Test the harness itself with synthetic pass, failure, skip, xfail, quarantine,
+partial-selection, stale-evidence, and non-comparable-evidence cases. In
+particular, verify that:
 
-    assert response.status == 404
-    assert response.body["code"] == "user_not_found"
-```
+* a nonzero pytest exit cannot serialize a passing decision;
+* every behavior test has exactly one structural scope;
+* contract remains a purpose;
+* partial evidence cannot satisfy a full gate;
+* compatibility cells match the current revision and configuration digests.
 
-### Provider verification
+The runnable examples are in
+`example_project/tests/component/test_evidence_integrity.py`.
 
-Consumer-driven contracts should be versioned, published, and verified against the provider artifact. A passing consumer-side mock test is not provider verification.
+## 16. Project workflow
 
-Compatibility evidence may need to cover:
-
-* old consumer against new provider,
-* new consumer against old provider,
-* old data read by new code,
-* new data rejected or tolerated by old code,
-* migration and rollback paths,
-* packaged artifacts rather than source-tree objects.
-
-## 17. Snapshot and golden testing
-
-Snapshots are appropriate when output is large, reviewable, structurally stable, and expensive to assert field by field.
-
-Before comparison:
-
-* canonicalize irrelevant ordering,
-* remove unstable timestamps, identifiers, or paths unless contractual,
-* decode structured snapshots and assert critical semantics,
-* keep snapshots small enough to review.
-
-```python
-import pytest
-
-
-@pytest.mark.component
-@pytest.mark.snapshot
-def test_manifest_matches_reviewed_golden(manifest, snapshot):
-    canonical = canonicalize_manifest(manifest)
-
-    assert canonical["schema_version"] == 3
-    assert canonical == snapshot
-```
-
-Updating a snapshot means accepting a behavior change. Review the semantic diff rather than running an unconditional update command.
-
-## 18. Observability testing
-
-Prefer structured fields over exact prose unless wording is itself contractual.
-
-```python
-import pytest
-
-
-@pytest.mark.component
-@pytest.mark.observability
-def test_failed_job_emits_diagnostic_context(caplog, worker):
-    with caplog.at_level("ERROR"):
-        worker.process(Job(id="job-123", invalid=True))
-
-    records = [record for record in caplog.records if record.name == "worker"]
-    assert any(getattr(record, "job_id", None) == "job-123" for record in records)
-```
-
-For metrics and traces, validate names, dimensions, correlation identifiers, and error-path emission. System and operational tests should also establish that signals reach the actual collector or alert path when that boundary matters.
-
-## 19. Performance testing
-
-Separate measurement from gating until the harness is demonstrated to be stable.
-
-A performance definition should include:
-
-* operation or user journey,
-* workload and data sizes,
-* warmup,
-* sample count,
-* hardware and platform identity,
-* dependency and configuration identity,
-* statistic such as median or p95,
-* natural variation,
-* baseline comparability rules,
-* relative and practically meaningful absolute thresholds,
-* action on regression.
-
-Use `pytest-benchmark`, a dedicated runner, or a project-specific harness where appropriate. Do not compare results from incompatible machines or workloads as though they were one series.
-
-See `L3_T11_metrics.md` before creating a performance gate.
-
-## 20. Coverage and mutation testing
-
-Coverage identifies executed instrumented code. Use it to find unexamined responsibilities and suspicious gaps, not as proof of correctness.
-
-When reviewing coverage:
-
-* inspect missing branches and responsibilities,
-* separate generated, defensive, platform-specific, and unreachable code,
-* consider changed-code or risk-focused views,
-* keep the code cohort and exclusions explicit,
-* prevent partial runs from overwriting complete coverage.
-
-Mutation testing evaluates whether selected implementation changes are detected. Define:
-
-* code cohort,
-* operators,
-* test selection,
-* timeout behavior,
-* treatment of equivalent and invalid mutants,
-* treatment of `no_tests` mutants,
-* comparison rules across tool versions.
-
-Use survivors as prompts for missing assertions, weak oracles, ambiguous requirements, or equivalent behavior. Do not impose a universal mutation-score target.
-
-## 21. Static analysis and supply-chain checks
-
-A Python `check` workflow commonly includes:
-
-  * formatter validation, such as `ruff format --check`,
-  * linting, such as `ruff check`,
-  * type checking, such as basedpyright, pyright, mypy, or ty,
-  * dependency vulnerability scanning,
-  * secret scanning across the repository and relevant history,
-  * package metadata and build validation,
-  * tests required for the decision.
-
-Example:
-
-```bash
-uv run ruff format --check .
-uv run ruff check .
-uv run basedpyright
-uv run pip-audit
-uv run pytest
-```
-
-Select tools and gates according to the language features, threat model, deployment context, false-positive handling, and available remediation process. Security findings require triage rather than blanket suppression.
-
-## 22. Security testing
-
-Static and dependency scanning are baseline evidence, not complete security testing.
-
-Add targeted tests for relevant threats such as:
-
-* authentication and authorization boundaries,
-* injection and unsafe parsing,
-* path traversal,
-* deserialization,
-* secret handling,
-* permission and role transitions,
-* denial-of-service inputs,
-* insecure defaults,
-* failure-open behavior,
-* supply-chain or artifact substitution.
-
-Use controlled doubles for difficult fault cases and real boundary evidence for security semantics that doubles cannot establish.
-
-## 23. Acceptance evidence
-
-Acceptance is a purpose, not a structural scope. Stable, repeatable acceptance conditions may be encoded in pytest at the least costly scope that preserves the stakeholder-visible semantics.
-
-```python
-import pytest
-
-
-@pytest.mark.component
-@pytest.mark.acceptance
-def test_user_can_export_a_valid_report(reporting_component):
-    report = reporting_component.export_report(user_id="user-123")
-
-    assert report.status == "complete"
-    assert report.download_url is not None
-```
-
-Acceptance conditions should identify the stakeholder, starting situation, action, observable outcome, and relevant environment or artifact form. Do not force conditions that depend on human judgment into an automated pass/fail oracle. Demonstrations, reviews, or stakeholder evaluation may remain outside pytest, with their results retained as evidence artifacts.
-
-## 24. Exploratory testing
-
-Exploratory testing is guided investigation, not an unstructured pytest suite. Python tooling can support exploratory sessions by providing:
-
-* reproducible environment setup,
-* representative or adversarial data generation,
-* instrumentation and artifact capture,
-* minimized reproduction scripts,
-* comparison and inspection utilities.
-
-Record the charter, environment, observations, limitations, and unexplored areas. Convert durable findings into regression tests, properties, contract obligations, monitoring, documentation, or design changes as appropriate. Do not automate every exploratory action merely to preserve it.
-
-## 25. Usability and accessibility evidence
-
-Automated Python and browser tooling can detect some conformance failures, but it cannot by itself establish usability or accessibility.
-
-Useful automated evidence may include:
-
-* semantic-role and accessible-name checks,
-* keyboard navigation and focus-order checks,
-* contrast, scaling, reflow, and motion checks,
-* CLI output and error-message structure,
-* localization and text-expansion checks,
-* regression checks for stable mechanical obligations.
-
-Where task completion, comprehension, assistive-technology interaction, error recovery, or user judgment is material, supplement automation with representative users or qualified evaluators. Record the browser, device, assistive technology, locale, user group, and task conditions.
-
-A browser-based accessibility check may carry both structural and purpose markers:
-
-```python
-import pytest
-
-
-@pytest.mark.system
-@pytest.mark.accessibility
-def test_checkout_has_no_blocking_automated_accessibility_violations(page):
-    page.goto("/checkout")
-
-    violations = run_accessibility_scan(page)
-
-    assert not blocking_violations(violations)
-```
-
-A passing scanner establishes only the checks implemented by that scanner. It does not establish complete accessibility or usability.
-
-## 26. Operational resilience and recovery
-
-Operational evidence should begin with an explicit deployment, degradation, diagnosis, rollback, or recovery claim. Python harnesses may coordinate subprocesses, containers, dependencies, migrations, backups, and signal collection, but they must bound risk and verify recovery rather than merely injecting a fault.
-
-```python
-import pytest
-
-
-@pytest.mark.integration
-@pytest.mark.fault_injection
-@pytest.mark.resilience
-def test_service_recovers_after_dependency_restart(service, dependency):
-    dependency.stop()
-    assert service.wait_for_degraded(timeout=10)
-
-    dependency.start()
-
-    assert service.wait_until_ready(timeout=30)
-    assert service.synthetic_transaction().ok
-```
-
-Operational tests should:
-
-* identify the artifact, environment, configuration, state, and dependencies,
-* define blast radius, stop conditions, deadlines, and cleanup,
-* verify user-visible degradation and recovery,
-* verify data consistency after recovery,
-* retain relevant logs, metrics, traces, and timelines,
-* include operator actions and runbooks when human response is part of the control,
-* repeat evidence at a cadence appropriate to how quickly it can decay.
-
-Use production fault injection only when it is explicitly authorized, controlled, observable, and justified by semantics that cannot be established safely elsewhere.
-
-## 27. Common anti-patterns
-
-Avoid:
-
-* arbitrary sleeps used to hide missing synchronization,
-* unbounded subprocess, network, or task waits,
-* deep mocks of internal call graphs,
-* fakes treated as proof of production dependency behavior,
-* giant end-to-end suites duplicating every lower-level case,
-* low-level tests that omit the real semantics behind the risk,
-* exact log-string assertions when structured fields are the contract,
-* broad snapshots replacing deliberate assertions,
-* test order dependence,
-* shared mutable fixtures without reset guarantees,
-* retries that silently convert intermittent failure into success,
-* selected runs overwriting complete evidence,
-* coverage or mutation percentages treated as correctness,
-* permanent skips, `xfail`, warning filters, or quarantines without ownership and review,
-* source-tree tests presented as evidence that the built package works,
-* Python-specific conventions presented as universal testing definitions.
-
-## 28. Relationship to repository documents
-
-* `Overview.md` defines normative policy.
-* `glossary.md` defines repository terminology.
-* `L1.md` selects evidence from risk and decision context.
-* `L2_*.md` define lifecycle confidence profiles.
-* `L3_*.md` define procedures for particular forms of evidence.
-* `automated_testing.md` discusses broader concepts and tradeoffs.
-* `examples/` contains project-specific implementations and assessments.
+The reference project's executable workflow is documented in
+`example_project/local-testing.md`. Use `just --list` for commands and
+`example_project/pyproject.toml` for the project marker inventory. Do not copy
+its numeric budget or compatibility matrix without a project-specific L1 and
+L3-T11 decision.

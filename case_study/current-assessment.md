@@ -1,8 +1,10 @@
 # Current Testing Assessment
 
-This is a project-specific assessment example. It preserves concrete observed
+This is a dated project-specific assessment case study. It preserves concrete observed
 values, local thresholds, commands, and conclusions so that the example remains
-useful. Those values are not repository-wide defaults.
+useful. The assessed source project is not included in this repository, so the
+values are historical evidence rather than results reproducible from
+`example_project/`. They are not repository-wide defaults.
 
 Statements below distinguish **observations**, **inferences**, **assumptions**,
 and **decisions** where the difference matters.

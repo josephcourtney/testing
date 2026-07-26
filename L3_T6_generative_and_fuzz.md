@@ -1,4 +1,4 @@
-# L3-T6 — Generative, Property, Model, and Differential Testing
+# L3-T6 — Generative, Property, Model, Differential, and Fuzz Testing
 
 ## 1. Purpose
 
@@ -25,6 +25,15 @@ Transform an input or environment and assert an expected relation between result
 ### Generated contract or integration testing
 
 Generate values or interaction sequences at a boundary when real infrastructure remains affordable and deterministic enough. Generative testing is not limited to pure functions or unit scope.
+
+### Fuzz testing
+
+Generate or mutate inputs to expose crashes, hangs, unsafe resource use, parser
+confusion, and violated safety properties. Define the input interface, seed
+corpus, mutation strategy, oracle, resource limits, minimization and
+reproduction process, and retained corpus. A crash-only oracle does not cover
+semantic correctness, and fuzzing is a technique rather than a structural
+scope.
 
 ## 3. Applicability
 
@@ -72,7 +81,8 @@ Bound sizes, sequence lengths, deadlines, and infrastructure use according to ca
 ## 5. Writing procedure
 
 1. State the failure class and input or action domain.
-2. Choose property, state-machine, differential, metamorphic, or mixed technique.
+2. Choose property, state-machine, differential, metamorphic, fuzz, or mixed
+   technique.
 3. Define the oracle independently in plain language.
 4. Build generators that cover ordinary, boundary, invalid, and structurally diverse cases.
 5. Verify that shrinking or trace minimization produces actionable failures.

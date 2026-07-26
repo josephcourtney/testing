@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "requirements": {
+    "normalization": {
+      "scopes": ["unit"]
+    },
+    "registry": {
+      "scopes": ["component"]
+    },
+    "installed-cli": {
+      "scopes": ["system"]
+    },
+    "evidence-integrity": {
+      "scopes": ["component"]
+    }
+  }
+}

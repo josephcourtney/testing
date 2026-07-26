@@ -1,14 +1,18 @@
-# L3-T8 — Non-Functional Testing
+# L3-T8 — Performance, Security, Privacy, Data, and Observability Evidence
 
 ## 1. Purpose
 
-Evaluate material properties not captured by ordinary functional examples, including performance, security, privacy, data quality, and observability.
+Evaluate material performance, security, privacy, data-quality, and
+observability claims.
 
-These categories are selected from the risk profile. They are not deferred automatically to a late lifecycle phase.
+The phrase **quality-attribute evidence** is used here only as a convenient
+umbrella. These categories remain distinct purposes and evidence forms selected
+from the risk profile; they are not a structural scope and are not deferred
+automatically to a late lifecycle profile.
 
 ## 2. Common design rules
 
-For every non-functional claim:
+For every quality-attribute claim:
 
 * identify the failure mode and affected user, operator, data, or obligation,
 * define an observable property or measurement,
@@ -75,7 +79,7 @@ Prefer structured fields and semantic assertions over complete log-message equal
 
 ## 7. Procedure
 
-1. Select material non-functional claims from the L1 risk map.
+1. Select material quality-attribute claims from the L1 risk map.
 2. Define the environment, workload, threat, dataset, or operator scenario.
 3. Identify an observable contract and evidence source.
 4. Build or select a repeatable harness.
@@ -86,7 +90,7 @@ Prefer structured fields and semantic assertions over complete log-message equal
 
 ## 8. Evaluation
 
-Good non-functional evidence:
+Good quality-attribute evidence:
 
 * corresponds to a material claim,
 * exercises realistic semantics,

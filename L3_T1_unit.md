@@ -100,3 +100,11 @@ Red flags:
 * Move to integration scope when correctness depends on real external semantics.
 * Move to system scope when only assembled user-visible behavior provides the required oracle.
 * Do not move downward merely to obtain a preferred portfolio shape if doing so removes sensitivity to the risk.
+
+## 9. Outputs
+
+* focal boundary and responsibility,
+* covered cases, invariants, and failure modes,
+* collaborator strategy and important fidelity limits,
+* result and diagnostics,
+* required broader-scope or alternative-technique follow-up.

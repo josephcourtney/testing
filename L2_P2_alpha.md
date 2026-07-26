@@ -1,6 +1,4 @@
-# L2-P2 — Feature Development Testing Phase
-
-## Procedure L2-P2: Feature Development / Alpha Testing Phase
+# L2-P2 — Feature Development / Alpha Confidence Profile
 
 ## 1. Profile role
 
@@ -13,7 +11,7 @@ the changed claims, failure modes, architecture, and decision. An already
 material integration, security, privacy, accessibility, performance, data, or
 operational risk is not deferred because the project is in development.
 
-## 2. Phase intent
+## 2. Profile intent
 
 **Goal:**
 Establish correctness of newly introduced or modified behavior while enabling
@@ -182,10 +180,11 @@ The profile is satisfied when:
 
 ## 11. Outputs
 
+Retain the common L1 record plus these profile-specific details:
+
 * changed-responsibility and invariant map,
 * acceptance-condition map,
 * evidence by scope, purpose, and technique,
-* provisional and supported interface commitments,
+* supported interface commitments,
 * rapid-feedback and merge-gate commands,
-* known gaps, owners, and revisit triggers,
-* profile outcome and rationale.
+* provisional interfaces and their review triggers.
