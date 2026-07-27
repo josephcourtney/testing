@@ -47,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             python = environment / "bin" / "python"
             command = environment / "bin" / "testing-reference"
+            policy_command = environment / "bin" / "testpolicy"
             clean_env = dict(os.environ)
             clean_env.pop("PYTHONPATH", None)
             run(
@@ -63,11 +64,21 @@ def main(argv: list[str] | None = None) -> int:
                 env=clean_env,
             )
             run(
-                [str(python), "-c", "import testing_reference"],
+                [
+                    str(python),
+                    "-c",
+                    (
+                        "from importlib.resources import files; "
+                        "import testing_policy, testing_reference; "
+                        "assert files('testing_policy').joinpath("
+                        "'rules/catalog.json').is_file()"
+                    ),
+                ],
                 cwd=sandbox,
                 env=clean_env,
             )
             run([str(command), " Alpha ", "BETA"], cwd=sandbox, env=clean_env)
+            run([str(policy_command), "--help"], cwd=sandbox, env=clean_env)
     except (OSError, RuntimeError) as error:
         print(f"wheel validation failed: {error}", file=sys.stderr)
         return 1

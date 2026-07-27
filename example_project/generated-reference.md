@@ -9,6 +9,11 @@
 | `default` | Default recipe. |
 | `docs-generate` | Regenerate command and marker documentation from executable sources. |
 | `docs-check` | Check generated references, stale paths, and text encoding. |
+| `policy-plan decision="merge"` | Resolve the current testing-policy obligations without changing state. |
+| `policy-status decision="merge"` | Show the current testing-policy state. |
+| `policy-gate decision="merge"` | Fail when a blocking policy obligation is unresolved. |
+| `policy-review decision="release"` | Show human reviews, waivers, and exceptions needing attention. |
+| `policy-validate` | Validate policy configuration and durable records. |
 | `setup` | Create or update the locked development environment. |
 | `test` | Run the complete trusted selection and write version-5 evidence. |
 | `test-fast` | Run a partial selection that excludes slow and quarantined tests. |

@@ -2,6 +2,7 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
 export UV_CACHE_DIR := "../.cache/testing-example-uv"
 export RUFF_CACHE_DIR := "../.cache/testing-example-ruff"
+export PYTHONPATH := "src"
 
 default:
     @just --list
@@ -13,6 +14,26 @@ docs-generate:
 # Check generated references, stale paths, and text encoding.
 docs-check:
     uv run python -m scripts.docs_reference
+
+# Resolve the current testing-policy obligations without changing state.
+policy-plan decision="merge":
+    uv run testpolicy plan --decision {{quote(decision)}}
+
+# Show the current testing-policy state.
+policy-status decision="merge":
+    uv run testpolicy status --decision {{quote(decision)}}
+
+# Fail when a blocking policy obligation is unresolved.
+policy-gate decision="merge":
+    uv run testpolicy gate --decision {{quote(decision)}}
+
+# Show human reviews, waivers, and exceptions needing attention.
+policy-review decision="release":
+    uv run testpolicy review --decision {{quote(decision)}}
+
+# Validate policy configuration and durable records.
+policy-validate:
+    uv run testpolicy validate
 
 # Create or update the locked development environment.
 setup:
@@ -47,7 +68,8 @@ format-check:
     uv run ruff format --check .
 
 # Run the ordinary local hard gate.
-check: lint format-check docs-check test
+check: lint format-check docs-check policy-validate test
+    uv run testpolicy gate --decision merge
 
 # Assess flakes only across comparable complete trusted runs.
 health: test

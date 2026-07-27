@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "commands": {
+    "docs-check": {
+      "tool": "just",
+      "binary": "just",
+      "arguments": [
+        "docs-check"
+      ],
+      "additional_arguments": [],
+      "timeout_seconds": 120
+    },
+    "performance": {
+      "tool": "just",
+      "binary": "just",
+      "arguments": [
+        "performance"
+      ],
+      "additional_arguments": [],
+      "timeout_seconds": 300
+    },
+    "release-check": {
+      "tool": "just",
+      "binary": "just",
+      "arguments": [
+        "release-check"
+      ],
+      "additional_arguments": [],
+      "timeout_seconds": 1200
+    },
+    "trusted-tests": {
+      "tool": "just",
+      "binary": "just",
+      "arguments": [
+        "test"
+      ],
+      "additional_arguments": [],
+      "timeout_seconds": 900
+    },
+    "wheel-check": {
+      "tool": "just",
+      "binary": "just",
+      "arguments": [
+        "test-wheel"
+      ],
+      "additional_arguments": [],
+      "timeout_seconds": 600
+    }
+  }
+}

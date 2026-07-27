@@ -19,6 +19,7 @@
       "denominator": "distinct test cases with at least one comparable observation",
       "method": "count cases whose observed outcome set contains both passed and failed",
       "threshold": 0,
+      "threshold_decision_id": "METRIC-FLAKE-001",
       "response": "fail health assessment and investigate; quarantine requires a separate owned record",
       "owner": "reference-project maintainer",
       "review_trigger": "evidence schema, comparability key, or outcome classification changes"
@@ -30,6 +31,7 @@
       "denominator": "one source-environment CLI invocation with three short values",
       "method": "median monotonic wall-clock duration on the current environment",
       "threshold": 0.5,
+      "threshold_decision_id": "METRIC-CLI-LATENCY-001",
       "response": "inspect environment comparability and profile the command before changing the budget",
       "owner": "reference-project maintainer",
       "review_trigger": "command workload, execution environment, timer, or user expectation changes"

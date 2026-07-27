@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "name": "testing-reference",
+  "guidance_root": "..",
+  "profiles": {
+    "active": [
+      "production"
+    ]
+  },
+  "profile_decision": "PROFILE-PRODUCTION-001",
+  "supported_decisions": [
+    "merge",
+    "release",
+    "deployment",
+    "continued_operation",
+    "risk_acceptance"
+  ],
+  "owners": {
+    "testing": "reference-project maintainer",
+    "release": "reference-project maintainer",
+    "metrics": "reference-project maintainer"
+  }
+}

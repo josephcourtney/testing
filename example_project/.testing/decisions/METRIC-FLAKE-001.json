@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "METRIC-FLAKE-001",
+  "kind": "metric_threshold",
+  "status": "accepted",
+  "metric": "flake-observation",
+  "threshold": 0,
+  "rationale": "Any observed mixed pass/fail outcome invalidates reliance on the reference project's trusted evidence until investigated.",
+  "approved_by": "reference-project maintainer",
+  "accepted_at": "2026-07-27T00:00:00+00:00"
+}

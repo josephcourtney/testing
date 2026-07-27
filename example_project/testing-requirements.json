@@ -12,6 +12,9 @@
     },
     "evidence-integrity": {
       "scopes": ["component"]
+    },
+    "policy-resolution": {
+      "scopes": ["component"]
     }
   }
 }

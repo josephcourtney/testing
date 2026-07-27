@@ -7,6 +7,27 @@ contracts. It is intentionally separate from the dated case study in
 The exact command and marker tables are generated in `generated-reference.md`
 from the `justfile` and `pyproject.toml`; `just docs-check` fails if they drift.
 
+## Policy workflow
+
+The active production profile, claims, architecture map, accepted decisions,
+project rules, waivers, and attestations live under `.testing/`. Inspect and
+validate that reviewed state before collecting evidence:
+
+```console
+just policy-validate
+just policy-plan merge
+```
+
+For a change-aware release plan, run
+`uv run testpolicy plan --decision release --base origin/main`. Use
+`uv run testpolicy explain RULE-ID --decision release` for the applicability
+trace and canonical guidance excerpt. Use `just policy-review release` to see
+only human evaluations and exceptions requiring attention.
+
+`just check` ends with the merge policy gate. The CI release aggregation ends
+with the release policy gate. See `../WORKFLOW.md` for the end-to-end workflow
+and `../policy_tool.md` for the state and command contracts.
+
 ## Setup and trusted evidence
 
 Install `uv` and `just`, then run:

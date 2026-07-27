@@ -7,6 +7,7 @@ dependencies = []
 
 [project.scripts]
 testing-reference = "testing_reference.cli:main"
+testpolicy = "testing_policy.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -21,7 +22,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/testing_reference"]
+packages = ["src/testing_reference", "src/testing_policy"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"

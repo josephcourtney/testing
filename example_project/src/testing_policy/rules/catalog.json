@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "CORE-PROFILE-001",
+      "title": "Govern active lifecycle profiles with an accepted decision",
+      "severity": "blocking",
+      "applies_when": {},
+      "requirement": {
+        "kind": "project_profile"
+      },
+      "guidance": {
+        "document": "L1.md",
+        "section": "Lifecycle profile",
+        "summary": "Profiles change confidence and governance defaults but cannot suppress an already-material risk."
+      }
+    },
+    {
+      "id": "CORE-TRUSTED-001",
+      "title": "Retain valid complete trusted test evidence",
+      "severity": "blocking",
+      "applies_when": {
+        "decisions_any": ["merge", "release", "deployment", "continued_operation"]
+      },
+      "requirement": {
+        "kind": "trusted_evidence",
+        "path": ".cache/evidence/full.json",
+        "command_id": "trusted-tests"
+      },
+      "guidance": {
+        "document": "Overview.md",
+        "section": "Tooling and execution integrity",
+        "summary": "Complete, partial, stale, non-comparable, and quarantined evidence must remain distinguishable."
+      }
+    },
+    {
+      "id": "CORE-QUARANTINE-001",
+      "title": "Keep quarantine owned, explicit, and unexpired",
+      "severity": "blocking",
+      "applies_when": {},
+      "requirement": {
+        "kind": "quarantine",
+        "path": "quarantine.json"
+      },
+      "guidance": {
+        "document": "L3_T10_portfolio_health.md",
+        "section": "Evidence integrity",
+        "summary": "Quarantine is an explicit evidence gap and cannot silently support trusted claims."
+      }
+    },
+    {
+      "id": "PROJECT-DOCS-001",
+      "title": "Keep generated command and marker guidance current",
+      "severity": "blocking",
+      "applies_when": {},
+      "requirement": {
+        "kind": "file_exists",
+        "path": "generated-reference.md",
+        "command_id": "docs-check"
+      },
+      "guidance": {
+        "document": "README.md",
+        "section": "Using the repository",
+        "summary": "Executable command and marker sources should not drift from their reader-facing reference."
+      }
+    },
+    {
+      "id": "T11-METRICS-001",
+      "title": "Govern every numeric gate with a complete metric decision",
+      "severity": "blocking",
+      "applies_when": {
+        "profiles_any": ["stabilization", "production", "maintenance"]
+      },
+      "requirement": {
+        "kind": "metric_specifications",
+        "path": "metric-specifications.json"
+      },
+      "guidance": {
+        "document": "L3_T11_metrics.md",
+        "section": "Metric specification",
+        "summary": "A threshold requires a declared decision, population, method, rationale, response, owner, and review trigger."
+      }
+    },
+    {
+      "id": "P4-ARTIFACT-001",
+      "title": "Validate the exact installed artifact",
+      "severity": "blocking",
+      "applies_when": {
+        "profiles_any": ["production"],
+        "decisions_any": ["release"],
+        "claims_any": ["packaging", "installed_cli"]
+      },
+      "requirement": {
+        "kind": "file_pass",
+        "path": ".cache/evidence/wheel.json",
+        "kind_value": "testing-reference-wheel-evidence",
+        "command_id": "wheel-check"
+      },
+      "guidance": {
+        "document": "L3_T4_system.md",
+        "section": "Installed-artifact fidelity",
+        "summary": "Build once and verify the exact release artifact outside the source tree."
+      }
+    },
+    {
+      "id": "P4-PERFORMANCE-001",
+      "title": "Retain passing evidence for the declared performance claim",
+      "severity": "blocking",
+      "applies_when": {
+        "profiles_any": ["production"],
+        "decisions_any": ["release"],
+        "claims_any": ["performance"]
+      },
+      "requirement": {
+        "kind": "file_pass",
+        "path": ".cache/evidence/performance.json",
+        "kind_value": "testing-reference-performance-evidence",
+        "command_id": "performance"
+      },
+      "guidance": {
+        "document": "L3_T8_quality_attributes.md",
+        "section": "Performance",
+        "summary": "Performance evidence must identify workload, environment, method, variation, and practical effect."
+      }
+    },
+    {
+      "id": "P4-RELEASE-001",
+      "title": "Aggregate every production release obligation",
+      "severity": "blocking",
+      "applies_when": {
+        "profiles_any": ["production"],
+        "decisions_any": ["release"]
+      },
+      "requirement": {
+        "kind": "file_pass",
+        "path": ".cache/release.json",
+        "command_id": "release-check"
+      },
+      "guidance": {
+        "document": "L2_P4_production.md",
+        "section": "Evidence integrity and enforcement",
+        "summary": "Production release requires fresh, comparable, enforced evidence and explicit residual risk."
+      }
+    },
+    {
+      "id": "T14-HUMAN-001",
+      "title": "Evaluate material usability or accessibility claims with humans",
+      "severity": "blocking",
+      "applies_when": {
+        "claims_any": ["usability", "accessibility"]
+      },
+      "requirement": {
+        "kind": "human_attestation"
+      },
+      "guidance": {
+        "document": "L3_T14_usability_accessibility.md",
+        "section": "Define users and tasks",
+        "summary": "Automated checks cannot establish comprehension or accessibility for intended users."
+      }
+    },
+    {
+      "id": "T15-RECOVERY-001",
+      "title": "Evaluate material recovery claims with current operational evidence",
+      "severity": "blocking",
+      "applies_when": {
+        "claims_any": ["recovery", "resilience"]
+      },
+      "requirement": {
+        "kind": "human_attestation"
+      },
+      "guidance": {
+        "document": "L3_T15_operational_resilience.md",
+        "section": "Operational claims",
+        "summary": "A completed backup or rollback command is not proof of usable recovered state."
+      }
+    }
+  ]
+}
