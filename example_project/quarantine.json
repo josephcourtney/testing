@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "nodeid": "tests/unit/test_text.py::test_unicode_normalization_future_obligation",
+      "owner": "reference-project maintainer",
+      "rationale": "Illustrates explicit quarantine metadata; the behavior is not a trusted claim.",
+      "expiry": "2099-01-01"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "claims": [
+    {
+      "id": "NORMALIZATION-001",
+      "statement": "Normalization produces stable documented keys.",
+      "categories": [
+        "correctness"
+      ],
+      "owner": "reference-project maintainer"
+    },
+    {
+      "id": "REGISTRY-001",
+      "statement": "The registry preserves values under normalized keys.",
+      "categories": [
+        "correctness"
+      ],
+      "owner": "reference-project maintainer"
+    },
+    {
+      "id": "INSTALLED-CLI-001",
+      "statement": "The built wheel installs and exposes the documented CLI on supported platforms.",
+      "categories": [
+        "packaging",
+        "installed_cli",
+        "compatibility"
+      ],
+      "owner": "reference-project maintainer"
+    },
+    {
+      "id": "EVIDENCE-INTEGRITY-001",
+      "statement": "Invalid, partial, stale, non-comparable, or quarantined evidence cannot satisfy a trusted gate.",
+      "categories": [
+        "evidence_integrity"
+      ],
+      "owner": "reference-project maintainer"
+    },
+    {
+      "id": "CLI-LATENCY-001",
+      "statement": "A small assembled CLI invocation stays within the reviewed interactive budget.",
+      "categories": [
+        "performance"
+      ],
+      "owner": "reference-project maintainer"
+    }
+  ]
+}

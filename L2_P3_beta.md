@@ -1,12 +1,4 @@
----
-aliases:
-  - L2-P3
-linter-yaml-title-alias: L2-P3
-tags: []
-title: L2-P3
----
-
-# L2-P3 — Stabilization and Pre-Release Testing Phase
+# L2-P3 — Stabilization and Pre-Release Confidence Profile
 
 ## 1. Profile role
 
@@ -18,7 +10,7 @@ It is not a universal inventory of test classes. Apply `L1.md` first, select
 evidence from the product's actual claims and risks, and mark a category not
 applicable when no corresponding boundary or obligation exists.
 
-## 2. Phase intent
+## 2. Profile intent
 
 **Goal:**
 Stabilize behavior, validate critical boundaries and user journeys, and reduce
@@ -60,7 +52,7 @@ Record:
 * real persistence, protocol, process, platform, and service boundaries,
 * configuration and environment matrix,
 * known incidents, regressions, and unresolved ambiguity,
-* suite-health status and release feedback budget,
+* portfolio-health status and release feedback budget,
 * residual risks and available rollback or containment.
 
 ## 5. Default evidence expectations
@@ -136,9 +128,10 @@ A material risk overrides these defaults.
 4. Verify real boundary semantics for critical dependencies.
 5. Verify provider/consumer compatibility and artifact identity.
 6. Exercise representative assembled-product workflows and a curated smoke set.
-7. Perform exploratory, usability, accessibility, security, and non-functional
-   evaluation where applicable.
-8. Assess suite health, flakiness, runtime, diagnostics, and evidence integrity.
+7. Perform applicable exploratory, usability, accessibility, security, and
+   quality-attribute evaluation.
+8. Assess portfolio health, flakiness, runtime, diagnostics, and evidence
+   integrity.
 9. Validate every metric used as a release gate.
 10. Record omitted evidence, residual uncertainty, waivers, mitigations, and
     owners.
@@ -161,14 +154,14 @@ The profile is satisfied when:
 
 ## 9. Assessment outputs
 
+Retain the common L1 record plus these profile-specific details:
+
 * release claim and critical-journey map,
 * boundary and compatibility matrix,
 * applicable/not-applicable evidence table with rationale,
-* installed-artifact and environment identities,
-* exploratory, usability, accessibility, and non-functional findings,
-* suite-health and metric-validation results,
-* waivers, blockers, mitigations, and owners,
-* pass, conditional pass, fail, exploratory finding, or risk-acceptance result.
+* installed-artifact coverage,
+* exploratory, usability, accessibility, and quality-attribute findings,
+* portfolio-health and metric-validation results.
 
 ## 10. Forward rules
 

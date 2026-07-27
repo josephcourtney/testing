@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "id": "PROFILE-PRODUCTION-001",
+  "kind": "profile_change",
+  "status": "accepted",
+  "previous_profiles": [
+    "development"
+  ],
+  "active_profiles": [
+    "production"
+  ],
+  "rationale": "The reference project demonstrates the complete production evidence and release-policy workflow.",
+  "approved_by": "reference-project maintainer",
+  "accepted_at": "2026-07-27T00:00:00+00:00"
+}

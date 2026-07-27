@@ -1,14 +1,4 @@
----
-aliases:
-  - L2-P1
-linter-yaml-title-alias: L2-P1
-tags: []
-title: L2-P1
----
-
-# L2-P1 — Exploratory / Prototype Testing Phase
-
-## Procedure L2-P1: Exploratory / Prototype Testing Phase
+# L2-P1 — Exploratory / Prototype Confidence Profile
 
 ## 1. Profile role
 
@@ -20,7 +10,7 @@ Material security, privacy, safety, data, accessibility, external-impact, or
 irreversibility risks are not deferred merely because the project is a
 prototype. Apply L1 first and invoke whatever L3 procedures those risks require.
 
-## 2. Phase intent
+## 2. Profile intent
 
 **Goal:**
 Reduce uncertainty and validate feasibility with minimal friction.
@@ -31,9 +21,9 @@ architecture or interface before important assumptions are tested.
 
 **Risks commonly deferred when they are not yet material:**
 Long-term regression protection, broad compatibility, sustained performance,
-production operations, and complete non-functional evidence.
+production operations, and complete quality-attribute evidence.
 
-Deferral is a recorded decision, not an automatic property of the phase.
+Deferral is a recorded decision, not an automatic property of the profile.
 
 Terminology is defined by `glossary.md`; general policy is defined by
 `Overview.md`.
@@ -161,10 +151,11 @@ Record one of:
 
 ## 9. Outputs
 
+Retain the common L1 record plus these profile-specific details:
+
 * assumption and question inventory,
 * prototype environment and data identity,
 * experiments, tests, measurements, or review artifacts,
 * findings and counterexamples,
-* limitations and unexplored areas,
 * promotion, discard, or continuation decision,
 * follow-up evidence and revisit triggers.

@@ -1,12 +1,4 @@
----
-aliases:
-  - L3-T10 — Suite Health
-linter-yaml-title-alias: L3-T10 — Suite Health
-tags: []
-title: L3-T10 — Suite Health
----
-
-# L3-T10 — Test Suite Health
+# L3-T10 — Evidence Portfolio Health
 
 ## 1. Purpose
 
@@ -21,7 +13,8 @@ Apply:
 * during stabilization, production, and maintenance assessments,
 * when runtime, flakiness, quarantine, or maintenance burden changes,
 * after large test or architecture refactors,
-* before relying on a suite as a release gate.
+* before relying on an evidence portfolio or one of its suites as a release
+  gate.
 
 ## 3. Health dimensions
 
@@ -55,7 +48,8 @@ Assess whether complete and partial runs are separated, evidence is fresh, artif
 
 ## 4. Assessment procedure
 
-1. Identify the decisions and cadences the suite is intended to support.
+1. Identify the decisions and cadences the portfolio and its suites are
+   intended to support.
 2. Collect comparable run histories, failure classifications, runtimes, quarantines, and maintenance observations.
 3. Review a sample of tests at each important scope and purpose for oracle quality and fidelity.
 4. Map critical risks to existing evidence and identify gaps or redundant portfolios.
@@ -72,7 +66,8 @@ Assess whether complete and partial runs are separated, evidence is fresh, artif
 
 ## 6. Gating guidance
 
-Fail a decision when suite-health problems invalidate the evidence needed for that decision, for example:
+Fail a decision when portfolio-health problems invalidate the evidence needed
+for that decision, for example:
 
 * retries or nondeterminism make a critical gate untrustworthy,
 * the complete suite cannot be distinguished from a selected run,

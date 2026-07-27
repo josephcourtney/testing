@@ -103,7 +103,7 @@ Assert:
 * a contract or compatibility obligation,
 * an invariant that the prior defect violated,
 * user-visible or operator-visible recovery,
-* a practically meaningful non-functional property when that was the failure.
+* a practically meaningful quality attribute when that was the failure.
 
 Avoid:
 
@@ -147,7 +147,7 @@ of risk. Consider:
 6. Assert a stable externally meaningful obligation.
 7. Add issue or incident context where it improves future interpretation.
 8. Pair the focused test with contract, integration, generative, system,
-   non-functional, or operational evidence when the broader risk warrants it.
+   quality-attribute or operational evidence when the broader risk warrants it.
 9. Record removal or review conditions when the obligation is temporary.
 10. Verify evidence freshness and artifact/environment identity when the
     regression depends on a particular platform, dependency, or deployment.
@@ -221,6 +221,6 @@ Check:
 * minimized reproductions and generated counterexamples,
 * regressions missing for important learned failures,
 * tests to downscope, upscope, merge, rewrite, or remove,
-* broader contract, generative, integration, system, non-functional, or
+* broader contract, generative, integration, system, quality-attribute, or
   operational follow-up,
 * review and retirement conditions for temporary obligations.

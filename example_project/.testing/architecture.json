@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "components": {
+    "normalization": {
+      "paths": [
+        "src/testing_reference/text.py",
+        "tests/unit/test_text.py"
+      ],
+      "claims": [
+        "NORMALIZATION-001"
+      ]
+    },
+    "registry": {
+      "paths": [
+        "src/testing_reference/registry.py",
+        "tests/component/test_registry.py"
+      ],
+      "claims": [
+        "REGISTRY-001"
+      ]
+    },
+    "installed-command": {
+      "paths": [
+        "src/testing_reference/cli.py",
+        "pyproject.toml",
+        "uv.lock",
+        "tests/system/test_cli.py",
+        "scripts/test_wheel.py"
+      ],
+      "claims": [
+        "INSTALLED-CLI-001",
+        "CLI-LATENCY-001"
+      ]
+    },
+    "policy-system": {
+      "paths": [
+        ".testing/**",
+        "src/testing_policy/**",
+        "scripts/**",
+        "tests/component/test_policy*.py",
+        "tests/system/test_policy*.py"
+      ],
+      "claims": [
+        "EVIDENCE-INTEGRITY-001"
+      ]
+    }
+  },
+  "boundaries": {
+    "process": {
+      "claims": [
+        "INSTALLED-CLI-001"
+      ]
+    },
+    "packaging": {
+      "claims": [
+        "INSTALLED-CLI-001"
+      ]
+    }
+  }
+}

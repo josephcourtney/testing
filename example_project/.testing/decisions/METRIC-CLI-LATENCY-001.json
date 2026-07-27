@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "id": "METRIC-CLI-LATENCY-001",
+  "kind": "metric_threshold",
+  "status": "accepted",
+  "metric": "cli-latency",
+  "threshold": 0.5,
+  "rationale": "Half a second is a conservative project-specific ceiling for this intentionally tiny interactive command and workload.",
+  "approved_by": "reference-project maintainer",
+  "accepted_at": "2026-07-27T00:00:00+00:00"
+}

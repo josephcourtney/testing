@@ -1,24 +1,17 @@
----
-aliases:
-  - L2-P5
-linter-yaml-title-alias: L2-P5
-tags: []
-title: L2-P5
----
-
-# L2-P5 — Maintenance and Change Testing Phase
+# L2-P5 — Maintenance and Change Confidence Profile
 
 ## 1. Profile role
 
 This is the lifecycle confidence profile for safely changing or continuing to
 operate a live system. It emphasizes change-impact analysis, incident learning,
-contract revalidation, evidence decay, suite health, and operational feedback.
+contract revalidation, evidence decay, portfolio health, and operational
+feedback.
 
 It does not require a fixed regression inventory for every change. Apply
 `L1.md`, identify the claims and boundaries affected by the change or operating
 observation, and select evidence accordingly.
 
-## 2. Phase intent
+## 2. Profile intent
 
 **Goal:**
 Safely evolve a live system while preventing regressions and preserving the
@@ -81,7 +74,7 @@ inventory.
 * Exact installed-artifact evidence when packaging, dependencies, entry points,
   or included files change.
 
-### Operational and non-functional change
+### Operational and quality-attribute change
 
 * Security and privacy reassessment for new threats, dependencies, permissions,
   or data flows.
@@ -140,10 +133,10 @@ Change-impact analysis must justify what is not rerun or revalidated.
    symptom.
 5. Revalidate contracts, integrations, migrations, artifacts, and supported
    combinations affected by the change.
-6. Evaluate non-functional and operational effects where material.
+6. Evaluate quality-attribute and operational effects where material.
 7. Run the required trusted regression and release selections without allowing
    quarantined or partial results to masquerade as complete evidence.
-8. Compare suite health, performance, compatibility, and other metrics only
+8. Compare portfolio health, performance, compatibility, and other metrics only
    under valid comparability rules.
 9. Retire or rewrite obsolete, duplicated, brittle, or misleading tests.
 10. Record outcome, residual risk, mitigation, owner, and revisit trigger.
@@ -164,14 +157,14 @@ The profile is satisfied when:
 
 ## 9. Assessment outputs
 
+Retain the common L1 record plus these profile-specific details:
+
 * change-impact and affected-boundary map,
 * defect or incident reproduction and root-cause context,
 * added, updated, removed, or reclassified evidence,
 * contract, compatibility, migration, and artifact revalidation,
-* operational and non-functional findings,
-* before/after suite-health observations,
-* waivers, mitigations, owners, and recurrence triggers,
-* pass, conditional pass, fail, exploratory finding, or risk-acceptance result.
+* operational and quality-attribute findings,
+* before/after portfolio-health observations.
 
 ## 10. Forward rules
 

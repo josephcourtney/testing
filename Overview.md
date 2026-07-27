@@ -34,7 +34,8 @@ tradeoffs; those examples are not universal requirements.
 
 Project-specific commands, markers, thresholds, directory layouts, tool
 configurations, runtime budgets, support matrices, and measurement cohorts
-belong under `examples/` or in the adopting project's own documentation.
+belong under `example_project/` or in the adopting project's own documentation.
+Historical assessments belong under `case_study/`.
 
 Use **must** for requirements and **should** for strong recommendations.
 
@@ -210,7 +211,7 @@ into one mutually exclusive hierarchy.
 
 ### 4.1 Structural scope
 
-When scope markers are used, an automated functional test should identify one
+When scope markers are used, an automated behavior test should identify one
 primary structural scope:
 
 * **unit** — a small chosen boundary with highly localizing failures,
@@ -369,7 +370,7 @@ Examples:
 
 A lifecycle profile may increase required confidence, enforcement,
 environmental fidelity, breadth, cadence, ownership, or recordkeeping. It must
-not defer an already-material risk merely because a named phase has not been
+not defer an already-material risk merely because a named profile has not been
 reached.
 
 A project must not rely on one scope, technique, metric, portfolio shape, or
@@ -533,7 +534,7 @@ Common workflows may include:
 * performance measurement,
 * mutation campaigns,
 * compatibility-cell export and aggregation,
-* suite-health recording,
+* portfolio-health recording,
 * release checks.
 
 A testing workflow must distinguish:
@@ -586,51 +587,20 @@ Each required check must have:
 
 ## 9. Measurement policy
 
-No repository-wide numeric target is universal.
+No repository-wide numeric target is universal. A metric may influence a
+decision only after it has the complete specification required by **L3-T11**:
+decision, claim, population, denominator, method, identity and comparability,
+uncertainty, threshold rationale, response, owner, and review trigger.
 
-Coverage, mutation score, flake rate, runtime, feedback latency, defect escape,
-performance, capacity, resource use, data drift, model drift, snapshot churn,
-maintenance burden, and similar metrics may be used only after the project
-defines:
-
-* the decision the metric informs,
-* the claim the metric is evidence about,
-* the population and denominator,
-* the collection method, tool, configuration, and exclusions,
-* the artifact, environment, workload, and data identity,
-* the comparison window or baseline,
-* uncertainty, natural variation, and known sources of bias,
-* the threshold rationale and practical effect,
-* the action taken when the threshold is crossed,
-* the owner and review trigger.
-
-Coverage is evidence of execution, not correctness, assertion quality, or
-requirement coverage.
-
-Mutation score is meaningful only for the declared mutant operators, code
-cohort, test selection, timeout behavior, exclusions, and treatment of invalid,
-equivalent, uncovered, and no-tests mutants.
-
-Flake rates require a defined unit of analysis, comparable observations, and
-enough data to support the claimed precision. “No flakes observed” is not the
-same as a precise long-term probability.
-
-Performance gates require controlled comparisons, explicit workloads and
-hardware, a stable baseline, natural-variation estimates, and a practically
-meaningful relative and absolute effect.
-
-Defect and incident metrics require severity, discovery stage, attribution,
-reporting behavior, exposure, and observation period.
-
-Data and model drift measures require a reference population, sample size,
-multiple-testing policy, operational meaning, and defined response. Generic PSI,
-KS, or accuracy thresholds are not portable defaults.
+Coverage establishes execution, not correctness. Mutation, flake, performance,
+defect, incident, drift, and maintenance measures are meaningful only for their
+declared cohorts and conditions. Generic thresholds are not portable defaults.
 
 Improving a metric must not be pursued through tests or assertions that add no
 meaningful defect-detection value or that distort behavior to satisfy the
 measurement.
 
-Use **L3-T10** for test-suite health and **L3-T11** for metric design,
+Use **L3-T10** for evidence-portfolio health and **L3-T11** for metric design,
 validation, thresholds, and interpretation.
 
 ## 10. Lifecycle profiles
@@ -643,7 +613,7 @@ expectations:
 * **development / alpha (L2-P2)** — make changed responsibilities and known
   acceptance conditions executable while preserving rapid feedback,
 * **stabilization / beta (L2-P3)** — validate critical boundaries,
-  compatibility, user journeys, artifacts, and suite health,
+  compatibility, user journeys, artifacts, and portfolio health,
 * **production (L2-P4)** — require release evidence, operational readiness,
   enforcement, and explicit residual risk,
 * **maintenance (L2-P5)** — protect learned behavior, reassess changed claims,
@@ -710,27 +680,11 @@ applies.
 
 ## 13. Required records
 
-For material decisions, retain enough information to reconstruct:
-
-* the change, release, deployment, or operating scope,
-* the lifecycle profile and decision,
-* relevant risks and claims,
-* failure modes and consequences,
-* selected evidence and why it is appropriate,
-* commands, selections, configurations, tool versions, and exclusions,
-* subject revision and artifact identity,
-* environment, platform, dependency, workload, and data identity,
-* whether results are complete, partial, fresh, stale, comparable, or
-  quarantined,
-* results and measurement conditions,
-* unresolved gaps and residual uncertainty,
-* waivers and compensating controls,
-* the resulting pass, conditional pass, fail, exploratory finding, or
-  risk-acceptance decision.
-
-The record may be lightweight for low-risk work and more formal for high-impact,
-regulated, safety-critical, security-critical, privacy-sensitive, or production
-decisions.
+For material decisions, retain the assessment record defined by **L1 Section
+9**, supplemented by the outputs required by each invoked L3 procedure. That
+record is the canonical schema for decision, identity, selection, results,
+limitations, waivers, and residual uncertainty. Its form may be lightweight for
+low-risk work and more formal for high-impact or regulated work.
 
 ## 14. Detailed procedures
 
@@ -747,11 +701,11 @@ Detailed design, writing, execution, evaluation, and output guidance belongs in:
 * **L3-T3** — integration testing,
 * **L3-T4** — system testing,
 * **L3-T5** — regression testing,
-* **L3-T6** — generative, property, model, and differential testing,
+* **L3-T6** — generative, property, model, differential, and fuzz testing,
 * **L3-T7** — contract and compatibility testing,
-* **L3-T8** — non-functional testing,
+* **L3-T8** — performance, security, privacy, data, and observability evidence,
 * **L3-T9** — snapshot and golden testing,
-* **L3-T10** — test-suite health,
+* **L3-T10** — evidence-portfolio health,
 * **L3-T11** — metric design and validation,
 * **L3-T12** — acceptance testing,
 * **L3-T13** — exploratory testing,
